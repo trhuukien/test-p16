@@ -69,13 +69,21 @@ class Block extends \Bss\ConvertImageWebp\Plugin\Block
     {
         $currentFullAction = $block->getRequest()->getFullActionName();
 
+<<<<<<< HEAD
         if ($currentFullAction == 'cms_page_view') {
+=======
+        if ($currentFullAction == 'cms_page_view' || $currentFullAction =='cms_index_index') {
+>>>>>>> a4d3a9c (bm)
             return parent::afterToHtml($block, $html);
         } else {
             if ($html!= null && strpos($html, "pagebuilder") !== false || // Check img in page-builder.
                 ($html!= null && $currentFullAction == 'catalog_product_view' && strpos($html, "wysiwyg") !== false) // Check img in product page and it's insert image in BE
             ) {
+<<<<<<< HEAD
                 return parent::afterToHtml($block, $html);
+=======
+                // return parent::afterToHtml($block, $html);
+>>>>>>> a4d3a9c (bm)
             } else {
                 return $html;
             }

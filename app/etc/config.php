@@ -438,7 +438,11 @@ return [
         'RedChamps_ShareCart' => 1,
         'Sparsh_OrderComments' => 1,
         'Swissup_Core' => 1,
+<<<<<<< HEAD
         'Swissup_Easycatalogimg' => 1,
+=======
+        'Swissup_Easycatalogimg' => 0,
+>>>>>>> a4d3a9c (bm)
         'Swissup_Marketplace' => 1,
         'TIG_PostNL' => 1,
         'Temando_ShippingRemover' => 1,

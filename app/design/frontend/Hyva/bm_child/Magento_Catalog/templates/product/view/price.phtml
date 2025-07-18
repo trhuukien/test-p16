@@ -81,7 +81,10 @@ if ($product->getTypeId() === \Magento\ConfigurableProduct\Model\Product\Type\Co
     $child = $configurableType->getProductByAttributes($superAttributes ,$product);
     if ($child) {
         $finalPrice = $productPriceViewModel->getPriceValue(FinalPrice::PRICE_CODE, $child);
+<<<<<<< HEAD
         $finalPrice = $productPriceViewModel->getPriceValue(FinalPrice::PRICE_CODE, $child);
+=======
+>>>>>>> a4d3a9c (bm)
         $tierPrices = $productPriceViewModel->getTierPrices(TierPrice::PRICE_CODE, $child);
 
         if ($productPriceViewModel->displayPriceInclAndExclTax()) {
@@ -278,6 +281,7 @@ if ($product->getTypeId() === \Magento\ConfigurableProduct\Model\Product\Type\Co
 >
     <div x-show="!activeProductsPriceData && !isPriceHidden()">
         <div class="price-container">
+<<<<<<< HEAD
             <?php if ($finalPrice < $regularPrice): ?>
                 <div class="old-price mr-2 flex hidden">
                     <span id="product-price-<?= (int)$product->getId() ?>"
@@ -300,6 +304,9 @@ if ($product->getTypeId() === \Magento\ConfigurableProduct\Model\Product\Type\Co
             <?php endif; ?>
 
             <div class="final-price inline-block color-base" itemprop="offers" itemscope="" itemtype="https://schema.org/Offer">
+=======
+            <div class="final-price inline-block color-base flex items-center" itemprop="offers" itemscope="" itemtype="https://schema.org/Offer">
+>>>>>>> a4d3a9c (bm)
                 <?php if ($product->canConfigure() && is_int($product->getPrice())): ?>
                     <span class="price-label block hidden">
                         <?= $escaper->escapeHtml(__('As low as')) . ':' ?>
@@ -311,6 +318,29 @@ if ($product->getTypeId() === \Magento\ConfigurableProduct\Model\Product\Type\Co
                         <?= /** @noEscape */ $productViewModel->format($finalPrice) ?>
                     </span>
                 </span>
+<<<<<<< HEAD
+=======
+                <?php if ($finalPrice < $regularPrice): ?>
+                    <div class="old-price ml-2 flex text-gray-900">
+                        <span id="product-price-<?= (int)$product->getId() ?>"
+                              class="price-wrapper title-font font-medium text-sm line-through">
+                            <span class="price" x-html="hyva.formatPrice(<?= (float)$regularPrice ?> + getCustomOptionPrice())">
+                                <?= /** @noEscape */ $productViewModel->format($regularPrice) ?>
+                            </span>
+                        </span>
+                    </div>
+                    <?php if ($productPriceViewModel->displayPriceInclAndExclTax()): ?>
+                        <div class="old-price-excl-tax hidden">
+                            <span class="font-medium line-through text-gray-350">
+                                <span class="lowercase text-sm"><?= $escaper->escapeHtml(__('Excl. Tax')) ?></span>
+                                <span class="price" x-html="hyva.formatPrice(<?= (float)$regularPriceExclTax ?> + getCustomOptionBasePrice())">
+                                    <?= /** @noEscape */ $productViewModel->format($regularPriceExclTax) ?>
+                                </span>
+                            </span>
+                        </div>
+                    <?php endif; ?>
+                <?php endif; ?>
+>>>>>>> a4d3a9c (bm)
                 <meta itemprop="price" content="<?= $escaper->escapeHtmlAttr($finalPrice) ?>">
                 <meta itemprop="priceCurrency"
                       content="<?= $escaper->escapeHtmlAttr($productViewModel->getCurrencyData()['code']) ?>">

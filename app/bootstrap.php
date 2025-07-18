@@ -11,7 +11,11 @@ error_reporting(E_ALL);
 if (in_array('phar', \stream_get_wrappers())) {
     stream_wrapper_unregister('phar');
 }
+<<<<<<< HEAD
 #ini_set('display_errors', 1);
+=======
+ini_set('display_errors', 1);
+>>>>>>> a4d3a9c (bm)
 
 /* PHP version validation */
 if (!defined('PHP_VERSION_ID') || PHP_VERSION_ID < 80100) {

@@ -196,5 +196,8 @@ Selected Delivery Date:,Leverdatum:,,
 Delivery,Afleveren,,
 Pickup,Ophalen PostNL-punt,,
 At the first opportunity,Levering op afleveradres,,
+<<<<<<< HEAD
 It's a default billing address.,Ingesteld als standaard factuuradres,,
 It's a default shipping address.,Ingesteld als standaard afleveradres,,
+=======
+>>>>>>> a4d3a9c (bm)

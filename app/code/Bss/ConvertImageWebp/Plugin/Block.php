@@ -75,7 +75,11 @@ class Block
      */
     public function afterToHtml(\Magento\Framework\View\Element\AbstractBlock $block, $html)
     {
+<<<<<<< HEAD
         return $html;
+=======
+        // return $html;
+>>>>>>> a4d3a9c (bm)
         if ($this->config->isEnableModule() && $html) {
             //Convert and Show webp image in tag <img>.
             if (strpos($html, "img") !== false

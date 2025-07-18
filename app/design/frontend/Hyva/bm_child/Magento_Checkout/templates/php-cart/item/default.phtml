@@ -42,7 +42,11 @@ $heroicons = $viewModels->require(HeroiconsOutline::class);
 <?php endforeach; ?>
 >
 <tr class="item-info align-top text-left lg:text-right flex flex-wrap lg:table-row">
+<<<<<<< HEAD
     <td data-th="<?= $escaper->escapeHtml(__('Item')) ?>" class="col item pt-5 gap-8 text-left w-full sm:flex-nowrap lg:w-auto relative py-6">
+=======
+    <td data-th="<?= $escaper->escapeHtml(__('Item')) ?>" class="col item pt-5 gap-8 text-left w-full sm:flex-nowrap lg:w-auto relative py-6 pl-0">
+>>>>>>> a4d3a9c (bm)
         <?php if ($block->hasProductUrl()): ?>
         <a href="<?= $escaper->escapeUrl($block->getProductUrl()) ?>"
            title="<?= $escaper->escapeHtmlAttr($block->getProductName()) ?>"
@@ -165,8 +169,13 @@ $heroicons = $viewModels->require(HeroiconsOutline::class);
     </td>
 </tr>
 <tr class="item-actions">
+<<<<<<< HEAD
     <td colspan="4" class="border-b">
         <div class="flex items-center justify-end gap-4 p-4 pt-2">
+=======
+    <td colspan="4" class="border-b pr-0">
+        <div class="flex items-center justify-end gap-4 p-4 pt-2 pr-0">
+>>>>>>> a4d3a9c (bm)
             <?= /* @noEscape */ $block->getActions($item) ?>
         </div>
     </td>

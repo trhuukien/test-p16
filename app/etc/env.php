@@ -11,8 +11,13 @@ return [
         'connection' => [
             'default' => [
                 'host' => 'localhost',
+<<<<<<< HEAD
                 'dbname' => 'dev4_db',
                 'username' => 'dev4_db',
+=======
+                'dbname' => 'bm_db',
+                'username' => 'bm_db',
+>>>>>>> a4d3a9c (bm)
                 'password' => 'B0NbGOSJg',
                 'active' => '1'
             ]
@@ -53,7 +58,11 @@ return [
         'translate' => 1,
         'config_webservice' => 1,
         'compiled_config' => 1,
+<<<<<<< HEAD
         'ec_cache' => 0
+=======
+        'ec_cache' => 1
+>>>>>>> a4d3a9c (bm)
     ],
     'install' => [
         'date' => 'Wed, 01 Nov 2017 21:41:06 +0000'

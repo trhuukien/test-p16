@@ -25,6 +25,7 @@ $filter = $block->getFilter();
 /** @type \Mageplaza\LayeredNavigationPro\Model\Layer\Filter $filterModel */
 $filterModel = $block->getFilterModel();
 
+<<<<<<< HEAD
 $searchEnable = $block->isSearchEnable();
 $attCode = $filter->getRequestVar();
 ?>
@@ -41,15 +42,43 @@ $attCode = $filter->getRequestVar();
                     <?= /** @noEscape */ $item->getLabel() ?>
                     <?php if ($filterModel->isShowCounter($filter)): ?>
                         <span class="count"><?= /** @noEscape */ $item->getCount() ?></span>
+=======
+$searchEnable     = $block->isSearchEnable();
+$attCode          = $filter->getRequestVar();
+$subclassName     = $searchEnable ? ' layer-search-list layer-search-list-' . $attCode : '';
+?>
+<?php if ($searchEnable): ?>
+    <input type="text" class="layer-search-box w-full" code="<?= /** @noEscape */ $attCode ?>" placeholder="<?= /** @noEscape */ __('Search') ?>"/>
+<?php endif; ?>
+<ol class="items ln-items-<?= $escaper->escapeHtml($attCode.$subclassName) ?>">
+    <?php foreach ($block->getItems() as $item): ?>
+        <?php $itemSubclassName = $searchEnable ? "data-search-term=\"" . strtolower($item->getLabel()) . "\"" : ''; ?>
+        <li class="item" <?= /** @noEscape */ $itemSubclassName ?>>
+            <?php if ($item->getCount() > 0): ?>
+                <input @click="clickCheckBox($event)" type="<?= /** @noEscape */ $filterModel->isMultiple($filter) ? 'checkbox' : 'radio' ?>" <?= /** @noEscape */ $filterModel->isSelected($item) ? 'checked="checked"' : '' ?>
+                       class="layer-input-filter" name="filter_<?= /** @noEscape */ $attCode ?>">
+                <a @click="clickLink($event,'<?= /** @noEscape */ $block->escapeUrl($filterModel->getItemUrl($item)) ?>')"
+                   class="flex justify-between py-1 hover:text-black"
+                   href="<?= /** @noEscape */ $block->escapeUrl($filterModel->getItemUrl($item)) ?>">
+                    <?= /** @noEscape */ $item->getLabel() ?>
+                    <?php if ($filterModel->isShowCounter($filter)): ?>
+                        <span class="count">(<?= /** @noEscape */ $item->getCount() ?>)</span>
+>>>>>>> a4d3a9c (bm)
                     <?php endif; ?>
                 </a>
             <?php elseif ($filterModel->isShowZero($filter)): ?>
                 <input type="<?= /** @noEscape */ $filterModel->isMultiple($filter) ? 'checkbox' : 'radio' ?>" disabled="disabled"
                        class="layer-input-filter" name="filter_<?= /** @noEscape */ $attCode ?>"/>
+<<<<<<< HEAD
                 <?= /** @noEscape */ $item->getLabel() ?>
                 <?php if ($filterModel->isShowCounter($filter)): ?>
                     <span class="count"><?= /** @noEscape */ $item->getCount() ?><span
                                 class="filter-count-label"><?= /** @noEscape */ ($item->getCount() == 1) ? 'item' : 'items'; ?></span></span>
+=======
+                <span class="py-1 hover:text-black"><?= /** @noEscape */ $item->getLabel() ?></span>
+                <?php if ($filterModel->isShowCounter($filter)): ?>
+                    <span class="count">(<?= /** @noEscape */ $item->getCount() ?>)</span>
+>>>>>>> a4d3a9c (bm)
                 <?php endif; ?>
             <?php endif; ?>
         </li>
