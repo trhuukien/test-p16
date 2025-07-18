@@ -1,0 +1,148 @@
+<?php declare(strict_types=1);
+
+/**
+ * @author Amasty Team
+ * @copyright Copyright (c) Amasty (https://www.amasty.com)
+ * @package Mega Menu Lite Hyva
+ */
+
+use Amasty\MegaMenuLite\Block\Container;
+use Amasty\MegaMenuLiteHyva\ViewModel\DesktopMenuItem;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Magento\Framework\Escaper;
+
+/** @var Escaper $escaper */
+/** @var Container $block */
+/** @var ViewModelRegistry $viewModels */
+/** @var HeroiconsOutline $heroIcons */
+/** @var array $item */
+
+$heroIcons = $viewModels->require(HeroiconsOutline::class);
+$menuItemViewModel = $viewModels->require(DesktopMenuItem::class);
+$menuItemViewModel->setBlock($block);
+
+$elems = $item['elems'];
+$content = isset($item['content']) ? $item['content'] : '';
+$itemId = $item['id'] ?? null;
+$hideContent = isset($item['hide_content']) ? (bool)$item['hide_content'] : false;
+$hasDropdown = (!empty($elems) || !empty($content)) && !$hideContent;
+$blockSubmenuType = $block->getLayout()->getBlock('ammenu.menu.top.submenu_type');
+
+// phpcs:disable Generic.Files.LineLength.TooLong
+?>
+<li x-data="Object.assign({}, amMegaMenuSubmenuItem(), { itemId: '<?= $escaper->escapeHtmlAttr($item['id']) ?>' })"
+    x-show="canShow('<?= $escaper->escapeHtml($item['status']) ?>', <?= /* @noEscape */ $item['is_category'] ? 'true' : 'false' ?>)"
+    <?php if ($hasDropdown): ?>
+        @notify-is-opened.window="itemOpen = $event.detail.id === itemId"
+        @mouseenter="$dispatch('notify-is-opened', { id: itemId })"
+        @mouseleave="itemOpen = false"
+    <?php else: ?>
+        x-cloak
+    <?php endif; ?>
+    class="hover:bg-[var(--ammenu-main-menu-background-hover)] cursor-pointer">
+
+    <?= /** @noEscape */ $menuItemViewModel->fetchView('components/top_menu/item/link-top.phtml', [
+        'item' => $item,
+        'hasDropdown' => $hasDropdown
+    ]) ?>
+
+    <?php if ($hasDropdown): ?>
+        <?php
+        $width = isset($item['width']) ? $item['width'] : 1;
+        $widthValue = isset($item['width_value']) ? $item['width_value'] : 0;
+        $columns = (count($elems) > 4) ? 4 : count($elems);
+        if (isset($item['column_count'])) {
+            $columns = (count($elems) >= $item['column_count'] && $item['column_count'] > 0)
+                ? $item['column_count'] : $columns;
+        }
+        $columnsStyle = isset($item['submenu_type']) ? ($item['submenu_type'] ? '' : 'repeat(' . $columns . ', minmax(0,1fr))') : 'repeat(' . $columns . ', minmax(0,1fr))';
+        $additionalClass = isset($item['submenu_type']) ? $item['submenu_type'] ? ' flex' : '' : '';
+        $submenuAnimationClass = isset($item['submenu_animation']) ? ' animate-' . $item['submenu_animation'] : '';
+        $animationName = isset($item['submenu_animation']) ? lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $item['submenu_animation'])))) : '';
+        $hasSubMenuType = isset($item['submenu_type']) ? ($item['submenu_type'] ? '' : $itemId) : $itemId;
+        $submenuType = isset($item['submenu_type']) ? $item['submenu_type'] : false;
+        $subCatPosition = json_encode($item['type'] ?? '');
+        ?>
+        <?php if (!$hideContent): ?>
+            <template x-if="itemOpen">
+                <div class="absolute left-1/4 max-h-[70vh] max-w-full rounded-bl-2xl rounded-br-2xl overflow-y-auto
+                     bg-cover bg-no-repeat bg-center
+                     bg-[image:var(--ammenu-submenu-background-image)] bg-[var(--ammenu-submenu-background-color)]
+                     <?= $escaper->escapeHtmlAttr($submenuAnimationClass); ?><?= $escaper->escapeHtmlAttr($additionalClass); ?>"
+                     :class="{
+                         'left-0': '<?= /* @noEscape */ $width; ?>' === '0'
+                     }"
+                     :style="{
+                         'animation-duration': animation_time ? animation_time + 's' : '',
+                         'width': getWidth('<?= /* @noEscape */ $width; ?>', '<?= /* @noEscape */ $widthValue; ?>', '<?= /* @noEscape */ $submenuType; ?>')
+                     }"
+                     style="max-height: 100%;"
+                     x-ref="amMenuSubmenuItemOpen"
+                     @change-width-size.window="subMenuAdjustment($el, '<?= /* @noEscape */ $width; ?>', '<?= /* @noEscape */ $widthValue; ?>');"
+                     x-intersect:enter="subMenuAdjustment($el, '<?= /* @noEscape */ $width; ?>', '<?= /* @noEscape */ $widthValue; ?>');"
+                     x-cloak>
+
+                    <?php if ($hasDropdown): ?>
+                        <?php
+                        $itemChildUniqId = uniqid();
+                        ?>
+                        <script>
+                            function amMenuItemDrill_<?= $escaper->escapeJs($itemChildUniqId); ?>() {
+                                return Object.assign({}, amMenuItemDrill(), {
+                                    defaultTabs: ['<?= $escaper->escapeHtmlAttr($itemId) ?>'],
+                                    activeId: '<?= $escaper->escapeHtmlAttr($hasSubMenuType); ?>',
+                                    activeTabs: <?= /* @noEscape */ "['{$escaper->escapeHtmlAttr($itemId)}']" ?>,
+                                    submenuType: <?= $escaper->escapeHtmlAttr($submenuType ? 'true' : 'false'); ?>,
+                                    subCatPosition: <?= /* @noEscape */ $subCatPosition ?>
+                                });
+                            }
+                        </script>
+                        <div class="flex flex-wrap p-5"
+                             :class="{
+                                'w-full': submenuType
+                             }"
+                             x-data="amMenuItemDrill_<?= $escaper->escapeJs($itemChildUniqId); ?>()">
+
+                            <!-- Menu Pro / Submenu Type -->
+                            <?php if ($blockSubmenuType): ?>
+                                <?= /* @noEscape */ $blockSubmenuType->setData('item', $item)->toHtml(); ?>
+                            <?php endif; ?>
+                            <!-- /Menu Pro -->
+
+                            <template x-if="!submenuType">
+                                <div class="w-full">
+                                    <?php if (!empty($elems)): ?>
+                                        <div class="grid content-start"
+                                             :style="{
+                                                 'grid-template-columns': '<?= $escaper->escapeHtmlAttr($columnsStyle); ?>'
+                                             }">
+                                            <?php foreach ($elems as $key => $itemChild): ?>
+                                                <?php if (!empty($itemChild['elems'])): ?>
+                                                    <?= /** @noEscape */ $menuItemViewModel->fetchView('components/top_menu/item.phtml', ['item' => $itemChild, 'isFirst' => true]); ?>
+                                                <?php else: ?>
+                                                    <div class="flex flex-wrap items-start py-2">
+                                                        <?= /** @noEscape */ $menuItemViewModel->fetchView('components/top_menu/item/link.phtml', [
+                                                            'item' => $itemChild,
+                                                            'isFirst' => true
+                                                        ]); ?>
+                                                    </div>
+                                                <?php endif ?>
+                                            <?php endforeach ?>
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <?php if (!empty($content)): ?>
+                                        <div data-content="ammenu-content">
+                                            <?= /* @noEscape */ $content; ?>
+                                        </div>
+                                    <?php endif; ?>
+                                </div>
+                            </template>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </template>
+        <?php endif;?>
+<?php endif; ?>
+</li>

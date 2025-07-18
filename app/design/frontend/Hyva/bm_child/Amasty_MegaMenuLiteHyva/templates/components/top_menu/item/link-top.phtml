@@ -1,0 +1,57 @@
+<?php declare(strict_types=1);
+
+/**
+ * @author Amasty Team
+ * @copyright Copyright (c) Amasty (https://www.amasty.com)
+ * @package Mega Menu Lite Hyva
+ */
+
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Amasty\MegaMenuLiteHyva\ViewModel\DesktopMenuItem;
+
+/** @var Escaper $escaper */
+/** @var Template $block */
+/** @var ViewModelRegistry $viewModels */
+/** @var array $item */
+
+$menuItemViewModel = $viewModels->require(DesktopMenuItem::class);
+$fontWeight = $item['desktop_font'] ?? '700';
+
+$additionalClass = $item['current']
+    ? 'text-[var(--ammenu-current-category-color)] group-[.link]:text-[var(--ammenu-main-menu-text-hover)]'
+    : 'text-[var(--ammenu-main-menu-text)] group-[.link]:text-[var(--ammenu-main-menu-text-hover)]';
+
+$bgClass = $item['current']
+    ? 'bg-[var(--ammenu-current-category-color)] group-[.link]:bg-[var(--ammenu-main-menu-text-hover)]'
+    : 'bg-[var(--ammenu-main-menu-text)] group-[.link]:bg-[var(--ammenu-main-menu-text-hover)]';
+
+$iconBlock = $block->getLayout()->getBlock('ammenu.top.menu.icon');
+
+// phpcs:disable Generic.Files.LineLength.TooLong
+?>
+<a class="group cate-1 py-2 flex items-center justify-between cursor-pointer relative p-4 <?= $escaper->escapeHtmlAttr($additionalClass) ?>"
+   href="<?= $escaper->escapeUrl(empty($item['url']) ? '#' : $item['url']) ?>"
+   :class="{
+       'text-[var(--ammenu-main-menu-text-hover)] link': itemOpen
+   }">
+
+    <!-- Render the menu item label -->
+    <?= /** @noEscape */ $menuItemViewModel->fetchView('components/label.phtml', [
+        'item' => $item,
+        'classes' => 'inline-block text-xs font-bold rounded p-1 absolute bottom-[75%] text-left'
+    ]) ?>
+
+    <!-- Render the icon block if available -->
+
+    <!-- Render the menu item name with dynamic font weight -->
+    <span :style="{ 'font-weight': '<?= $escaper->escapeHtmlAttr($fontWeight); ?>' }">
+        <?= $escaper->escapeHtml($item['name']) ?>
+    </span>
+    <?php if ($hasDropdown): ?>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44.93 54.17" class="ml-2 arrow">
+      <path d="M6.6,9.31,35.3,27.09,6.6,44.87V9.3M3.21,0A3.21,3.21,0,0,0,0,3.21V51a3.2,3.2,0,0,0,4.89,2.72L43.41,29.81a3.19,3.19,0,0,0,1-4.4,3.23,3.23,0,0,0-1-1L4.89.48A3.34,3.34,0,0,0,3.21,0Z"></path>
+    </svg>
+    <?php endif ?>
+</a>

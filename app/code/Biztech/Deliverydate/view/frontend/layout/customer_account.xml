@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Biztech_Deliverydate::css/calendar.css"/>
+        <css src="Biztech_Deliverydate::css/style.css"/>
+        <link src="Biztech_Deliverydate::js/dashboard.js"/>
+    </head>
+</page>

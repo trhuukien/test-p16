@@ -1,0 +1,89 @@
+<?php
+/**
+ * Mageplaza
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Mageplaza.com license that is
+ * available through the world-wide-web at this URL:
+ * https://www.mageplaza.com/LICENSE.txt
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category    Mageplaza
+ * @package     Mageplaza_AjaxLayer
+ * @copyright   Copyright (c) Mageplaza (http://www.mageplaza.com/)
+ * @license     https://www.mageplaza.com/LICENSE.txt
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+
+/** @var \Magento\LayeredNavigation\Block\Navigation\State $block */
+/** @var \Magento\Framework\Escaper $escaper */
+/** @var \Hyva\Theme\Model\ViewModelRegistry $viewModels */
+
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+?>
+<?php $filters = $block->getActiveFilters() ?>
+<div
+    class="filter-current p-4"
+>
+    <div class="relative mb-3">
+        <h3 id="active-filtering-heading">
+            <strong><?= $escaper->escapeHtml(__('Filters')) ?></strong>
+        </h3>
+        
+        <?php if ($block->getLayer()->getState()->getFilters()): ?>
+        <div class="block-actions filter-actions">
+            <a @click="clickLink($event,'<?= $escaper->escapeUrl($block->getClearUrl()) ?>')" href="<?= $escaper->escapeUrl($block->getClearUrl()) ?>"
+               class="text-sm text-primary hover:text-primary-darker absolute flex clear-all-custom">
+               <?= $escaper->escapeHtml(__('Clear All')) ?>
+               <svg class="ml-1 mt-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="4" stroke="#71ae44" width="15px" height="15px">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"></path>
+                </svg>
+           </a>
+        </div>
+    <?php endif; ?>
+    </div>
+    <div class="pb-4 border-b">
+        <div
+            id="active-filtering-content"
+            class="items pt-1 pb-3"
+            aria-labelledby="active-filtering-heading"
+            role="region"
+        >
+            <?php if (!empty($filters)): ?>
+            <?php foreach ($filters as $filter): ?>
+                <?php
+                    $filterName = $filter->getName();
+                    $filterLabel = $block->stripTags($filter->getLabel());
+                ?>
+                <div class="item flex justify-between items-center relative">
+                    <span class="flex ml-4 lg:ml-5">
+                        <span class="filter-label text-sm"><?= $escaper->escapeHtml(__($filterName)) ?></span>
+                        <span class="separator text-sm mx-1">:</span>
+                        <span class="filter-value text-sm"><?= $escaper->escapeHtml($filterLabel) ?></span>
+                    </span>
+                    <span>
+                        <a class="text-center block action remove text-primary hover:text-primary-darker absolute"
+                           @click="clickLink($event,'<?= $escaper->escapeUrl($filter->getRemoveUrl()) ?>')"
+                           href="<?= $escaper->escapeUrl($filter->getRemoveUrl()) ?>"
+                           title="<?= /* @noEscape */ $escaper->escapeHtmlAttr(__('Remove active %1 filter: %2', $filterName, $filterLabel)) ?>">
+                            <svg width="13" height="13" viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+                              <rect width="22" height="22" rx="4" fill="#67ae44"></rect>
+                              <path d="M6 11L9.5 14.5L16 8" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+                            </svg>
+                        </a>
+                    </span>
+                </div>
+            <?php endforeach; ?>
+            <?php endif; ?>
+        </div>
+    </div>
+</div>

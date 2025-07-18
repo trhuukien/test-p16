@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Biztech_Deliverydate::css/style.css"/>
+        <css src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" src_type="url" rel="stylesheet" type="text/css" />
+        <css src="Biztech_Deliverydate::css/slickslider/slick.css"/>
+        <css src="Biztech_Deliverydate::css/slickslider/slick-theme.css"/>
+    </head>
+    <body>
+        <referenceContainer name="content">
+            <block class="Biztech\Deliverydatepro\Block\Multishipping\Checkout\Shipping" name="checkout_shipping" template="Biztech_Deliverydatepro::multishipping/checkout/shipping.phtml" cacheable="false">
+                <arguments>
+                    <argument name="renderer_template" xsi:type="string">Magento_Multishipping::checkout/item/default.phtml</argument>
+                </arguments>
+                <block class="Magento\Framework\View\Element\RendererList" name="checkout.cart.item.renderers" as="renderer.list"/>
+                <block class="Magento\Multishipping\Block\Checkout\Billing\Items" name="checkout_billing_items" template="Magento_Multishipping::checkout/billing/items.phtml" cacheable="false">
+                    <arguments>
+                        <argument name="renderer_template" xsi:type="string">Magento_Multishipping::checkout/item/default.phtml</argument>
+                        <argument name="renderer_list_name" xsi:type="string">checkout.cart.item.renderers</argument>
+                    </arguments>
+                </block>
+            </block>
+        </referenceContainer>
+    </body>
+</page>

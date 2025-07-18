@@ -1,0 +1,14 @@
+<?php if ($block->getHelper()->supportCookieDirective()):?>
+
+	<?php echo $block->getChildHtml('ec_cookie_content') ?>
+	
+	<script data-ommit="true" nonce="<?php echo $block->generateNonce() ?>">
+
+    	document.addEventListener("DOMContentLoaded", () => 
+    	{
+    		AEC.CookieConsent.setProxy().setNonce(<?php echo json_encode($block->generateNonce()) ?>).setWidget(<?php echo json_encode($block->getHelper()->getCookieWidgetOptions()) ?>).setEndpoints(<?php echo json_encode([ 'type' => 'json', 'cookie' => $block->getUrl('datalayer/index/cookie'), 'cookieContent' => $block->getUrl('datalayer/index/cookieContent'), 'cookieConsent' => $block->getUrl('datalayer/index/cookieConsent') ]) ?>).getConsentDialog(dataLayer);
+    	});
+		
+	</script>
+	
+<?php endif ?>

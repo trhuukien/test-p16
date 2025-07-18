@@ -1,0 +1,80 @@
+<?php
+
+namespace Biztech\Deliverydatepro\Block\Cart;
+
+use Magento\Framework\View\Element\Template;
+use Magento\Checkout\Model\Cart;
+use Biztech\Deliverydatepro\Helper\Data;
+use Biztech\Deliverydate\Block\Deliverydate;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+
+class Summary extends Template
+{
+    /**
+     * @var Cart
+     */
+    protected $cart;
+    protected $proHelper;
+    protected $productCollectionFactory;
+    protected $deliverydate;
+
+    /**
+     * Summary constructor.
+     * @param Template\Context $context
+     * @param Cart $cart
+     * @param array $data
+     */
+    public function __construct(
+        Template\Context $context,
+        Cart $cart,
+        Data $proHelper,
+        CollectionFactory $productCollectionFactory,
+        Deliverydate $deliverydate,
+        array $data = []
+    ) {
+        $this->cart = $cart;
+        $this->proHelper = $proHelper;
+        $this->productCollectionFactory = $productCollectionFactory;
+        $this->deliverydate = $deliverydate;
+        parent::__construct($context, $data);
+    }
+
+    /**
+     * Get current products in cart
+     *
+     * @return \Magento\Quote\Model\Quote\Item[]
+     */
+    public function getHighestDeliveryDate()
+    {
+        $writer = new \Zend_Log_Writer_Stream(BP . '/var/log/currentQuote.log');
+        $logger = new \Zend_Log();
+        $logger->addWriter($writer);
+        $logger->info('text message');
+        $items = $this->cart->getQuote()->getAllItems();
+        $highestDeliveryDate = null;
+        foreach($items as $item)
+        {
+            $productId = $item->getProductId();
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $product = $objectManager->get('Magento\Catalog\Model\Product')->load($productId);
+            $deliveryDate[] =  $this->proHelper->getFinalDeliveryDate($product);
+        }
+        // return $deliveryDate;
+        $logger->info(print_r($deliveryDate,true));
+        foreach($deliveryDate as $deliveryDate)
+        {
+            if($highestDeliveryDate == null || $deliveryDate > $highestDeliveryDate)
+            {
+                $highestDeliveryDate = $deliveryDate;
+            }
+        }
+        $logger->info('Highest Delivery date');
+        $logger->info(print_r($deliveryDate,true));
+        return $highestDeliveryDate;
+    }
+
+    public function deliveryDateFormat()
+    {
+        return $this->deliverydate->getDeliveryDateFormat();
+    }
+}

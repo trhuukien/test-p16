@@ -1,0 +1,11 @@
+<?php
+
+$translatedDate = $block->formatLocalizedDate();
+
+if ($translatedDate) {
+    echo  __('Delivery Date').' '.$translatedDate;
+} else {
+    echo __('No delivery dates available.');
+}
+
+?>

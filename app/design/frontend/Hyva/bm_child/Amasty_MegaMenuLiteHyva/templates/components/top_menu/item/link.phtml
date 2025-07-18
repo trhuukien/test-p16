@@ -1,0 +1,61 @@
+<?php declare(strict_types=1);
+
+/**
+ * @author Amasty Team
+ * @copyright Copyright (c) Amasty (https://www.amasty.com)
+ * @package Mega Menu Lite Hyva
+ */
+
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Amasty\MegaMenuLiteHyva\ViewModel\DesktopMenuItem;
+
+/** @var Escaper $escaper */
+/** @var Template $block */
+/** @var ViewModelRegistry $viewModels */
+/** @var array $item */
+/** @var bool $isFirst */
+
+$menuItemViewModel = $viewModels->require(DesktopMenuItem::class);
+$fontWeight = $item['desktop_font'] ?? '400';
+
+$additionalClass = $item['current'] ?
+    'text-[var(--ammenu-current-category-color)] group-hover:text-[var(--ammenu-submenu-text-hover)]'
+    : ($isFirst ?
+        'text-[var(--ammenu-submenu-text)] group-hover:text-[var(--ammenu-submenu-text-hover)]'
+        : 'text-[var(--ammenu-third-level-menu)] group-hover:text-[var(--ammenu-submenu-text-hover)]');
+
+$bgClass = $item['current']
+    ? 'bg-[var(--ammenu-current-category-color)] group-hover:bg-[var(--ammenu-submenu-text-hover)]'
+    : ($isFirst ?
+        'bg-[var(--ammenu-submenu-text)] group-hover:bg-[var(--ammenu-submenu-text-hover)]'
+        : 'bg-[var(--ammenu-third-level-menu)] group-hover:bg-[var(--ammenu-submenu-text-hover)]');
+
+$iconBlock = $block->getLayout()->getBlock('ammenu.top.menu.icon');
+
+//phpcs:disable Generic.Files.LineLength.TooLong
+?>
+<a class="text-sm group parent flex items-start w-full text-lg cursor-pointer py-2 px-4"
+   title="<?= $escaper->escapeHtmlAttr($item['name']) ?>"
+   href="<?= $escaper->escapeUrl($item['url']) ?>">
+
+    <?php if ($iconBlock): ?>
+        <?= /* @noEscape */ $iconBlock->setData('item', $item)
+            ->setData('available', ['desktop', 'both'])
+            ->setData('additional_class', $bgClass)
+            ->toHtml() ?>
+    <?php endif ?>
+
+    <span class="max-w-[300px] text-ellipsis whitespace-nowrap overflow-hidden <?= $escaper->escapeHtmlAttr($additionalClass) ?>"
+          :style="{
+              'font-weight': '<?= $escaper->escapeHtmlAttr($fontWeight); ?>'
+          }">
+        <?= $escaper->escapeHtml($item['name']) ?>
+    </span>
+
+    <?= /** @noEscape */ $menuItemViewModel->fetchView('components/label.phtml', [
+        'item' => $item,
+        'classes' => 'text-left inline-block text-xs font-bold rounded p-1 ml-2 mr-6 overflow-hidden'
+    ]) ?>
+</a>

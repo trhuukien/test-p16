@@ -1,0 +1,544 @@
+<?php
+
+namespace Biztech\Deliverydate\Block;
+
+use Biztech\Deliverydate\Helper\Data;
+use Magento\Checkout\Model\Cart;
+use Magento\Framework\Pricing\Helper\Data as PricingHelper;
+use Magento\Framework\Stdlib\DateTime\DateTime;
+use Magento\Framework\Stdlib\DateTime\Timezone;
+use Magento\Framework\View\Element\Template;
+use Magento\Framework\View\Element\Template\Context;
+use Magento\Sales\Model\ResourceModel\Order\CollectionFactory as OrderCollectionFactory;
+use Magento\Store\Model\ScopeInterface;
+use Magento\Customer\Model\Session;
+
+class Deliverydate extends Template {
+
+    protected $_scopeConfig;
+    protected $_helper;
+    protected $_date;
+    protected $priceHelper;
+    protected $timeZone;
+    protected $_order;
+    protected $_cart;
+    protected $customerSession;
+
+    public function __construct(
+    Context $context, Data $helper, DateTime $date, Timezone $timeZone, PricingHelper $priceHelper, OrderCollectionFactory $order, Session $customerSession, Cart $cart, array $data = []
+    ) {
+        $this->_order = $order;
+        parent::__construct($context, $data);
+        date_default_timezone_set($timeZone->getConfigTimezone());
+        $this->_scopeConfig = $context->getScopeConfig();
+        $this->_helper = $helper;
+        $this->_date = $date;
+        $this->timeZone = $timeZone;
+        $this->priceHelper = $priceHelper;
+        $this->customerSession = $customerSession;
+        $this->_cart = $cart;
+    }
+
+    public function getSalesOrderCollection(array $filters = []) {
+        $collectOrder = $this->_order->create()->addAttributeToSelect('*');
+        foreach ($filters as $field => $condition) {
+            $collectOrder->addFieldToFilter($field, $condition);
+        }
+
+        return $collectOrder;
+    }
+
+    public function _prepareLayout() {
+        return parent::_prepareLayout();
+    }
+
+    /* public function getDeliverydate()
+      {
+      if (!$this->hasData('deliverydate')) {
+      $this->setData('deliverydate', Mage::registry('deliverydate'));
+      }
+
+      return $this->getData('deliverydate');
+      } */
+
+    public function getenabledMethod() {
+        return $this->getConfigValue('deliverydate/deliverydate_front_config/delivery_method', ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getConfigValue($path, $scope = null) {
+        if (is_null($scope)) {
+            $scope = ScopeInterface::SCOPE_STORE;
+        }
+        return $this->_scopeConfig->getValue($path, $scope);
+    }
+
+    public function enableExtension() {
+        $display = false;
+        if ($this->_helper->getMagentoVersion() >= '2.4.0') {
+            $this->proHelper = $this->_helper->objectManager()->get('Biztech\Deliverydatepro\Helper\Data');
+            $isCustomerApplicable = $this->proHelper->checkCurrentUserAllowed($this->customerSession->getCustomer()->getGroupId());
+            if ($this->_helper->isEnable() && $this->_helper->getOnWhichPage() == 1 && $isCustomerApplicable) {
+                $display = true;
+            }
+        } else {
+            if ($this->_helper->isEnable() && $this->_helper->getOnWhichPage() == 1) {
+                $display = true;
+            }
+        }
+
+        return $display;
+    }
+
+    public function getisMandatory() {
+        return $this->getConfigValue('deliverydate/deliverydate_front_config/is_mandatory', ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getDeliveryDateCommentsLabel() {
+        return $this->getConfigValue('deliverydate/deliverydate_front_config/deliverydate_comments_label', ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getShowHtml() {
+        return $this->getConfigValue('deliverydate/deliverydate_front_config/show_html', ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getDeliveryHtml() {
+        return $this->getConfigValue('deliverydate/deliverydate_front_config/deliverydate_html', ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getDeliverydatelabel() {
+        return $this->getConfigValue('deliverydate/deliverydate_front_config/deliverydate_label', ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getCalendarTime() {
+        return $this->getConfigValue('deliverydate/deliverydate_general/deliverytime_enable_time', ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getTableLabel() {
+        return $this->getConfigValue('deliverydate/deliverydate_timeslots/table_label', ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getCurrentTime($timeFormat = 'H') {
+        return $this->_date->date($timeFormat);
+    }
+
+    public function getavailableTimeslot($multishipping = false, $addressId = NULL) {
+        $displaySlots = [];
+
+        $timeslot = $this->getHelper()->getTimeSlots();
+        $delivery_days = $this->getNoofDaysofDelivery();
+        $deliverytime_format = $this->getDeliveryTimeFormat();
+        $deliverydate_format = $this->getDeliveryDateFormat();
+        $startDate = $this->_date->date('Y-m-d');
+
+
+        $deliverydateProEnable = $this->getHelper()->checkModuleStatus('Biztech_Deliverydatepro');
+        $isOrderProcessingTime = false;
+        if ($deliverydateProEnable == true) {
+            $proHelper = $this->getHelper()->objectManager()->get('\Biztech\Deliverydatepro\Helper\Data');
+            $deliveryOption = $proHelper->deliveryOption();
+            if (($deliveryOption == 2) && ($this->_helper->getOnWhichPage() == 1 || $this->_helper->getOnWhichPage() == 3)) {
+                $isOrderProcessingTime = true;
+                $orderProcessingTime = $proHelper->getQuoteData();
+            }
+            if ($deliveryOption == 2 && $this->_helper->getOnWhichPage() == 1 && $multishipping == true && $addressId != NULL) {
+                $isOrderProcessingTime = true;
+                $orderProcessingTime = $proHelper->getQuoteAddressData($addressId);
+            }
+        }
+        if ($isOrderProcessingTime) {
+            if ($orderProcessingTime > 0) {
+                $dayIntval = $orderProcessingTime;
+            } else {
+                $dayIntval = 0;
+            }
+        } else {
+            $dayIntval = $this->getDayDiff();
+        }
+
+        if (!is_null($dayIntval)) {
+            $startDate = date('Y-m-d', strtotime($startDate . '+' . $dayIntval . 'days'));
+        }
+
+        $endDate = date('Y-m-d', strtotime($startDate . '+' . ($delivery_days) . 'days'));
+
+        $begin = new \DateTime($startDate);
+        $end = new \DateTime($endDate);
+        $interval = new \DateInterval('P1D');
+        $dateRange = new \DatePeriod($begin, $interval, $end);
+
+        $displaySlots = $this->getDateRange($dateRange, $timeslot, $deliverytime_format, $deliverydate_format, $dayIntval);
+
+        return $displaySlots;
+    }
+
+    public function getHelper() {
+        return $this->_helper;
+    }
+
+    public function getNoofDaysofDelivery() {
+        return $this->getConfigValue('deliverydate/deliverydate_timeslots/no_of_deliverydays', ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getDeliveryTimeFormat() {
+        return $this->getConfigValue('deliverydate/deliverydate_front_config/deliverytime_format', ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getDeliveryDateFormat() {
+        return $this->getConfigValue('deliverydate/deliverydate_front_config/deliverydate_format', ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getDayDiff() {
+        return $this->getConfigValue('deliverydate/deliverydate_configuration/deliverytime_day_diff', ScopeInterface::SCOPE_STORE);
+    }
+
+    protected function getDateRange($dateRange, $timeslot, $deliverytime_format = 'g:i a', $deliverydate_format = 'Y-m-d', $dayIntval = 0) {
+        $displaySlots = [];
+        if(!empty($this->getTimeDiff())){
+            $time_diff = ceil($this->getTimeDiff());    
+        }else{
+            $time_diff = 1;
+        }
+        
+
+        $disable_slot = $this->getHelper()->getFormattedDisableSlots();
+        $disable_slot_date = $this->getHelper()->getFormattedDisableSlotsDate();
+
+        if ($this->getDayOffs() === '0') {
+            $day_off = explode(',', $this->getDayOffs());
+        } else {
+            $day_off = $this->getDayOffs() ? explode(',', $this->getDayOffs()) : [];
+        }
+
+        $nonworking_days = $this->getHelper()->getFormattedNonWorkingDays();
+        $nonworking_period = $this->getHelper()->getFormattedNonWorkingPeriod();
+        $excludeHolidayFromProcessingDay = $this->getHelper()->objectManager()->get('\Biztech\Deliverydatepro\Helper\Data')->excludeHolidayFromProcessingDay();
+        $deliverydateProEnable = $this->getHelper()->checkModuleStatus('Biztech_Deliverydatepro');
+
+        if ($deliverydateProEnable == true) {
+            if ($this->getHelper()->objectManager()->get('\Biztech\Deliverydatepro\Helper\Data')->excludeHolidays() == 1) {
+                $holiday = $this->getHelper()->objectManager()->get('\Biztech\Deliverydatepro\Helper\Data')->getEnableHolidays();
+                $annualNotRepeatHoliday = [];
+                $annualRepeatHoliday = [];
+                if (isset($holiday['annualNotRepeatHoliday'])) {
+                    $annualNotRepeatHoliday = (array) $holiday['annualNotRepeatHoliday'];
+                }
+                if (isset($holiday['annualRepeatHoliday'])) {
+                    $annualRepeatHoliday = (array) $holiday['annualRepeatHoliday'];
+                    $holidayResult = [];
+                    if ($excludeHolidayFromProcessingDay) {
+                        foreach ($annualRepeatHoliday as $repeatDate) {
+                            $holidayResult[] = date('d-m-Y', strtotime($repeatDate));
+                        }
+                    } else {
+                        $dateTime = $dateRange->end;
+                        $endYear = $dateTime->format('Y');
+                        $currentYear = date('Y', strtotime($annualRepeatHoliday[0]));
+                        if ($currentYear < $endYear) {
+                            $add = 1;
+                            for ($i = $currentYear; $i < $endYear; $i++) {
+                                foreach ($annualRepeatHoliday as $repeatDate) {
+                                    $holidayResult[] = date('d-m-Y', strtotime('+ ' . $add . ' year', strtotime($repeatDate)));
+                                }
+                                $add++;
+                            }
+                        }
+                    }
+                    $annualRepeatHoliday = array_merge((array) $holidayResult, (array) $annualRepeatHoliday);
+                }
+                $nonworking_dates = array_merge((array) $nonworking_days, (array) $nonworking_period, $annualNotRepeatHoliday, $annualRepeatHoliday);
+            } else {
+                $nonworking_dates = array_merge((array) $nonworking_days, (array) $nonworking_period);
+            }
+        } else {
+            $nonworking_dates = array_merge((array) $nonworking_days, (array) $nonworking_period);
+        }
+
+        $dailyQuota = $this->getHelper()->disableSameDayBasedOnDailyQuota();
+
+        if ($dailyQuota['disable'] === true) {
+            $nonworking_dates = array_values(array_unique(array_merge($nonworking_dates, $dailyQuota['day_to_disable']), SORT_REGULAR));
+        }
+
+        $cutoff = $this->getHelper()->disableDayBasedOnCutoff();
+        if ($cutoff['status'] === true) {
+            $nonworking_dates = array_values(array_unique(array_merge($nonworking_dates, $cutoff['day_to_disable']), SORT_REGULAR));
+        }
+
+        if ($excludeHolidayFromProcessingDay) {
+            $processingDateArray = [];
+            $processingDayArray = [];
+            for ($i = 0; $i < $dayIntval; $i++) {
+                $modifiedDate = date('d-m-Y', strtotime('+' . $i . ' days'));
+                $processingDateArray[] = $modifiedDate;
+                $processingDayArray[] = date('w', strtotime($modifiedDate));
+            }
+            foreach ($processingDateArray as $processingDate) {
+                if (in_array($processingDate, $nonworking_dates)) {
+                    $dayIntval++;
+                }
+            }
+            $dayOffs = '';
+            if ($this->getDayOffs()) {
+                $dayOffsArray = explode(',', $this->getDayOffs());
+                $processingDayArray = array_count_values($processingDayArray);
+
+                foreach ($processingDayArray as $key => $processingDay) {
+                    if (in_array($key, $dayOffsArray)) {
+                        $dayIntval = $dayIntval + $processingDay;
+                    }
+                }
+            }
+        }
+        $startDate = $this->_date->date('Y-m-d');
+        $delivery_days = $this->getNoofDaysofDelivery();
+
+        if (!is_null($dayIntval)) {
+            $startDate = date('Y-m-d', strtotime($startDate . '+' . $dayIntval . 'days'));
+        }
+
+        $endDate = date('Y-m-d', strtotime($startDate . '+' . ($delivery_days) . 'days'));
+
+        $begin = new \DateTime($startDate);
+        $end = new \DateTime($endDate);
+        $interval = new \DateInterval('P1D');
+        $dateRange = new \DatePeriod($begin, $interval, $end);
+
+        $currentTime = $this->timeZone->date()->format('Y-m-d h:i A');
+
+        $delivery_start_time = $this->_date->date('Y-m-d h:i A', strtotime($currentTime) + 60 * 60 * $time_diff);
+
+        if (count($timeslot) > 0) {
+            foreach ($dateRange as $date) {
+                $deliveryDateDisplay = $date->format($deliverydate_format);
+                $deliveryDate = $date->format('d-m-Y');
+                $day = $date->format('l');
+                if ($day == 'Sunday') {
+                    $day_no = 0;
+                } else {
+                    $day_no = $date->format('N');
+                }
+
+                $k = $date->format('l') . '_' . $date->format('Y-m-d');
+                $displaySlots[$k]['row_heading'] = $deliveryDateDisplay . ' ' . __($day);
+                $displaySlots[$k]['delivery_date'] = $date->format('Y-m-d');
+                $l = 0;
+                for ($j = 0; $j < count($timeslot); $j++) {
+                    $cond1 = false;
+                    $cond2 = false;
+                    $cond3 = false;
+                    $cond5 = false;
+                    $timeslotPrice = $timeslot['timeslot_' . $j]['price'];
+
+                    $startTime = date($deliverytime_format, strtotime($timeslot['timeslot_' . $j]['start_time']));
+                    $endTime = date($deliverytime_format, strtotime($timeslot['timeslot_' . $j]['end_time']));
+
+                    if ($timeslotPrice > 0) {
+                        $price = $this->priceHelper->currency($timeslotPrice, true, false);
+                        $timeslotValueHtml = '<span class="am">' . $startTime . '</span> <span class="seperator">-</span><span class="pm">' . $endTime . '</span> <span class="seperator"></span> <span class="price">' . $price . '</span>';
+                    } else {
+                        $timeslotValueHtml = '<span class="am">' . $startTime . '</span> <span class="seperator">-</span><span class="pm">' . $endTime . '</span> <span class="seperator"></span>';
+                    }
+                    $timeslotValue = $timeslot['timeslot_' . $j]['start_time'] . ' - ' . $timeslot['timeslot_' . $j]['end_time'];
+                    $timeslotId = $deliveryDate . '_' . $timeslot['timeslot_' . $j]['start_time'] . '_' . $timeslotPrice;
+
+                    $displaySlots[$k]['slots'][$j - $l]['slot_value_html'] = ($timeslotValueHtml);
+                    $displaySlots[$k]['slots'][$j - $l]['slot_value'] = $timeslotValue;
+                    $displaySlots[$k]['slots'][$j - $l]['slot_id'] = $timeslotId;
+
+                    foreach ($disable_slot as $dslot) {
+                        if (($dslot['day'] == $day_no) && in_array($timeslotValue, $dslot['time_slot'])) {
+                            $cond1 = true;
+                        }
+                    }
+
+                    foreach ($disable_slot_date as $dslot_date) {
+                        if ((date('d-m-Y', strtotime($dslot_date['date'])) == date('d-m-Y', strtotime($deliveryDate))) && in_array($timeslotValue, $dslot_date['time_slot'])) {
+                            $cond3 = true;
+                        }
+                    }
+                    $_sTime = $date->format('Y-m-d') . ' ' . date('h:i A', strtotime($timeslot['timeslot_' . $j]['start_time']));
+
+                    if ((in_array($day_no, $day_off)) ||
+                            (strtotime($_sTime) < strtotime($delivery_start_time)) || (in_array($deliveryDate, $nonworking_dates))
+                    ) {
+                        $cond2 = true;
+                    }
+
+                    if ($deliveryDate == $this->_date->date('d-m-Y', strtotime($delivery_start_time))) {
+                        if ((strtotime($_sTime) < strtotime($delivery_start_time)) && $deliveryDate == $this->_date->date('d-m-Y', strtotime($delivery_start_time))) {
+                            $cond5 = true;
+                        }
+                    }
+
+                    if ($cond1 == true || $cond2 == true || $cond3 == true || $cond5 == true) {
+                        $displaySlots[$k]['slots'][$j - $l]['disabled'] = true;
+                    } else {
+                        $displaySlots[$k]['slots'][$j - $l]['disabled'] = false;
+                    }
+                }
+            }
+        }
+
+        return $displaySlots;
+    }
+
+    public function getTimeDiff() {
+        return $this->getConfigValue('deliverydate/deliverydate_timeslots/deliverytime_diff', ScopeInterface::SCOPE_STORE);
+    }
+
+    public function getDayOffs() {
+        $dayOffs = $this->getConfigValue('deliverydate/deliverydate_dayoff/deliverydate_dayoff');
+        if (isset($dayOffs[0]) && $dayOffs[0] == '') {
+            unset($dayOffs[0]);
+            $dayOffs = array_values($dayOffs);
+        }
+        return $dayOffs;
+    }
+
+    public function isEnableAtCartPage() {
+        return ( $this->_helper->getOnWhichPage() == 3);
+    }
+
+
+    public function getDeliveryDate()
+    {
+        $items = $this->_cart->getQuote()->getAllItems();
+        $proHelper = $this->getHelper()->objectManager()->get('\Biztech\Deliverydatepro\Helper\Data');
+        foreach($items as $item)
+        {
+            $productId = $item->getProductId();
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $product = $objectManager->get('Magento\Catalog\Model\Product')->load($productId);
+            $deliveryDate[] =  $proHelper->getFinalDeliveryDate($product);
+            $deliveryDayNumbers[] = $this->getDeliveryDayNames($product);
+        }
+
+        if (is_array($deliveryDayNumbers) && !empty($deliveryDayNumbers)) {
+            // Filter out null or empty arrays
+            $validArrays = array_filter($deliveryDayNumbers, function ($element) {
+                return is_array($element) && !empty($element);
+            });
+            if (!empty($validArrays)) {
+                if (count($validArrays) === 1) {
+                    // If there's only one valid array, return it directly
+                    $commonDays = $validArrays[0];
+                } else {
+                    // Call array_intersect with the valid arrays
+                    $commonDays = call_user_func_array('array_intersect', $validArrays);
+                }
+            } else {
+                // Handle the case where no valid arrays are left after filtering
+                $commonDays = [];
+            }
+        }
+
+        $highestDeliveryDate = $this->findHeighestDeliverydate($deliveryDate,$commonDays);
+        return $highestDeliveryDate;
+
+    }
+
+    public function getDeliveryDayNames($productDetails)
+    {
+        $deliveryDays = $productDetails->getDeliveryDays();
+        if (is_array($deliveryDays)) {
+            $deliveryDayNumbers = $deliveryDays;
+        } elseif (is_string($deliveryDays)) {
+            $deliveryDayNumbers = explode(',', $deliveryDays);
+        } else {
+            return;
+        }
+        return $deliveryDayNumbers;
+    }
+
+    public function findHeighestDeliverydate($deliveryDate,$commonDays)
+    {
+        $highestDeliveryDate = null;
+        foreach($deliveryDate as $delivery)
+        {
+            if($highestDeliveryDate == null || $delivery > $highestDeliveryDate)
+            {
+                $highestDeliveryDate = $delivery;
+            }
+        }
+
+        if (empty($commonDays)) {
+            return $highestDeliveryDate;
+        }
+
+        $date = new \DateTime($highestDeliveryDate);
+
+        sort($commonDays);
+
+        // Get the numeric representation of the current day of the week (0 for Sunday, 1 for Monday, ..., 6 for Saturday)
+        $currentDayNum = $date->format('w');
+        
+        foreach ($commonDays as $dayNum) {
+            if ($dayNum >= $currentDayNum) {
+                // Set the date to the next occurrence of the common day
+                $daysUntilNextCommonDay = $dayNum - $currentDayNum;
+                $date->modify("+{$daysUntilNextCommonDay} days");
+                return $date->format('Y-m-d');
+            }
+        }
+
+        // If no common day is found after the highest delivery date, move to the first common day of the next week
+        $daysUntilNextWeekCommonDay = (7 - $currentDayNum) + $commonDays[0];
+        $date->modify("+{$daysUntilNextWeekCommonDay} days");
+        return $date->format('Y-m-d');
+    }
+
+    public function dayOff()
+    {
+        $writer = new \Zend_Log_Writer_Stream(BP . '/var/log/Day Off.log');
+        $logger = new \Zend_Log();
+        $logger->addWriter($writer);
+        $logger->info('text message');
+
+        $completeSet = ['0', '1', '2', '3', '4', '5', '6'];
+        
+        $items = $this->_cart->getQuote()->getAllItems();
+        foreach($items as $item)
+        {
+            $productId = $item->getProductId();
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $product = $objectManager->get('Magento\Catalog\Model\Product')->load($productId);
+            $deliveryDayNumbers[] = $this->getDeliveryDayNames($product);
+        }
+        $logger->info(print_r($deliveryDayNumbers,true));
+        $days = [];
+        $flattenedDeliveryDays = [];
+
+        if (is_array($deliveryDayNumbers) && !empty($deliveryDayNumbers)) {
+            // Filter out null or empty arrays
+            $validArrays = array_filter($deliveryDayNumbers, function ($element) {
+                return is_array($element) && !empty($element);
+            });
+            if (!empty($validArrays)) {
+                if (count($validArrays) === 1) {
+                    // If there's only one valid array, return it directly
+                    $commonDays = $validArrays[0];
+                } else {
+                    // Call array_intersect with the valid arrays
+                    $commonDays = call_user_func_array('array_intersect', $validArrays);
+                }
+            } else {
+                // Handle the case where no valid arrays are left after filtering
+                $commonDays = [];
+            }
+        }
+        $logger->info('Common days');
+        $logger->info(print_r($commonDays,true));
+
+        if(!empty($commonDays) && count($commonDays) > 0 )
+        {
+             $logger->info('Find Missing Numbers');
+             
+             $missingNumbers = array_diff($completeSet, $commonDays);
+             $missingNumbersString = implode(', ', $missingNumbers);
+             $logger->info(print_r($missingNumbersString,true));
+             return $missingNumbersString;
+        }
+    }
+    
+
+}

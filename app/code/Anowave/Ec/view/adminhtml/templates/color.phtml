@@ -1,0 +1,8 @@
+<?php $list = bin2hex(openssl_random_pseudo_bytes(16)); ?>
+<input type="color" list="<?php echo $list ?>" id="<?php echo $block->getElement()->getHtmlId()?>" name="<?php echo $block->getElement()->getName() ?>" value="<?php echo $block->getElement()->getValue() ?>" />
+<datalist id="<?php echo $list ?>">
+    <option>#00b22e</option>
+    <option>#005fc9</option>
+    <option>#ffae00</option>
+    <option>#c90000</option>
+</datalist>

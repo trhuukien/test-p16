@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceBlock name="yotpo_widget_script" remove="true" />
+        <referenceBlock name="yotpo_widget_div" remove="true" />
+        <referenceBlock name="yotpo_bottomline" remove="true" />
+        <referenceBlock name="reviews.tab" remove="true" />
+        <referenceBlock name="customer-account-navigation-product-reviews-link" remove="true" />
+        <referenceBlock name="customer_account_dashboard_info1" remove="true" />
+        <referenceBlock name="fb_reviews_bar" remove="true" />
+    </body>
+</page>

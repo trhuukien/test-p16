@@ -1,0 +1,214 @@
+<?php declare(strict_types=1);
+
+/**
+ * @author Amasty Team
+ * @copyright Copyright (c) Amasty (https://www.amasty.com)
+ * @package Mega Menu Lite Hyva
+ */
+
+use Magento\Framework\Escaper;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Amasty\MegaMenuLite\Block\Container;
+use Amasty\MegaMenuLiteHyva\ViewModel\DesktopMenuItem;
+
+/** @var Escaper $escaper */
+/** @var Container $block */
+/** @var ViewModelRegistry $viewModels */
+/** @var HeroiconsOutline $heroIcons */
+/** @var array $item */
+
+$heroIcons = $viewModels->require(HeroiconsOutline::class);
+$menuItemViewModel = $viewModels->require(DesktopMenuItem::class);
+$menuItemViewModel->setBlock($block);
+
+$elems = $item['elems'] ?? [];
+$itemId = $item['id'] ?? null;
+$content = $item['content'] ?? '';
+$fontWeight = $item['desktop_font'] ?? '700';
+$hideContent = isset($item['hide_content']) ? (bool)$item['hide_content'] : false;
+$hasDropdown = (!empty($elems) || !empty($content)) && !$hideContent;
+
+$submenuAnimation = $item['submenu_animation'] ?? '';
+$animationClass = $submenuAnimation ? 'animate-' . $submenuAnimation : '';
+
+$additionalClass = $item['current']
+    ? 'text-[var(--ammenu-current-category-color)] hover:text-[var(--ammenu-main-menu-text-hover)] group-[.link]:bg-[var(--ammenu-main-menu-text-hover)]'  //phpcs:ignore
+    : 'text-[var(--ammenu-main-menu-text)] hover:text-[var(--ammenu-main-menu-text-hover)] group-[.link]:bg-[var(--ammenu-main-menu-text-hover)]'; //phpcs:ignore
+
+$bgClass = $item['current']
+    ? 'bg-[var(--ammenu-current-category-color)] group-hover:bg-[var(--ammenu-main-menu-text-hover)] group-[.link]:bg-[var(--ammenu-main-menu-text-hover)]' //phpcs:ignore
+    : 'bg-[var(--ammenu-main-menu-text)] group-hover:bg-[var(--ammenu-main-menu-text-hover)] group-[.link]:bg-[var(--ammenu-main-menu-text-hover)]'; //phpcs:ignore
+
+$iconBlock = $block->getLayout()->getBlock('ammenu.top.menu.icon');
+$blockSubmenuType = $block->getLayout()->getBlock('ammenu.menu.top.submenu_type');
+
+// phpcs:disable Generic.Files.LineLength.TooLong
+?>
+<li class="flex flex-col relative"
+    x-data="{ itemId: '<?= $escaper->escapeHtmlAttr($item['id']) ?>' }"
+    <?php if ($hasDropdown): ?>
+        @notify-is-opened.window="setActiveSubmenu($event.detail.id)" x-ref="menuItem"
+    <?php else: ?>
+        x-cloak
+    <?php endif ?>
+>
+    <div class="flex justify-between items-center border-b mx-4"
+         :style="{
+             'border-color': color_settings?.border ?? ''
+         }">
+        <?php if ($hasDropdown): ?>
+            <div class="flex w-10/12 items-center break-anywhere text-start border-0 background-none">
+                <a class="group flex items-center w-full py-4 cursor-pointer break-anywhere
+                   <?= $escaper->escapeHtmlAttr($additionalClass); ?>"
+                   href="<?= $escaper->escapeUrl($item['url']) ?>"
+                   :class="{
+                        'text-[var(--ammenu-main-menu-text-hover)] link': activeSubmenuId === itemId
+                   }"
+                   title="<?= $escaper->escapeHtmlAttr($item['name']) ?>">
+                    <?php if ($iconBlock): ?>
+                        <?= /* @noEscape */ $iconBlock->setData('item', $item)
+                            ->setData('additional_class', $bgClass)
+                            ->setData('available', ['desktop', 'both'])->toHtml() ?>
+                    <?php endif ?>
+
+                    <span :style="{ 'font-weight': <?= $escaper->escapeHtmlAttr($fontWeight); ?> }">
+                        <?= $escaper->escapeHtml($item['name']) ?>
+                    </span>
+
+                    <?= /** @noEscape */ $menuItemViewModel->fetchView('components/label.phtml', [
+                        'item' => $item,
+                        'classes' => 'inline-block text-xs font-bold rounded p-1 ml-2 mr-6 whitespace-nowrap overflow-hidden'
+                    ]) ?>
+                </a>
+            </div>
+
+            <button class="cursor-pointer inline-block mr-1"
+                    :style="{ 'color': color_settings?.toggle_icon_color ?? '' }"
+                    @click="setActiveSubmenu(itemId)"
+                    @keydown.space.stop.prevent="setActiveSubmenu(itemId)"
+                    @keydown.enter.stop.prevent="setActiveSubmenu(itemId)"
+                    x-bind:aria-expanded="activeSubmenuId === itemId">
+
+                <?= $heroIcons->chevronRightHtml('', 24, 24, [
+                    'title' => __('Open'),
+                    'x-cloak',
+                    'x-show' => 'activeSubmenuId !== itemId'
+                ]); ?>
+
+                <?= $heroIcons->chevronLeftHtml('', 24, 24, [
+                    'title' => __('Back'),
+                    'x-cloak',
+                    'x-show' => 'activeSubmenuId === itemId'
+                ]); ?>
+            </button>
+        <?php else: ?>
+            <a href="<?= $escaper->escapeUrl($item['url']) ?>"
+               title="<?= $escaper->escapeHtmlAttr($item['name']) ?>"
+               class="flex items-center w-full py-4 border-0 break-anywhere text-start background-none group
+               <?= $escaper->escapeHtmlAttr($additionalClass); ?>">
+
+                <?php if ($iconBlock): ?>
+                    <?= /* @noEscape */ $iconBlock->setData('item', $item)
+                        ->setData('additional_class', $bgClass)
+                        ->setData('available', ['desktop', 'both'])->toHtml() ?>
+                <?php endif ?>
+
+                <span :style="{ 'font-weight': <?= $escaper->escapeHtmlAttr($fontWeight); ?> }">
+                    <?= $escaper->escapeHtml($item['name']) ?>
+                </span>
+
+                <?= /** @noEscape */ $menuItemViewModel->fetchView('components/label.phtml', [
+                    'item' => $item,
+                    'classes' => 'inline-block text-xs font-bold rounded p-1 ml-2 mr-6 whitespace-nowrap overflow-hidden'
+                ]) ?>
+            </a>
+        <?php endif ?>
+    </div>
+
+    <?php if ($hasDropdown): ?>
+        <?php
+        $width = $item['width'] ?? 1;
+        $widthValue = $item['width_value'] ?? 0;
+        $columns = min(count($elems), 4);
+
+        if (isset($item['column_count']) && $item['column_count'] > 0) {
+            $columns = (count($elems) >= $item['column_count']) ? $item['column_count'] : $columns;
+        }
+
+        $submenuType = $item['submenu_type'] ?? false;
+        $columnsStyle = $submenuType ? '' : 'repeat(' . $columns . ', minmax(0,1fr))';
+        $submenuAnimation = $item['submenu_animation'] ?? '';
+        $submenuAnimationClass = $submenuAnimation ? ' animate-' . $submenuAnimation : '';
+        $animationName = $submenuAnimation ? lcfirst(str_replace(' ', '', ucwords(str_replace('_', ' ', $submenuAnimation)))) : '';
+        $hasSubMenuType = $submenuType ? '' : $itemId;
+        $subCatPosition = json_encode($item['type'] ?? '');
+        $itemChildUniqId = uniqid();
+        ?>
+        <template x-if="activeSubmenuId === itemId">
+            <div class="fixed left-80 max-w-[65vw] max-h-[70vh]
+                 bg-cover bg-no-repeat bg-center
+                 rounded-br-2xl rounded-tr-2xl
+                 z-40 shadow-lg overflow-y-auto <?= $escaper->escapeHtmlAttr($animationClass); ?>
+                 bg-[var(--ammenu-submenu-background-color)] bg-[image:var(--ammenu-submenu-background-image)]"
+                 :style="{
+                     'top': subMenuPosition,
+                     'animation-duration': animation_time ? animation_time + 's' : '',
+                     'width': getWidth('<?= /* @noEscape */ $width; ?>', '<?= /* @noEscape */ $widthValue; ?>')
+                 }"
+                 id="dropdown-menu-id-<?= $escaper->escapeHtmlAttr($itemId) ?>"
+                 :class="{ 'opacity-100': subMenuPosition, 'opacity-0': !subMenuPosition }"
+                 x-intersect:enter="hamburgerMenuAdjustment($el)">
+                <script>
+                    function amMenuItemDrill_<?= $escaper->escapeJs($itemChildUniqId); ?>() {
+                        return Object.assign({} , amMenuItemDrill() , {
+                            defaultTabs: ['<?= $escaper->escapeHtmlAttr($itemId) ?>'],
+                            activeId: '<?= $escaper->escapeHtmlAttr($hasSubMenuType); ?>',
+                            activeTabs: <?= /* @noEscape */ "['{$escaper->escapeHtmlAttr($itemId)}']" ?>,
+                            submenuType: <?= $escaper->escapeHtmlAttr($submenuType ? 'true' : 'false'); ?>,
+                            subCatPosition: <?= /* @noEscape */ $subCatPosition ?>
+                        });
+                    }
+                </script>
+                <div class="flex flex-wrap p-5"
+                     :class="{
+                        'w-full': submenuType
+                     }"
+                     x-data="amMenuItemDrill_<?= $escaper->escapeJs($itemChildUniqId); ?>()">
+                    <!-- Menu Pro / Submenu Type -->
+                    <?php if ($blockSubmenuType): ?>
+                        <?= /* @noEscape */ $blockSubmenuType->setData('item', $item)->toHtml(); ?>
+                    <?php endif; ?>
+                    <!-- /Menu Pro -->
+
+                    <template x-if="!submenuType">
+                        <div class="w-full">
+                            <?php if (!empty($elems)): ?>
+                                <div class="grid content-start"
+                                     :style="{
+                                        'grid-template-columns': '<?= $escaper->escapeHtmlAttr($columnsStyle); ?>'
+                                     }">
+                                    <?php foreach ($elems as $key => $itemChild): ?>
+                                        <?php if (!empty($itemChild['elems'])): ?>
+                                            <?= /** @noEscape */ $menuItemViewModel->fetchView('components/top_menu/item.phtml', ['item' => $itemChild, 'isFirst' => true]); ?>
+                                        <?php else: ?>
+                                            <div class="flex flex-wrap items-start py-2">
+                                                <?= /** @noEscape */ $menuItemViewModel->fetchView('components/top_menu/item/link.phtml', ['item' => $itemChild]); ?>
+                                            </div>
+                                        <?php endif ?>
+                                    <?php endforeach ?>
+                                </div>
+                            <?php endif; ?>
+
+                            <?php if (!empty($content)): ?>
+                                <div data-content="ammenu-content">
+                                    <?= /* @noEscape */ $content; ?>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+    <?php endif; ?>
+</li>

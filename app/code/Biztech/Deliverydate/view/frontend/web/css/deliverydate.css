@@ -1,0 +1,21 @@
+@media (min-width: 768px){
+	.checkout-index-index .fieldset>.field.biz-comment-note {
+	    width: auto;
+	    margin-left: 0;
+	}
+}
+.checkout-index-index .control{
+	margin: 0;
+}
+
+.delivery-date {
+    margin-bottom: 15px;
+}
+
+.delivery-date:before {
+    content: '\f00c';
+    font-family: FontAwesome;
+    line-height: 1;
+    font-size: 1.6rem;
+    color: #67ae44;
+}

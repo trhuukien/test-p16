@@ -1,0 +1,34 @@
+<?php
+// @codingStandardsIgnoreFile
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$helper = $objectManager->create('Biztech\Deliverydate\Helper\Data');
+if ($helper->isEnable() && $helper->getConfigValue('deliverydate/deliverydate_configuration/on_multishipping') && $helper->getOnWhichPage() == 1) {
+    $addressId = $this->getData('address_id');
+    ?>
+    <div class="deliverydate-main-wrapper deliverydate-wrapper_<?php echo $addressId ?>" data-bind="scope:'multishipping-deliverydate'">
+        <div class="fieldset">
+            <div class="field">
+                <label class="label">
+                    <span class="title">
+                        <?php echo __('Delivery Date Information'); ?></span>
+                </label>
+            </div>
+            <div class="admin__page-section-content">
+                <?php
+                $enable_method = $helper->getConfigValue('deliverydate/deliverydate_front_config/delivery_method');
+                if ($enable_method == 1) {
+                    echo $this->getLayout()->createBlock('Biztech\Deliverydate\Block\Deliverydate')->setTemplate('Biztech_Deliverydatepro::multishipping/deliverydate/deliverydate.phtml')
+                            ->setData('address_id', $addressId)
+                            ->toHtml();
+                }
+                if ($enable_method == 2) {
+                    echo $this->getLayout()->createBlock('Biztech\Deliverydate\Block\Deliverydate')->setTemplate('Biztech_Deliverydatepro::multishipping/deliverydate/timeslot.phtml')
+                            ->setData('address_id', $addressId)
+                            ->toHtml();
+                }
+                ?>
+            </div>
+        </div>
+    </div>
+
+<?php } ?>

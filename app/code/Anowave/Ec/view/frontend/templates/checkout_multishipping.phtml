@@ -1,0 +1,91 @@
+<script data-ommit="true" nonce="<?php echo $block->generateNonce() ?>">
+
+	AEC.Checkout.data = <?php echo $block->getMultiCheckoutPush($block->getStep()) ?>;
+
+	(function(google_tag_params)
+	{
+		window.google_tag_params.ecomm_pagetype 	= 'cart';
+		window.google_tag_params.ecomm_prodid 		= google_tag_params.ecomm_prodid;
+		window.google_tag_params.ecomm_pvalue		= google_tag_params.ecomm_pvalue;
+		window.google_tag_params.ecomm_pname		= google_tag_params.ecomm_pname;
+		window.google_tag_params.ecomm_totalvalue 	= google_tag_params.ecomm_totalvalue;
+		window.google_tag_params.returnCustomer 	= <?php echo $block->getHelper()->getIsReturnCustomer() ?>;
+
+		<?php if ($block->getHelper()->supportDynx()): ?>
+
+			window.google_tag_params.dynx_pagetype 		= 'conversionintent';
+			window.google_tag_params.dynx_itemid 		= window.google_tag_params.ecomm_prodid;
+			window.google_tag_params.dynx_totalvalue 	= window.google_tag_params.ecomm_totalvalue
+		
+		<?php endif ?>
+		
+	})(AEC.Checkout.getData().google_tag_params);
+
+	<?php
+	/**
+	 * Flag checkout
+	 */
+	?>
+
+	AEC.Checkout.init = true;
+			
+	<?php
+	/**
+	 * Initial checkout step
+	 */
+	?>
+
+	AEC.Cookie.checkout(AEC.Checkout.getPayload()).push(dataLayer);
+
+	<?php
+	/**
+	 * Track Facebook Pixel Initiate Checkout
+	 */
+	?>
+	
+	<?php if ($block->getHelper()->facebook()):?>
+	
+    	var content_ids = [], content_length = AEC.Checkout.getPayload().ecommerce.items.length;
+    
+    	for (var i = 0, l = AEC.Checkout.getPayload().ecommerce.items.length; i < l; i++)
+    	{
+    		content_ids.push(AEC.Checkout.getPayload().ecommerce.items[i].item_id);
+    	}
+    
+    	(function(callback)
+    	{
+    		if (AEC.Const.COOKIE_DIRECTIVE)
+    		{
+    			AEC.CookieConsent.queue(callback).process();
+    		}
+    		else 
+    		{
+    			callback.apply(window,[]);
+    		}
+    	})
+    	(
+    		(function(content_ids, content_length)
+    		{
+    			return function()
+    			{
+    				AEC.EventDispatcher.on('ec.facebook.loaded', () => 
+    				{
+    					fbq("track", "InitiateCheckout", 
+        				{
+        					value:			AEC.Checkout.getData().total,
+        					content_type:	'product',
+        					content_name: 	'checkout',
+        					content_ids:	content_ids,
+        					num_items:		content_length,
+        					currency: 		'<?php echo $block->getHelper()->getCurrency() ?>'
+        				}, 
+        				{ eventID: AEC.UUID.generate({ event: 'InitiateCheckout' }) });
+    				});
+    			}
+    		})(content_ids,content_length)
+    	);
+	
+	<?php endif ?>
+			
+	
+</script>

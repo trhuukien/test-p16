@@ -1,0 +1,66 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../Magento/Config/etc/system_file.xsd">
+    <system>
+        <tab id="biztech" translate="label" sortOrder="210">
+            <label>AppJetty</label>
+        </tab>
+        <section id="deliverydate"  showInDefault="1" showInWebsite="1" showInStore="1">
+            <tab>biztech</tab>
+            <label>Delivery Date</label>
+            <resource>Biztech_Deliverydate::biztech_deliverydate</resource>
+            <group id="deliverydate_configuration" sortOrder="30"  showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Delivery Date Related Configurations</label>
+                
+                <field id="on_which_page" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Display at</label>
+                    <source_model>Biztech\Deliverydatepro\Model\Config\ShowAt</source_model>
+                    <comment>Choose at which step delivery date selection should be given.</comment>
+                </field>             
+                              
+                <field id="allow_for_category" translate="label" type="select" sortOrder="63" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Delivery date for category's products</label>
+                    <depends>
+                        <field id="on_which_page">2</field>
+                    </depends>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="use_category" translate="label" type="multiselect" sortOrder="64" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Product category</label>
+                    <depends>
+                        <field id="on_which_page">2</field>
+                        <field id="allow_for_category">1</field>
+                    </depends>
+                    <source_model>Biztech\Deliverydatepro\Model\Config\Category</source_model>
+                </field>
+                               
+            </group>
+            <group id="deliverydate_dayoff"  sortOrder="50" showInDefault="1" showInWebsite="0" showInStore="0">
+                <field id="exclude_holiday" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Exclude Holidays</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If set as Yes, all enabled holidays will be skipped from order processing day count</comment>
+                </field>
+                
+                <field id="exclude_holiday_from_processing" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Exclude Holiday/Disable Days From Processing Day</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If set as Yes, all enabled holidays will be skipped from order processing day count</comment>
+                </field>
+            </group>
+<!--            <group id="date_display"  sortOrder="70" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Delivery date settings based on shipping method</label>
+                              
+                <field id="estimation_message_on_product" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show estimation message on product page</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If set yes, and delivery option is set for product level then only date estimation message will display on product page</comment>
+                    <depends>
+                        <field id="deliverydate/deliverydate_configuration/on_which_page">2</field>
+                        <field id="deliverydate/deliverydate_configuration/delivery_option">2</field>
+                    </depends>
+                </field>
+            </group>-->
+        </section>
+    </system>
+</config>

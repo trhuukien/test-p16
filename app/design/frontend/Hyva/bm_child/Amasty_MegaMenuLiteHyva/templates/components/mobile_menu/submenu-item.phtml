@@ -1,0 +1,116 @@
+<?php declare(strict_types=1);
+
+/**
+ * @author Amasty Team
+ * @copyright Copyright (c) Amasty (https://www.amasty.com)
+ * @package Mega Menu Lite Hyva
+ */
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Magento\Framework\Escaper;
+use Amasty\MegaMenuLite\Block\Container;
+use Amasty\MegaMenuLite\Api\Data\Menu\ItemInterface;
+use Amasty\MegaMenuLiteHyva\ViewModel\DesktopMenuItem;
+
+/** @var Escaper $escaper */
+/** @var Container $block */
+/** @var ViewModelRegistry $viewModels */
+/** @var array $item */
+
+$menuItemViewModel = $viewModels->require(DesktopMenuItem::class);
+$menuItemViewModel->setBlock($block);
+
+$itemId = uniqid();
+$label = !empty($item[ItemInterface::LABEL]) ? $item[ItemInterface::LABEL] : false;
+$elems = $item['elems'];
+$content = isset($item['mobile_content']) ? $item['mobile_content'] : '';
+$showMobileContent = isset($item['show_mobile_content']) ? $item['show_mobile_content'] : false;
+$fontWeight = $item['mobile_font'] ?? '700';
+$hasDropdown = !empty($elems) || !empty($content);
+$additionalClass = $item['current'] ? 'text-[var(--ammenu-current-category-color)]'
+    : 'text-[var(--ammenu-main-menu-text)]';
+// phpcs:disable Generic.Files.LineLength.TooLong
+?>
+
+<li class="submenu-item w-1/2"
+    x-data="{ itemOpen: false, hasBeenOpened:false, init() { this.$watch('itemOpen', () => { this.hasBeenOpened = true })} }"
+    x-show="canShow('<?= $escaper->escapeHtml($item['status']) ?>', <?= /* @noEscape */ $item['is_category'] ? 'true' : 'false' ?>)"
+    :style="{
+        backgroundColor: mobile_class === 'accordion' && itemOpen ? color_settings?.submenu_background_color : null
+    }"
+    <?php if (empty($elems) && empty($content)): ?>
+        x-cloak
+    <?php endif; ?>>
+    <div class="flex flex-col grow justify-between items-center mx-4 rounded-lg px-4 py-2 h-full"
+         style="box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);"
+         :style="{ 'border-color': color_settings?.border ?? '' }"
+        <?php if ($hasDropdown): ?>
+            @click.prevent="itemOpen = !itemOpen; if (mobile_class === 'drill' && isMobile) {
+            drillTabs.push('<?= $escaper->escapeJs($item['id']); ?>');
+            drillActiveId = '<?= $escaper->escapeJs($item['id']); ?>'
+            }"
+            @keydown.space.prevent="itemOpen = !itemOpen; if (mobile_class === 'drill' && isMobile) {
+            drillTabs.push('<?= $escaper->escapeJs($item['id']); ?>');
+            drillActiveId = '<?= $escaper->escapeJs($item['id']); ?>'
+            }"
+        <?php endif; ?>>
+
+        <?php if (empty($elems) && empty($content)): ?>
+            <?= /** @noEscape */ $menuItemViewModel->fetchView('components/mobile_menu/item/link-top.phtml', [
+                'item' => $item
+            ]); ?>
+        <?php else: ?>
+            <?= /** @noEscape */ $menuItemViewModel->fetchView('components/mobile_menu/item/button.phtml', [
+                'item' => $item,
+                'classes' => 'flex items-center py-4 cursor-pointer border-0 background-none break-anywhere text-start',
+                'fontWeight' => $item['mobile_font'] ?? '700',
+                'attributes' => [
+                    ':class' => "{
+                        'text-[var(--ammenu-main-menu-text)]': " . (!$item['current'] ? 'true' : 'false') . " && !itemOpen,
+                        'text-[var(--ammenu-current-category-color)]': " . ($item['current'] ? 'true' : 'false') . " && !itemOpen,
+                        'text-[var(--ammenu-main-menu-text-hover)]': itemOpen
+                    }"
+                ]
+            ]); ?>
+        <?php endif ?>
+    </div>
+    <?php if ($hasDropdown): ?>
+        <template x-if="itemOpen && mobile_class === 'accordion'">
+            <div class="relative z-40" :style="{
+                    '--ammenu-submenu-text': 'var(--ammenu-third-level-menu)'
+                }">
+                <?php if ($showMobileContent === 0 && !empty($content)): ?>
+                    <div class="flex justify-between items-center border-t mx-4" data-content="ammenu-content">
+                        <?= /* @noEscape */ $content; ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (!empty($elems)): ?>
+                    <div class="flex flex-col flex-nowrap w-full pl-7 pr-4">
+                        <template x-if="!hide_view_all_link">
+                            <a href="<?= $escaper->escapeUrl($item['url']) ?>"
+                               class="block w-full underline text-md pb-2 break-anywhere text-[var(--ammenu-third-level-menu)]"
+                               :style="{
+                                    'font-weight': <?= $escaper->escapeHtmlAttr($fontWeight); ?>
+                               }">
+                                <span>
+                                    <?= $escaper->escapeHtml(__("View All %1", $item['name'])) ?>
+                                </span>
+                            </a>
+                        </template>
+
+                        <?php foreach ($elems as $key => $itemChild): ?>
+                            <?= /** @noEscape */ $menuItemViewModel->fetchView('components/mobile_menu/item.phtml', ['item' => $itemChild]) ?>
+                        <?php endforeach ?>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($showMobileContent === 1 && !empty($content)): ?>
+                    <div class="flex justify-between items-center border-t mx-4" data-content="ammenu-content">
+                        <?= /* @noEscape */ $content; ?>
+                    </div>
+                <?php endif; ?>
+            </div>
+        </template>
+    <?php endif ?>
+</li>

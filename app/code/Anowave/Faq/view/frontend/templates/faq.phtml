@@ -1,0 +1,14 @@
+<?php if ($this->getFaqs()): ?>
+	<div itemscope itemtype="https://schema.org/FAQPage">
+    	<?php foreach($this->getFaqs() as $faq):?>
+    		<div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+    			<h3 itemprop="name"><?php echo $faq->getFaq() ?></h3>
+    			<div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+    				<div itemprop="text"><?php echo $block->getFilterProvider()->getBlockFilter()->filter($faq->getFaqContent()) ?></div>
+    			</div>
+    		</div>
+    	<?php endforeach?>
+	</div>
+<?php else: ?>
+	No FAQs yet.
+<?php endif ?>

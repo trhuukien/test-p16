@@ -1,0 +1,48 @@
+<?php
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Mirasvit\Search\Block\Index\Magento\Catalog\Category;
+use Magento\Framework\Escaper;
+
+/**
+ * @codingStandardsIgnoreFile
+ * @var Category          $block
+ * @var Escaper           $escaper
+ * @var ViewModelRegistry $viewModels
+ */
+
+$collection = $this->getCollection();
+$heroicons  = $viewModels->require(HeroiconsOutline::class);
+?>
+
+<div class="mst-search__index mst-search__index-magento-catalog-category">
+    <ul class="mst-search__list">
+        <?php foreach ($collection as $item): ?>
+            <?php $path = $block->getFullPath($item->getId()); ?>
+            <li class="my-4 text-sm">
+                <div class="mst-search__index-image">
+                    <a class="hover:underline" href="<?= $escaper->escapeUrl($item->getUrl()) ?>">
+                        <?= $this->getCategoryImage($item) ?>
+                    </a>
+                </div>
+
+                <div class="mst-search__index-title _crumbs text-primary text-sm font-semibold flex">
+                    <?php foreach ($path as $parent): ?>
+                        <a class="hover:underline" href="<?= $escaper->escapeUrl($parent->getUrl()) ?>" class="text-gray-900">
+                            <?= $escaper->escapeHtml($parent->getName()) ?>
+                        </a>
+                        <span class="mt-1 px-1">
+                            <?= $heroicons->chevronRightHtml('text-gray-600', 13, 13) ?>
+                        </span>
+                    <?php endforeach ?>
+
+                    <a class="hover:underline" href="<?= $escaper->escapeUrl($item->getUrl()) ?>">
+                        <?= $escaper->escapeHtml($item->getName()) ?>
+                    </a>
+                </div>
+            </li>
+        <?php endforeach ?>
+    </ul>
+</div>

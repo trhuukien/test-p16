@@ -1,0 +1,202 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Hyva\Theme\ViewModel\StoreConfig;
+use Magento\Checkout\Block\Cart\Sidebar as SidebarCart;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Escaper $escaper */
+/** @var Template $block */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+
+/** @var StoreConfig $storeConfig */
+$storeConfig = $viewModels->require(StoreConfig::class);
+$showMiniCart = $storeConfig->getStoreConfig(SidebarCart::XML_PATH_CHECKOUT_SIDEBAR_DISPLAY);
+?>
+<script>
+    function initHeader () {
+        return {
+            searchOpen: false,
+            cart: {},
+            isCartOpen: false,
+            getData(data) {
+                if (data.cart) { this.cart = data.cart }
+            },
+            isCartEmpty() {
+                return !this.cart.summary_count
+            },
+            toggleCart(event) {
+                if (event.detail && event.detail.isOpen !== undefined) {
+                    this.isCartOpen = event.detail.isOpen
+                    if (!this.isCartOpen && this.$refs && this.$refs.cartButton) {
+                        this.$refs.cartButton.focus()
+                    }
+                } else {
+                    <?php
+                    /*
+                     * The toggle-cart event was previously dispatched without parameter to open the drawer (not toggle).
+                     * Keeping this in here for backwards compatibility.
+                     */
+                    ?>
+                    this.isCartOpen = true
+                }
+            }
+        }
+    }
+    function initCompareHeader() {
+        return {
+            compareProducts: null,
+            itemCount: 0,
+            receiveCompareData(data) {
+                if (data['compare-products']) {
+                    this.compareProducts = data['compare-products'];
+                    this.itemCount = this.compareProducts.count;
+                }
+            }
+        }
+    }
+</script>
+<div id="header"
+     class="z-70 w-full shadow bg-container-lighter border-container-lighter"
+     x-data="initHeader()"
+     @private-content-loaded.window="getData(event.detail.data)"
+>
+    <div class="container flex flex-wrap lg:flex-nowrap items-center justify-between w-full px-6 py-3 mx-auto mt-0">
+        <!--Logo-->
+        <?= $block->getChildHtml('logo'); ?>
+
+        <!--Main Navigation-->
+        
+        <div class="flex items-center gap-2 md:gap-1 order-2 md:order-3 md:-mr-1">
+            <!-- Additional Header Elements -->
+            <?= $block->getChildHtml('additional') ?>
+
+            
+            <!--Customer Icon & Dropdown-->
+            <?= $block->getChildHtml('customer') ?>
+
+            <button class="block lg:hidden ml-2 mr-3" onclick="window.dispatchEvent(new CustomEvent('toggle-hamburger-menu'))" >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="#67ae44" width="36" height="36" role="img">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"></path>
+                  <title>menu</title>
+                </svg>
+            </button>
+            <div class="hidden custom-block text-center ml-2 mr-3 text-white" style="
+                padding: 0px 5px;
+            ">
+              <div class="flex justify-center items-center ">
+                <!-- Phone SVG Icon (White) -->
+                <svg xmlns="http://www.w3.org/2000/svg" fill="#67ae44" viewBox="0 0 24 24" width="14" height="14">
+                  <path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.11-.21c1.2.48 2.5.73 3.83.73a1 1 0 011 1v3.5a1 1 0 01-1 1A17.93 17.93 0 013 4a1 1 0 011-1h3.5a1 1 0 011 1c0 1.33.25 2.63.73 3.83a1 1 0 01-.21 1.11l-2.2 2.2z"></path>
+                </svg>
+                <span class="text-black" style="
+                font-size: 11px;
+                margin-left: 5px;
+                line-height: 0px;
+            ">Bel ons op</span>
+              </div>
+              <div class="leading-tight">
+                <a href="tel:+31850606545" class="block text-color-benem text-lg font-semibold leading-[27px] hover:underline">
+                  +31 85 06 06 545
+                </a>
+              </div>
+            </div>
+            <div class="relative">
+            <!--Cart Icon-->
+            <?php if ($showMiniCart): ?>
+                <button
+            <?php else: ?>
+                <a
+            <?php endif ?>
+                id="menu-cart-icon"
+                class="relative inline-block rounded"
+                x-ref="cartButton"
+                :aria-disabled="isCartEmpty()"
+                :aria-label="`
+                    <?= $escaper->escapeHtmlAttr($showMiniCart ? __('Toggle minicart') : __('View cart')) ?>,
+                    ${isCartEmpty()
+                        ? '<?= $escaper->escapeHtmlAttr(__('Cart is empty')) ?>'
+                        : cart.summary_count > 1
+                            ? hyva.str('<?= $escaper->escapeHtmlAttr(__('%1 items')) ?>', cart.summary_count)
+                            : hyva.str('<?= $escaper->escapeHtmlAttr(__('%1 item')) ?>', cart.summary_count)
+                    }`"
+                <?php if ($showMiniCart): ?>
+                    @click.prevent="() => {
+                        $dispatch('toggle-cart', { isOpen: true })
+                    }"
+                    @toggle-cart.window="toggleCart($event)"
+                    :aria-expanded="isCartOpen"
+                    aria-haspopup="dialog"
+                <?php else: ?>
+                    href="<?= $escaper->escapeUrl($block->getUrl('checkout/cart/index')) ?>"
+                    title="<?= $escaper->escapeHtmlAttr(__('View cart')) ?>"
+                <?php endif ?>
+            >
+                <svg version="1.1" xmlns="http://www.w3.org/2000/svg" width="34" height="44" viewBox="0 0 48 48" preserveAspectRatio="xMidYMid meet">
+                  <path d="" stroke="none" fill="#67ae44" fill-rule="evenodd"></path>
+                  <path d="M0 0 C2.76704422 2.62514452 3.91048156 3.9929175 4.25 7.8125 C4.1675 8.534375 4.085 9.25625 4 10 C6.64 10 9.28 10 12 10 C13.32 21.88 14.64 33.76 16 46 C1.48 46 -13.04 46 -28 46 C-26.68 34.12 -25.36 22.24 -24 10 C-21.36 10 -18.72 10 -16 10 C-15.9175 8.9275 -15.835 7.855 -15.75 6.75 C-14.93508472 2.67542358 -14.27879877 1.43567909 -11 -1 C-7.14887086 -2.85916579 -3.81743382 -1.49970614 0 0 Z M-12 4 C-12.33 5.98 -12.66 7.96 -13 10 C-8.38 10 -3.76 10 1 10 C0.7192965 4.11255649 0.7192965 4.11255649 -2.4375 2.125 C-6.6273568 0.28555067 -8.42627645 1.25098188 -12 4 Z M-21 13 C-22.66549289 23.46188252 -24 33.36860525 -24 44 C-12.12 44 -0.24 44 12 44 C12.06157102 37.09380511 12.06157102 37.09380511 11.59765625 30.32421875 C11.46907227 29.17663086 11.46907227 29.17663086 11.33789062 28.00585938 C11.24701172 27.24080078 11.15613281 26.47574219 11.0625 25.6875 C10.93198242 24.5109082 10.93198242 24.5109082 10.79882812 23.31054688 C10.39502317 19.78996591 9.91470971 16.42956309 9 13 C7.35 13 5.7 13 4 13 C4 14.65 4 16.3 4 18 C2.68 18 1.36 18 0 18 C0.33 16.35 0.66 14.7 1 13 C-3.62 13 -8.24 13 -13 13 C-12.67 14.65 -12.34 16.3 -12 18 C-13.32 18 -14.64 18 -16 18 C-16 16.35 -16 14.7 -16 13 C-17.65 13 -19.3 13 -21 13 Z" fill="#67ae44" transform="translate(30,2)">
+                  </path>
+                </svg>
+                <span
+                    x-text="cart.summary_count"
+                    x-show="!isCartEmpty()"
+                    x-cloak
+                    class="absolute -top-1.5 -right-1.5 h-5 px-2 py-1 rounded-full bg-primary text-white
+                        text-xs font-semibold leading-none text-center uppercase tabular-nums custom-number-qty"
+                    aria-hidden="true"
+                ></span>
+            <?php if ($showMiniCart): ?>
+                
+                </button>
+            <?php else: ?>
+                </a>
+            <?php endif ?>
+                <?= $block->getChildHtml('cart-drawer'); ?>
+            </div>
+        </div>
+          <!--Search-->
+        <div class="z-10 order-3 relative"
+             id="search-content"
+        >
+            <?= $block->getChildHtml('header-search'); ?>
+
+            <!--Search Icon-->
+            <button
+                id="menu-search-icon"
+                class="absolute rounded p-1"
+                aria-label="<?= $escaper->escapeHtmlAttr(__('Toggle search form')) ?>"
+                aria-haspopup="true"
+                x-ref="searchButton"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="#67ae44" class="w-6 h-6" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+    <!--Cart Drawer-->
+    <?php if (!$showMiniCart): ?>
+        <?= $block->getChildHtml('cart-drawer'); ?>
+    <?php endif ?>
+    <!--Authentication Pop-Up-->
+    <?= $block->getChildHtml('authentication-popup'); ?>
+</div>
+<div class="block md:hidden">
+    <?= $block->getLayout() ->createBlock(\Magento\Cms\Block\Block::class) ->setBlockId('hyva_usp_bar')->toHtml();?>
+</div>
+<div class="top-menu-c mb-4">
+ <?= $block->getChildHtml('topmenu') ?>
+</div>

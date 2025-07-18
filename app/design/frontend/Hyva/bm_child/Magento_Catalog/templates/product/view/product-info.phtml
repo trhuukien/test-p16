@@ -1,0 +1,135 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\ProductAttributes;
+use Hyva\Theme\ViewModel\ProductCompare;
+use Hyva\Theme\ViewModel\ProductPage;
+use Hyva\Theme\ViewModel\Wishlist;
+use Magento\Catalog\Model\Product;
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var ProductPage $productViewModel */
+$productViewModel = $viewModels->require(ProductPage::class);
+/** @var ProductAttributes $attributesViewModel */
+$attributesViewModel = $viewModels->require(ProductAttributes::class);
+/** @var Product $product */
+$product = $productViewModel->getProduct();
+$productType = $product->getTypeId();
+
+?>
+<div class="w-full mb-6">
+    <?php if ($shortDescription = $product->getShortDescription()) { ?>
+        <div class="mt-2 pb-2 w-full leading-relaxed product-short-description border-b"><?= /* @noEscape */ $shortDescription ?></div>
+    <?php } ?>
+
+    <div class="flex flex-col sm:flex-row justify-between">
+        <?= $block->getChildHtml("product.info.stockstatus") ?>
+        <?= $block->getChildHtml("alert.urls") ?>
+    </div>
+
+    <div id="product-details" class="flex w-full justify-between product-details pt-2 border-b">
+        <div role="group" class="w-1/2" aria-label="<?= $escaper->escapeHtmlAttr('Price') ?>">
+            <?= $block->getChildHtml("product.info.price") ?>
+        </div>
+        <div>
+            <?= $block->getChildHtml('product.info.review') ?>
+            <?php foreach ($block->getAttributes() as $attributeConfig):
+                $attribute = $attributesViewModel->getAttributeFromLayoutConfig($attributeConfig); ?>
+                <?php if ($value = $attribute['value'] ?? null): ?>
+                <div class="flex py-2 attribute-<?=/* @noEscape */ $attribute['code'] ?: "" ?>">
+                    <dt class="w-1/2 text-left text-sm product-detail-label">
+                        <?= $escaper->escapeHtml($attribute['label']) ?>:
+                    </dt>
+                    <dd class="w-1/2 ml-2 text-left text-sm product-detail-value">
+                        <?= $escaper->escapeHtml($value) ?>
+                    </dd>
+                </div>
+
+            <?php endif ?>
+            <?php endforeach; ?>
+        </div>
+    </div>
+    <?php if ($tierPriceBlock = $block->getChildHtml("product.price.tier")): ?>
+        <div class="py-4 my-2 tier-price-container">
+            <?= /** @noEscape */ $tierPriceBlock ?>
+        </div>
+    <?php endif; ?>
+
+    <?= $block->getChildHtml('product.info.form') ?>
+    <?php if ($block->shouldRenderQuantity()): ?>
+    <div class="custom-delivery flex mb-4">
+                <?php
+                    $format = $block->deliveryDateFormat();
+                    $deliveryDateConfig = $block->getDeliveryDateConfig()['general']['FinalDeliveryDate'];
+                    $deliveryDate = isset($deliveryDateConfig) ? $deliveryDateConfig : '';
+                    $translatedDate = $block->getTranslatedDate($deliveryDate);
+                    $formattedDeliveryDate = !empty($deliveryDate) ? date($format, strtotime($deliveryDate)) : '';
+
+                    if (!empty($formattedDeliveryDate)) {
+                        // Translate the date first
+                        $getTranslatedDeliveryDate = $block->getTranslatedDate($deliveryDate);
+
+                        // Split the translated date into parts (first word and the rest of the string)
+                        $parts = explode(' ', $getTranslatedDeliveryDate, 2);
+                        $firstWord = $parts[0];  // The first word (weekday)
+                        $restOfString = isset($parts[1]) ? $parts[1] : '';  // The rest of the date
+                    }
+                    ?>
+
+        <?php if (!empty($formattedDeliveryDate)) : ?>
+            <!-- Capitalize only the first letter of the translated first word -->
+            <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="#67b54b" xmlns="http://www.w3.org/2000/svg"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg>
+            <span class="ml-1 text-sm" id="delivery-date-<?= $product->getId() ?>"><?= ucfirst($firstWord) . ' ' . $restOfString . ' bezorgd' ?></span>
+        <?php endif; ?>
+    </div>
+     <?php endif; ?>
+    <div class="flex flex-col box-tocart">
+
+        <?php if ($productType === 'bundle'): ?>
+            <span class="sr-only">
+                <?= $escaper->escapeHtml(__('The price depends on the chosen options')) ?>
+            </span>
+        <?php endif; ?>
+
+        <div class="flex mt-4 sm:mt-0">
+            <?php if ($product->isSaleable()): ?>
+                <?= $block->getChildHtml("product.info.quantity") ?>
+                <?= $block->getChildHtml("product.info.addtocart") ?>
+            <?php endif; ?>
+        </div>
+    </div>
+
+    <div class="product-social-links mt-4">
+        <?= $block->getLayout()
+            ->createBlock(\Magento\Cms\Block\Block::class)
+            ->setBlockId('product_social_links')
+            ->toHtml(); ?>
+    </div>
+
+    <?php if ($product->isSaleable() && $block->getChildHtml('addtocart.shortcut.buttons')): ?>
+        <div class="flex mt-4 justify-end">
+            <?= $block->getChildHtml('addtocart.shortcut.buttons') ?>
+        </div>
+    <?php endif; ?>
+
+    <?php if ($additionalActions = $block->getChildHtml('product.info.additional.actions')): ?>
+        <div class="flex mt-4 justify-end">
+            <?= /** @noEscape */ $additionalActions; ?>
+        </div>
+    <?php endif; ?>
+
+    <?= $block->getChildHtml("product.info.additional") ?>
+</div>

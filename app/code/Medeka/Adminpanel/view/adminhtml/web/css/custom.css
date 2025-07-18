@@ -1,0 +1,3 @@
+#container > div.dashboard-container.row > div.dashboard-secondary > div:nth-child(1) {
+    display: none !important;
+}

@@ -1,0 +1,568 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../../Magento/Config/etc/system_file.xsd">
+    <system>
+        <tab id="biztech" translate="label" sortOrder="210">
+            <label>AppJetty</label>
+        </tab>
+        <section id="deliverydate"  showInDefault="1" showInWebsite="1" showInStore="1">
+            <tab>biztech</tab>
+            <label>Delivery Date</label>
+            <resource>Biztech_Deliverydate::biztech_deliverydate</resource>
+            <group id="activation"  showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Delivery Date Activation</label>
+                <field id="key" translate="label" type="text" sortOrder="2" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Activation Key</label>
+                    <validate>required-entry</validate>
+                     <comment model="Biztech\Deliverydate\Model\System\Config\Comment" ></comment>
+                </field>
+                <field id="store" translate="label" type="multiselect" sortOrder="3" showInDefault="1" showInWebsite="1">
+                    <label>Select Store</label>
+                    <source_model>Biztech\Deliverydate\Model\Config\Source\WebsiteStoreview</source_model>
+                    <tooltip><![CDATA[If you are not able to select any store then please check your activation key and enter correct Activation key.]]></tooltip>
+                </field>
+            </group>
+            <group id="deliverydate_general" sortOrder="10"  showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General Configurations</label>
+                <field id="enabled" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled</label>
+                    <source_model>Biztech\Deliverydate\Model\System\Config\Enabledisable</source_model>
+                    <frontend_model>Biztech\Deliverydate\Block\Adminhtml\Enabledisable</frontend_model>
+                    <comment>Select Yes to enable this feature.</comment>
+                </field>
+
+                <field id="admin_enabled" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enabled at admin</label>
+                    <source_model>Biztech\Deliverydate\Model\System\Config\Enabledisable</source_model>
+                    <frontend_model>Biztech\Deliverydate\Block\Adminhtml\Enabledisable</frontend_model>
+                    <comment>Select "Yes" to allow admin to select delivery date information while creating orders from backend. Please note that admin will not have restriction on Delivery date selection.</comment>
+                </field>
+
+                <field id="display_on" translate="label" type="multiselect" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Display selected delivery date on</label>
+                    <source_model>Biztech\Deliverydate\Model\Config\DisplayDateOn</source_model>
+                </field>
+                
+            </group>
+            
+            <group id="deliverydate_front_config" sortOrder="20"  showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Front End Configurations</label>
+                <field id="delivery_method" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show delivery schedule in</label>
+                    <source_model>Biztech\Deliverydate\Model\Config\Method</source_model>
+                    <comment>Choose mode for delivery date selection.</comment>
+                </field>
+
+                <field id="date_display_mode" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Date Display Mode</label>
+                    <source_model>Biztech\Deliverydate\Model\Config\DateDisplayMode</source_model>
+                    <depends>
+                        <field id="delivery_method">1</field>
+                    </depends>
+                    <comment>Select Mode type to display date.</comment>
+                </field>
+                <field id="enable_calendar_timeslot" translate="label" type="select" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enable Delivery TimeSlot</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="delivery_method">1</field>
+                    </depends>
+                    <comment>Select Yes to display timeslot for the calendar mode.</comment>
+                </field>
+                <field id="calendar_slot_label" translate="label" type="text" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Label for timeslot</label>
+                    <depends>
+                        <field id="delivery_method">1</field>
+                        <field id="enable_calendar_timeslot">1</field>
+                    </depends>
+                    <comment>Add label for calendar Timeslot.</comment>
+                </field>
+                <field id="time_display_mode" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Timeslot Display Mode</label>
+                    <source_model>Biztech\Deliverydate\Model\Config\TimeDisplayMode</source_model>
+                    <depends>
+                        <field id="delivery_method">1</field>
+                        <field id="enable_calendar_timeslot">1</field>
+                    </depends>
+                    <comment>Select Mode type to display timeslot.</comment>
+                </field>
+               
+                <field id="datepicker_enable_animation" translate="label" type="select" sortOrder="35" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Date picker animations</label>
+                    <source_model>Biztech\Deliverydate\Model\Config\Animation</source_model>
+                    <depends>
+                        <field id="delivery_method">1</field>
+                        <field id="date_display_mode">calendar</field>
+                    </depends>
+                    <comment>Selected animations will be performed while opening and closing date picker.</comment>
+                </field>
+
+                <field id="datepicker_buttom_bar" translate="label" type="select" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Use datepicker bottom bar</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="delivery_method">1</field>
+                        <field id="date_display_mode">calendar</field>
+                    </depends>
+                    <comment>Display a bottom bar for selecting today's date and a done button for closing the calendar.</comment>
+                </field>
+
+                <field id="datepicker_rtl" translate="label" type="select" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable RTL(Right to Left) in datepicker</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="delivery_method">1</field>
+                        <field id="date_display_mode">calendar</field>
+                    </depends>
+                    <comment>Select yes to enable RTL(Right to Left) in datepicker.</comment>
+                </field>
+
+                <field id="datepicker_delivery_intervals" translate="label" type="text" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Maximum Number of Days for Delivery Intervals</label>
+                    <validate>validate-digits required-entry</validate>
+                    <depends>
+                        <field id="delivery_method">1</field>
+                    </depends>
+                    <comment>Display number of available day based on the configuration, place 0 if you don't want to provide any restriction on number of available days.</comment>
+                </field>
+
+                <field id="is_mandatory" translate="label" type="select" sortOrder="55" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Make delivery date mandatory</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Select "Yes" to make delivery date mandatory for customers.</comment>
+                </field>
+                
+                <field id="pre_select_date" translate="label" type="select" sortOrder="56" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Pre-select default delivery date</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Pre-select default delivery date option if date is not mandatory and date is not selected by the customer.</comment>
+                    <depends>
+                        <field id="is_mandatory">0</field>
+                    </depends>
+                </field>
+                
+                <field id="pre_select_date_after" translate="label" type="select" sortOrder="57" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Pre-select delivery date after</label>
+                    <source_model>Biztech\Deliverydate\Model\Config\Preselectdateoption</source_model>
+                    <comment>Select number of days after order placement when default delivery date option should get selected in case no date is selected by the customer </comment>
+                    <depends>
+                        <field id="is_mandatory">0</field>
+                        <field id="pre_select_date">1</field>
+                    </depends>
+                </field>
+
+                <field id="deliverydate_label" translate="label" type="text" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Label for delivery date</label>
+                    <validate>required-entry</validate>
+                    <comment>Add label for delivery date.</comment>
+                </field>
+
+                <field id="deliverydate_comments_label" translate="label" type="text" sortOrder="65" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Label for delivery date comments</label>
+                    <validate>required-entry</validate>
+                    <comment>Add label for delivery date comments.</comment>
+                </field>
+                
+                <field id="add_comment" translate="label" type="select" sortOrder="70" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Allow customers to add comment</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="comment_required" translate="label" type="select" sortOrder="75" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Make comments mandatory</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="add_comment">1</field>
+                    </depends>
+                </field>
+
+                <field id="show_callme" translate="label" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enable call me before delivery</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Select yes to show check box to enable call me before delivery option.</comment>
+                </field>
+
+
+                <field id="deliverydate_callme_label" translate="label" type="text" sortOrder="85" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Label for call me before delivery</label>
+                    <depends>
+                        <field id="show_callme">1</field>
+                    </depends>
+                    <validate>required-entry</validate>
+                    <comment>Add label for call me before delivery.</comment>
+                </field>
+
+                <field id="show_html" translate="label" type="select" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Show additional info</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Select Yes to display additional information to customers.</comment>
+                </field>
+
+                <field id="deliverydate_html" translate="label" type="textarea" sortOrder="95" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Additional info for customers</label>
+                    <depends>
+                        <field id="show_html">1</field>
+                    </depends>
+                    <validate>required-entry</validate>
+                </field>
+
+                <field id="deliverydate_format" translate="label" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Date format</label>
+                    <source_model>Biztech\Deliverydate\Model\Config\Dateformat</source_model>
+                    <comment>Select date format, to be displayed on frontend and backend.</comment>
+                </field>
+
+                <field id="deliverytime_format" translate="label" type="select" sortOrder="105" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Time format</label>
+                    <source_model>Biztech\Deliverydate\Model\Config\Timeformat</source_model>
+                    <comment>Select time format, to be displayed on frontend and backend.</comment>
+                </field>
+            </group>
+                
+            <group id="deliverydate_configuration" sortOrder="30"  showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Delivery Date Related Configurations</label>
+
+                <field id="on_which_page" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Display at</label>
+                    <source_model>Biztech\Deliverydate\Model\Config\ShowAt</source_model>
+                    <comment>Choose at which step delivery date selection should be given.</comment>
+                </field>
+                
+                <field id="quota_limit" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Quota per day</label>
+                    <validate>validate-zero-or-greater required-entry</validate>
+                    <depends>
+                        <field id="on_which_page">1</field>
+                    </depends>
+                    <comment>Ex. You can define the quota limit it will be valid for future number of days order If Quota set as 0, unlimited orders can be made.</comment>
+                </field>
+
+                <field id="quota_future_limit" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Quota for future number of days</label>
+                    <validate>validate-zero-or-greater required-entry</validate>
+                    <depends>
+                        <field id="on_which_page">1</field>
+                    </depends>
+                    <comment>Ex. You can define the quota limit for the future days of order.</comment>
+                </field>
+
+                <field id="return_quota" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Return quota per day when order is cancelled</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="on_which_page">1</field>
+                    </depends>
+                    <comment>Select "Yes" if you do not want to consider the cancel order for the daily quota calculation.</comment>
+                </field>
+                
+                <field id="include_additional_charge" translate="label" type="select" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Include additional delivery charge</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If set as yes, only then other delivery charges related configurations should be managed.</comment>
+                </field>
+                
+                <field id="allow_product_base_charge" translate="label" type="select" sortOrder="31" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Allow product based delivery charges</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="include_additional_charge">1</field>
+                    </depends>
+                </field>
+
+                <field id="day_wise_charge" translate="label" type="select" sortOrder="35" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Additional delivery charge</label>
+                    <source_model>Biztech\Deliverydatepro\Model\Config\DeliveryChargeType</source_model>
+                    <comment>Choose way of additional delivery charges to be applied</comment>
+                    <depends>
+                        <field id="include_additional_charge">1</field>
+                    </depends>
+                </field>
+                              
+                <field id="per_day_of_week" translate="label" type="text" sortOrder="40" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Per Day Of Week</label>
+                    <frontend_model>Biztech\Deliverydatepro\Block\Adminhtml\Config\Form\Field\ChargeDayOfWeek</frontend_model>
+                    <backend_model>Biztech\Deliverydatepro\Model\Adminhtml\System\Config\Backend\Design\ChargeDayOfWeek</backend_model>
+                    <depends>
+                        <field id="day_wise_charge">2</field>
+                        <field id="include_additional_charge">1</field>
+                    </depends>
+                </field>
+                
+                <field id="same_day_deliverycharges" translate="label" type="text" sortOrder="45" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Define same day delivery charges</label>
+                    <validate>validate-zero-or-greater</validate>
+                    <depends>
+                        <field id="day_wise_charge">1</field>
+                        <field id="include_additional_charge">1</field>
+                    </depends>
+                    <comment>You can define the same day delivery charges. If you will set set as 0 or leave it empty same day delivery orders can be made without any charges.</comment>
+                </field>
+                
+                <field id="deliverytime_day_diff" translate="label" type="text" sortOrder="46" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Order Processing Time</label>
+                    <validate>validate-digits</validate>
+                    <comment>You can leave it blank or add value 0 for providing the same day delivery.</comment>
+                </field>
+                
+                <field id="delivery_option" translate="label" type="select" sortOrder="47" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Delivery Options Level</label>
+                    <source_model>Biztech\Deliverydatepro\Model\Config\DeliveryOption</source_model>
+                    <comment>Choose at which step order processing time should be considered. If two products with different processing period are added in the cart, final delivery will be made based on higher processing time.</comment>
+                </field>
+                
+                <field id="enable_cutoff" translate="label" type="select" sortOrder="50" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable Cut Off time</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>Cut off time is that time after which same day order gets disabled.</comment>
+                </field>
+
+                <field id="cut_offtime" translate="label" type="time" sortOrder="52" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Disable same day delivery after (Cut-off time)</label>
+                    <depends>
+                        <field id="enable_cutoff">1</field>
+                        <!--<field id="deliverytime_day_diff">0</field>-->
+                    </depends>
+                </field>
+                
+                <field id="productwise_cutoff" translate="label" type="select" sortOrder="53" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable product wise cut off</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="enable_cutoff">1</field>
+                        <!--<field id="deliverytime_day_diff">0</field>-->
+                    </depends>
+                </field>
+
+                <field id="end_same_day_delivery" translate="label" type="select" sortOrder="54" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Show same day delivery ends timer</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="enable_cutoff">1</field>
+                        <!--<field id="deliverytime_day_diff">0</field>-->
+                    </depends>
+                    <comment>Select yes to display same day delivery ends timer on product page</comment>
+                </field>
+
+                <field id="use_customer_group" translate="label" type="select" sortOrder="60" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Delivery date for customer groups</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="selected_group" translate="label" type="multiselect" sortOrder="61" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Customers groups</label>
+                    <depends>
+                        <field id="use_customer_group">1</field>
+                    </depends>
+                    <source_model>Biztech\Deliverydatepro\Model\Config\CustomerGroup</source_model>
+                </field>
+
+                <field id="email_notification_yesno" translate="label" type="select" sortOrder="80" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Do you want email notification ?</label>
+                    <depends>
+                        <field id="on_which_page">1</field>
+                    </depends>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+
+                <field id="email_notification_options" translate="label" type="select" sortOrder="85" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Email Notification Period</label>
+                    <source_model>Biztech\Deliverydate\Model\Config\Emailoptions</source_model>
+                    <depends>
+                        <field id="email_notification_yesno">1</field>
+                        <field id="on_which_page">1</field>
+                    </depends>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="admin_email_template" translate="label" type="select" sortOrder="90" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Select Admin Email Template</label>
+                    <source_model>Biztech\Deliverydate\Model\Config\EmailTemplateList</source_model>
+                    <depends>
+                        <field id="email_notification_yesno">1</field>
+                        <field id="on_which_page">1</field>
+                    </depends>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="email_notification_email" translate="label" type="text" sortOrder="95" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Email notification id</label>
+                    <depends>
+                        <field id="email_notification_yesno">1</field>
+                        <field id="on_which_page">1</field>
+                    </depends>
+                    <validate>required-entry email validate-email</validate>
+                </field>
+                
+                <field id="customer_email_notification_yesno" translate="label" type="select" sortOrder="100" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Do you want email notification to be sent to the customer</label>
+                    <depends>
+                        <field id="on_which_page">1</field>
+                    </depends>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If same day delivery is enabled, then email reminder is not sent to the customers.</comment>
+                </field>
+                <field id="customer_email_template" translate="label" type="select" sortOrder="105" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Select Customer Email Template</label>
+                    <source_model>Biztech\Deliverydate\Model\Config\EmailTemplateList</source_model>
+                    <depends>
+                        <field id="customer_email_notification_yesno">1</field>
+                        <field id="on_which_page">1</field>
+                    </depends>
+                    <validate>required-entry</validate>
+                </field>
+                <field id="customer_email_notification_period" translate="label" type="select" sortOrder="110" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Email Notification Period For Customer</label>
+                    <source_model>Biztech\Deliverydate\Model\Config\Emailoptions</source_model>
+                    <depends>
+                        <field id="customer_email_notification_yesno">1</field>
+                        <field id="on_which_page">1</field>
+                    </depends>
+                    <validate>required-entry</validate>
+                </field>
+                
+                <field id="enable_shipping" translate="label" type="select" sortOrder="115" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable delivery date based on shipping method</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <depends>
+                        <field id="on_which_page">1</field>
+                    </depends>
+                </field>
+                
+                <field id="shipping_method_option" translate="label" type="multiselect" sortOrder="120" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Shipping Methods</label>
+                    <depends>
+                        <field id="enable_shipping">1</field>
+                        <field id="on_which_page">1</field>
+                    </depends>
+                    <source_model>Biztech\Deliverydatepro\Model\Config\ShippingMethod</source_model>
+                    <comment>For selected shipping methods only, delivery date selection will be available in the front on checkout page</comment>
+                </field>
+                
+                
+                <field id="disable_date_on_cart" translate="label" type="select" sortOrder="125" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Restrict Delivery Option Based on Cart Amount</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If set as yes, delivery date selection will be disabled for customers whose cart value is less than specified amount</comment>
+                    <depends>
+                        <field id="deliverydate/deliverydate_configuration/on_which_page" separator=",">1,3</field>
+                    </depends>
+                </field>
+                
+                <field id="cart_amount" translate="label" type="text" sortOrder="130" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Cart amount</label>
+                    <depends>
+                        <field id="disable_date_on_cart">1</field>
+                        <field id="deliverydate/deliverydate_configuration/on_which_page" separator=",">1,3</field>
+                    </depends>
+                    <comment>Enter minimum cart amount to display delivery date selection.</comment>
+                    <validate>validate-digits validate-greater-than-zero required-entry</validate>
+                </field>
+                
+                <field id="on_multishipping" translate="label" type="select" sortOrder="135" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Enable delivery selection for multi addresses</label>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                    <comment>If set as yes, date selection is enabled for multiple shipping addresses</comment>
+                    <depends>
+                        <field id="deliverydate/deliverydate_configuration/on_which_page">1</field>
+                    </depends>
+                </field>
+            </group>       
+            
+            <group id="deliverydate_timeslots"  sortOrder="40"  showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Time Slot Settings</label>
+
+                <field id="table_label" translate="label" type="text" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Label For time slot view table</label>
+                    <comment>Default label will be "Time Slots".</comment>
+                </field>
+
+                <field id="no_of_deliverydays" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Add number of delivery days</label>
+                    <validate>validate-digits validate-greater-than-zero required-entry</validate>
+                </field>
+
+                <field id="deliverytime_diff" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Minimum interval of hours between the order placing time and delivery time</label>
+                    <comment>Add time interval in hour.</comment>
+                    <validate>validate-digits validate-greater-than-zero</validate>
+                </field>
+
+                <field id="delivery_timeslot" translate="label" type="text" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Add time slot</label>
+                    <frontend_model>Biztech\Deliverydate\Block\Adminhtml\Config\Form\Field\Timeslot</frontend_model>
+                    <backend_model>Biztech\Deliverydate\Model\Adminhtml\System\Config\Backend\Design\Timeslot</backend_model>
+                </field>
+
+                <field id="disable_timeslot" translate="label" type="text" sortOrder="30" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Disable time slot of day</label>
+                    <frontend_model>Biztech\Deliverydate\Block\Adminhtml\Config\Form\Field\Disabletimeslot</frontend_model>
+                    <backend_model>Biztech\Deliverydate\Model\Adminhtml\System\Config\Backend\Design\Disabletimeslot</backend_model>
+                </field>
+
+                <field id="disable_timeslot_date" translate="label" type="text" sortOrder="35" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Disable time slot of particular date</label>
+                    <frontend_model>Biztech\Deliverydate\Block\Adminhtml\Config\Form\Field\Disabletimeslotdate</frontend_model>
+                    <backend_model>Biztech\Deliverydate\Model\Adminhtml\System\Config\Backend\Design\Disabletimeslotdate</backend_model>
+                </field>
+
+            </group>
+            
+            <group id="deliverydate_dayoff" sortOrder="50"  showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Day Off Settings</label>
+
+                <field id="deliverydate_dayoff" translate="label" type="multiselect" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Day off</label>
+                    <source_model>Biztech\Deliverydate\Model\Config\Dayoff</source_model>
+                    <backend_model>Biztech\Deliverydate\Model\Adminhtml\System\Config\Backend\Dayoff</backend_model>
+                    <comment>Choose days on which shipping will not be available. If no days and any week days are selected then priority is given to weekdays.</comment>
+                </field>
+
+                <field id="deliverydate_off" translate="label" type="text" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Single day off</label>
+                    <frontend_model>Biztech\Deliverydate\Block\Adminhtml\Config\Form\Field\Nonworking</frontend_model>
+                    <backend_model>Biztech\Deliverydate\Model\Adminhtml\System\Config\Backend\Design\Nonworking</backend_model>
+                </field>
+
+                <field id="deliverydate_periodoff" translate="label" type="text" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1">
+                    <label>Period : From - To</label>
+                    <frontend_model>Biztech\Deliverydate\Block\Adminhtml\Config\Form\Field\Date</frontend_model>
+                    <backend_model>Biztech\Deliverydate\Model\Adminhtml\System\Config\Backend\Design\Date</backend_model>
+                </field>
+            </group>   
+            
+            <group id="deliverydate_update_date" sortOrder="60"  showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>Update Delivery Date</label>
+                <field id="update_customer_deliverydate" translate="label" type="select" sortOrder="10" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Allow customer to edit delivery date</label>
+                    <source_model>Biztech\Deliverydate\Model\System\Config\Enabledisable</source_model>
+                    <comment>If enabled then customer can edit delivery date from their account. 
+                        Note: This configuration is only applicable if delivery period is selected from the checkout page and order shipment is not generated.</comment>
+                </field>
+                <field id="rule_activation" translate="label" type="select" sortOrder="15" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Rule condition to allow editing</label>
+                    <source_model>Biztech\Deliverydate\Model\Config\RuleActivation</source_model>
+                    <comment>Define rule option based on which customer can edit delivery date.</comment>
+                    <depends>
+                        <field id="update_customer_deliverydate">1</field>
+                    </depends>
+                </field>
+                
+                <field id="order_status" translate="label" type="multiselect" sortOrder="20" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Order status can be rescheduled</label>
+                    <source_model>Biztech\Deliverydate\Model\Config\OrderStatus</source_model>
+                    <depends>
+                        <field id="rule_activation">status</field>
+                        <field id="update_customer_deliverydate">1</field>
+                    </depends>
+                    <comment>Customers can edit delivery information only when orders are in these status. Select the status based on which you want to allow editing.</comment>
+                </field>
+                
+                <field id="date_interval" translate="label" type="select" sortOrder="25" showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Time interval to update day</label>
+                    <source_model>Biztech\Deliverydate\Model\Config\DateIntervalUpdate</source_model>
+                    <comment>Select number of days before the delivery day, in which customers can edit the selected delivery date.</comment>
+                    <depends>
+                        <field id="rule_activation">date</field>
+                        <field id="update_customer_deliverydate">1</field>
+                    </depends>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

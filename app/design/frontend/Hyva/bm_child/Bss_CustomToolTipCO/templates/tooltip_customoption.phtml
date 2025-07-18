@@ -1,0 +1,195 @@
+<?php
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+/** @var Magento\Catalog\Block\Product\View $block */
+/** @var ViewModelRegistry $viewModels */
+
+$product = $block->getProduct();
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+$dataTooltip = [];
+$dataTooltipOptionValue = [];
+$dataTooltipAttribute = [];
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$data = $objectManager->get(\Bss\CustomToolTipCO\Model\ToolTipAttributeFactory::class)->create();
+$collection = $data->getCollection();
+foreach($collection as $item) {
+    if ($product->getId() == $productId =$item->getProductId()) {
+        $dataTooltipAttribute[$item->getProductAttributeId()] = $item->getContent();
+    }
+}
+foreach ($product->getOptions() as $customoption) {
+    if ($customoption->getValues()) {
+        foreach ($customoption->getValues() as $value) {
+            $dataTooltipOptionValue[$value->getOptionTypeId()] = $value->getBssTooltipContent();
+        }
+    }
+    $dataTooltip[$customoption->getOptionId()] = $customoption->getTooltipContent();
+}
+$jsonTooltip = json_encode($dataTooltip, JSON_FORCE_OBJECT);
+$jsonTooltipValue = json_encode($dataTooltipOptionValue, JSON_FORCE_OBJECT);
+$jsonTooltipAttribute = json_encode($dataTooltipAttribute, JSON_FORCE_OBJECT);
+?>
+
+<div x-data='tooltipHandler(<?= $jsonTooltip ?>, <?= $jsonTooltipValue ?>, <?= $jsonTooltipAttribute ?>)' x-init="renderTooltips()">
+</div>
+<script>
+    function tooltipHandler(jsonTooltip, jsonTooltipValue, jsonTooltipAttribute) {
+        return {
+            tooltips: jsonTooltip,
+            optionValues: jsonTooltipValue,
+            attributeTooltips: jsonTooltipAttribute,
+
+            renderTooltips() {
+                // Render for custom option
+                document.querySelectorAll('.product-custom-option:not(.hidden-form-file)').forEach((el) => {
+                    const optionIdMatch = el.getAttribute('name')?.match(/\d+/);
+                    const optionId = optionIdMatch ? optionIdMatch[0] : null;
+                    const optionTypeId = el.getAttribute('value');
+                    const hasTooltip = this.tooltips[optionId];
+                    const hasTypeTooltip = this.optionValues[optionTypeId];
+                    let type = el.getAttribute('type');
+                    if (!type) {
+
+                    }
+
+                    if (hasTooltip && type !== 'checkbox') {
+                        this.insertTooltip(el, 'option-id', optionId);
+                    }
+
+                    if (hasTypeTooltip && type === 'checkbox') {
+                        this.insertTooltip(el, 'option-type-id', optionTypeId);
+                    }
+                });
+
+                // Render for swatch/super attribute
+                document.querySelectorAll('.super-attribute-select').forEach((el) => {
+                    const attrIdMatch = el.getAttribute('name')?.match(/\d+/);
+                    const attrId = attrIdMatch ? attrIdMatch[0] : null;
+                    const attrTooltip = this.attributeTooltips[attrId];
+
+                    if (attrTooltip) {
+                        this.insertTooltip(el, 'attribute-cf', attrId);
+                    }
+                });
+
+                // Hover handler
+                document.body.addEventListener('mouseover', (e) => {
+                    const el = e.target.closest('.bss-tooltip-customoption');
+                    if (el) {
+                        this.showTooltip(el, e);
+                    }
+                });
+
+                // document.body.addEventListener('mouseout', (e) => {
+                //     if (e.target.closest('.bss-tooltip-customoption')) {
+                //         this.removeTooltip();
+                //     }
+                // });
+
+                // document.querySelector('.page-wrapper')?.addEventListener('mouseover', (e) => {
+                //     if (!e.target.closest('.bss-tooltip-content')) {
+                //         setTimeout(() => {
+                //             this.removeTooltip();
+                //         }, 10);
+                //     }
+                // });
+            },
+
+            insertTooltip(el, attrName, idValue) {
+                let label = el.closest('.field')?.querySelector('label');
+                // get label for super attribute
+                if (!label) {
+                    label = el.closest('#product_addtocart_form')?.querySelector('label[for="attribute' + idValue + '"]');
+                }
+                // get label for select options
+                if (!label) {
+                    label = el.closest('#product_addtocart_form')?.querySelector('label[for="select_' + idValue + '"]');
+                }
+                // get label for text & file options
+                if (!label) {
+                    label = el.closest('#product_addtocart_form')?.querySelector('label[for="options_' + idValue + '_text"]');
+                }
+                if (label) {
+                    const wrapper = document.createElement('span');
+                    wrapper.classList.add('bss-tooltip-content');
+                    wrapper.classList.add('ml-auto');
+                    wrapper.classList.add('absolute');
+                    wrapper.innerHTML = `
+                    <span class="bss-tooltip-customoption" ${attrName}="${idValue}">
+                        <?= $heroicons->informationCircleHtml('ml-2', 18, 18,  ['aria-hidden' => 'true']); ?>
+                    </span>
+                `;
+                    label.after(wrapper);
+                }
+            },
+
+            showTooltip(el, event) {
+                this.removeTooltip();
+
+                let content = '';
+                if (el.hasAttribute('option-id')) {
+                    content = this.tooltips[el.getAttribute('option-id')] || '';
+                } else if (el.hasAttribute('option-type-id')) {
+                    content = this.optionValues[el.getAttribute('option-type-id')] || '';
+                } else if (el.hasAttribute('attribute-cf')) {
+                    content = this.attributeTooltips[el.getAttribute('attribute-cf')] || '';
+                }
+                el.parentNode.insertAdjacentHTML('beforeend', '<div class="bss-custom-tooltip hidden invisible absolute mt-8 z-70"><div class="content-tt flex flex-wrap items-center bg-white p-3 text-sm border rounded-lg">' + content + '</div></div>');
+                const tooltip = document.querySelector('.bss-custom-tooltip');
+                const tooltipTop = (tooltip.offsetHeight - 18) / 2;
+                if (tooltipTop > 28) {
+                    tooltip.style.top = `-${tooltipTop}px`;
+                }
+                tooltip.classList.add('visible');
+                tooltip.classList.remove('invisible');
+            },
+            // showTooltip(el, event) {
+            //     this.removeTooltip();
+
+            //     let content = '';
+            //     if (el.hasAttribute('option-id')) {
+            //         content = this.tooltips[el.getAttribute('option-id')] || '';
+            //     } else if (el.hasAttribute('option-type-id')) {
+            //         content = this.optionValues[el.getAttribute('option-type-id')] || '';
+            //     } else if (el.hasAttribute('attribute-cf')) {
+            //         content = this.attributeTooltips[el.getAttribute('attribute-cf')] || '';
+            //     }
+
+            //     const tooltipEl = document.createElement('div');
+            //     tooltipEl.classList.add('bss-custom-tooltip');
+            //     tooltipEl.classList.add('absolute');
+            //     tooltipEl.classList.add('block');
+            //     tooltipEl.classList.add('mt-8');
+            //     tooltipEl.classList.add('z-70');
+            //     tooltipEl.innerHTML = `<div class="content-tt flex flex-wrap items-center bg-white p-3 text-sm border rounded-lg" style="max-width:500px;">${content}</div>`;
+            //     document.body.prepend(tooltipEl);
+
+            //     const rect = el.getBoundingClientRect();
+            //     const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            //     const top = rect.top + scrollTop - tooltipEl.offsetHeight;
+            //     let left = rect.left;
+
+            //     const windowWidth = window.innerWidth;
+            //     if (left + tooltipEl.offsetWidth > windowWidth) {
+            //         left = rect.left - tooltipEl.offsetWidth;
+            //     }
+            //     if (top < 0) {
+            //         tooltipEl.style.top = `${rect.top + scrollTop + 20}px`;
+            //     } else {
+            //         tooltipEl.style.top = `${top}px`;
+            //     }
+            //     tooltipEl.style.left = `${left}px`;
+            //     tooltipEl.style.position = 'absolute';
+            //     tooltipEl.style.zIndex = 9999;
+            //     tooltipEl.style.display = 'block';
+            // },
+
+            removeTooltip() {
+                const existing = document.querySelector('.bss-custom-tooltip');
+                if (existing) {
+                    existing.remove();
+                }
+            }
+        }
+    }
+</script>

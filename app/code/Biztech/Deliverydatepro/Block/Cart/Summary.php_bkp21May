@@ -1,0 +1,125 @@
+<?php
+
+namespace Biztech\Deliverydatepro\Block\Cart;
+
+use Magento\Framework\View\Element\Template;
+use Magento\Checkout\Model\Cart;
+use Biztech\Deliverydatepro\Helper\Data;
+use Biztech\Deliverydate\Block\Deliverydate;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use Magento\Framework\Phrase;
+
+class Summary extends Template
+{
+    /**
+     * @var Cart
+     */
+    protected $cart;
+    protected $proHelper;
+    protected $productCollectionFactory;
+    protected $deliverydate;
+
+    /**
+     * Summary constructor.
+     * @param Template\Context $context
+     * @param Cart $cart
+     * @param array $data
+     */
+    public function __construct(
+        Template\Context $context,
+        Cart $cart,
+        Data $proHelper,
+        CollectionFactory $productCollectionFactory,
+        Deliverydate $deliverydate,
+        array $data = []
+    ) {
+        $this->cart = $cart;
+        $this->proHelper = $proHelper;
+        $this->productCollectionFactory = $productCollectionFactory;
+        $this->deliverydate = $deliverydate;
+        parent::__construct($context, $data);
+    }
+
+    /**
+     * Get current products in cart
+     *
+     * @return \Magento\Quote\Model\Quote\Item[]
+     */
+    public function getDeliveryDate()
+    {
+        $writer = new \Zend_Log_Writer_Stream(BP . '/var/log/currentQuote.log');
+        $logger = new \Zend_Log();
+        $logger->addWriter($writer);
+        $logger->info('text message');
+        $items = $this->cart->getQuote()->getAllItems();
+        foreach($items as $item)
+        {
+            $productId = $item->getProductId();
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $product = $objectManager->get('Magento\Catalog\Model\Product')->load($productId);
+            $deliveryDate[] =  $this->proHelper->getFinalDeliveryDate($product);
+            $deliveryDayNames[] = $this->getDeliveryDayNames($product);
+        }
+        // return $deliveryDate;
+        $logger->info(print_r($deliveryDate,true));
+        $logger->info(print_r($deliveryDayNames,true));
+
+        $commonDays = call_user_func_array('array_intersect', $deliveryDayNames);
+
+        $highestDeliveryDate = $this->findHeighestDeliverydate($deliveryDate,$commonDays);
+
+    }
+
+    public function deliveryDateFormat()
+    {
+        return $this->deliverydate->getDeliveryDateFormat();
+    }
+
+    public function getDeliveryDayNames($productDetails)
+    {
+        $deliveryDays = $productDetails->getDeliveryDays();
+
+        $writer = new \Zend_Log_Writer_Stream(BP . '/var/log/currentQuote.log');
+        $logger = new \Zend_Log();
+        $logger->addWriter($writer);
+        $logger->info('text message');
+        $logger->info(print_r($deliveryDays,true));
+
+        if (is_array($deliveryDays)) {
+            $deliveryDayNumbers = $deliveryDays;
+        } elseif (is_string($deliveryDays)) {
+            $deliveryDayNumbers = explode(',', $deliveryDays);
+        } else {
+            $logger->info('Unexpected type or value for delivery days');
+            return;
+        }
+        $dayNamesMap = [
+            '' => __('No Day'),
+            0 => __('Sunday'),
+            1 => __('Monday'),
+            2 => __('Tuesday'),
+            3 => __('Wednesday'),
+            4 => __('Thursday'),
+            5 => __('Friday'),
+            6 => __('Saturday'),
+        ];
+
+
+        $deliveryDayNames = [];
+
+        foreach ($deliveryDayNumbers as $dayNumber) {
+            if (isset($dayNamesMap[$dayNumber])) {
+                $deliveryDayNames[] = (string)$dayNamesMap[$dayNumber];
+            } else {
+                $logger->info('Invalid day number: ' . $dayNumber);
+            }
+        }
+        return $deliveryDayNames;
+    }
+
+    public function findHeighestDeliverydate($deliveryDate,$commonDays)
+    {
+
+    }
+
+}

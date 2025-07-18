@@ -1,0 +1,90 @@
+<?php if ($block->getApi()->getClient()->isAccessTokenExpired()):?>
+	<a class="config-google" href="<?php echo $block->getApi()->getClient()->createAuthUrl()?>">
+		<svg width="200" height="40" xmlns="http://www.w3.org/2000/svg">
+        	<g>
+            	<rect x="0" y="0" width="200" height="40" rx="2" fill="rgba(66,133,244,1)" />
+            	<rect x="1" y="1" width="38" height="38" fill="rgba(255,255,255,1)" rx="2" />
+            	<text x="54" y="24" fill="rgba(255,255,255,1)" style="font-family: Arial, sans-serif; font-size:14px; font-weight:600">Sign in with Google</text>
+        	</g>
+        	<g transform="translate(8,8)">
+        		<path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        		<path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        		<path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+        		<path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+        		<path d="M1 1h22v22H1z" fill="none"/>
+        	</g>
+        </svg>
+	</a>
+<?php else: ?>
+	<div>
+		<div style="margin:0px 0px 10px 0px"><strong style="text-transform: uppercase">SELECT ITEMS TO CREATE IN YOUR GOOGLE TAG MANAGER ACCOUNT</strong></div>
+		<div style="margin:0px 0px 10px 0px">The following items will be created next time you click "Save config" button.</div>
+	</div>
+	<div>
+		<?php foreach ($block->getOptions() as $option => $label):?>
+			<div>
+				<label for="<?php echo $option ?>"><input type="checkbox" class="config-checkbox" name="args[]" value="<?php echo $option ?>" id="<?php echo $option ?>" /> <?php echo $label ?></label>
+			</div>
+		<?php endforeach?>
+		<div>
+			<a href="javascript:void(0)" onclick="toggleApi(this)" style="display:block; margin-top:10px; padding-left:25px;"><?php echo __('Toggle all') ?></a>
+			<div style="margin:10px 0px 10px 0px; color:#ababab; font-size:12px; padding-left:25px; line-height:18px;">
+				<?php echo ('It is recommended to check all at initial configuration.') ?>
+			</div>
+		</div>
+		<div style="margin:30px 0px 10px 0px">
+			<?php $title = $block->renderPropertyTitle() ?>
+			<label for="ec_api_ua"><input type="checkbox" class="config-checkbox" name="ec_api_ua" value="ec_api_ua" id="ec_api_ua" /> <?php echo __('Create') ?> <?php echo $title ?></label>
+		</div>
+		<div>
+			<a href="javascript:void(0)" onclick="toggleApiUniversal(this)" style="display:block; margin-top:10px; padding-left:25px;"><?php echo __('Toggle') ?></a>
+		</div>
+		<div style="margin:10px 0px 10px 0px; color:#ababab; font-size:12px; padding-left:25px; line-height:18px;">
+			<?php echo ("By default the API will NOT create {$title} tag to avoid duplication (in case tag already exists). This tag however is important and is used to track transactions, detail views, impressions etc. If you don\'t have such tag make sure to create it OR if tag already exists make sure that Enhanced Ecommerce using Datalayer is enabled in tag options.") ?>
+		</div>
+		<script>
+				require(['jquery'],function($)
+				{
+					window.toggleApi = function(target)
+					{
+						$(target).parents('div').eq(1).find(':checkbox[name="args[]"]').prop('checked', function(i, value)
+						{
+							return !value;
+						});
+
+						return false;
+					};
+
+					window.toggleApiUniversal = function(target)
+					{
+						$(':checkbox[name=ec_api_ua]').prop('checked', function(i, value)
+						{
+							if (!value)
+							{
+								$(':checkbox[id=ec_api_tags]').prop('checked', true);
+							}
+							
+							return !value;
+						});
+
+						return false;
+					};
+
+					$(document).ready(function()
+					{
+						$(':checkbox[id=ec_api_ua]').on('click', function()
+						{
+							if ($(this).prop('checked'))
+							{
+								$(':checkbox[id=ec_api_tags]').prop('checked', true);
+							}
+						});
+					});
+					
+				});
+			</script>
+	</div>
+	<div style="margin:20px 0px 10px 0px">
+		<?php echo __('Make sure Container ID and Account ID are present and your account is authorised with corresponding permissions. If you don\'t know how to use the API, we\'ve prepared a short video on YouTube available in 1080p')?><br /><br /> <a href="https://www.youtube.com/watch?v=U8dK95FRP1w" target="_blank">Magento 2 Google Tag Manager API</a>
+	</div>
+<?php endif ?>

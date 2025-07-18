@@ -1,0 +1,21 @@
+<?php
+// @codingStandardsIgnoreFile
+?>
+<?php /** @var $block \Magento\Catalog\Block\Product\AbstractProduct */ ?>
+<?= $block->getReviewsSummaryHtml($block->getProduct(), 'short', true) ?>
+<div 
+    x-data 
+    x-init="
+        $nextTick(() => {
+            const viewBtn = document.querySelector('.reviews-actions .action.view');
+            if (viewBtn) {
+                const submitReviewUrl = viewBtn.getAttribute('href').replace('#reviews', '#review-form');
+                const newBtn = document.createElement('a');
+                newBtn.className = 'action add text-blue-600 hover:underline ml-4';
+                newBtn.href = submitReviewUrl;
+                newBtn.textContent = '<?php echo __('Add Your Review'); ?>';
+                viewBtn.insertAdjacentElement('afterend', newBtn);
+            }
+        })
+    "
+></div>

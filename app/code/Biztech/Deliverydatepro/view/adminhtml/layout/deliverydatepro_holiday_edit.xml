@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="admin-2columns-left" xsi:noNamespaceSchemaLocation="../../../../../../../lib/internal/Magento/Framework/View/Layout/etc/page_configuration.xsd">
+     <update handle="editor"/>
+    <body>
+	   <referenceContainer name="content">
+            <block class="Biztech\Deliverydatepro\Block\Adminhtml\Holiday\Edit" name="deliverydatepro_holiday_edit"/>
+        </referenceContainer>
+		 <referenceContainer name="left">
+            <block class="Biztech\Deliverydatepro\Block\Adminhtml\Holiday\Edit\Tabs" name="deliverydatepro_holiday_edit_tabs">
+				<block class="Biztech\Deliverydatepro\Block\Adminhtml\Holiday\Edit\Tab\Holiday" name="deliverydatepro_holiday_edit_tab_holiday"/>
+				 <action method="addTab">
+                    <argument name="name" xsi:type="string">holiday_section</argument>
+                    <argument name="block" xsi:type="string">deliverydatepro_holiday_edit_tab_holiday</argument>
+                </action>
+				<!--CedAddTab-->
+			</block>
+        </referenceContainer>
+    </body>
+</page>

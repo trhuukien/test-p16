@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="3columns" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+	<move element="page.messages" destination="content" as="page.messages" before="page.main.title"/>
+	<move element="page.main.title" destination="content" before="category.products"/>
+	<move element="category.description" destination="content" after="page.main.title"/>  
+	<move element="category.cms" destination ="content" after="category.product"/>
+    </body>
+</page>

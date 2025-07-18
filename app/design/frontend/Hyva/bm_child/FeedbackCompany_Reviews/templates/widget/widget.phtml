@@ -1,0 +1,17 @@
+<?php /** Copyright © Feedback Company. All rights reserved. */ ?>
+<?php /** @var \FeedbackCompany\Reviews\Block\Widget\AbstractWidget $block */ ?>
+<div class="container fc-widget" style="position:relative;padding:0">
+<?php if ($block->isActive()): ?>
+    <?= /* @noEscape */ $block->getWidgetCode(); ?>	
+    <?php if ($block->isEnableReviewTab()): ?>	
+        <script type="text/x-magento-init">
+            {
+                "*": {
+                    "widgetReviewTab": {}
+                }
+            }
+        </script>	
+    <?php endif; ?>
+<?php endif; ?>
+</div>
+

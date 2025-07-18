@@ -1,0 +1,61 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+declare(strict_types=1);
+
+use Magento\Theme\Block\Html\Breadcrumbs;
+use Magento\Framework\Escaper;
+
+/** @var Escaper $escaper */
+/** @var Breadcrumbs $block */
+/** @var array[] $crumbs */
+
+?>
+<?php if ($crumbs && is_array($crumbs)): ?>
+<nav class="breadcrumbs bg-container-lighter" aria-label="Breadcrumb">
+    <div class="container">
+        <ol class="items list-reset rounded flex flex-wrap text-grey text-sm pb-4 lg:pb-0">
+            <?php foreach ($crumbs as $crumbName => $crumbInfo): ?>
+                <li class="item flex <?= $escaper->escapeHtmlAttr($crumbName) ?>">
+                <?php if (!$crumbInfo['first']): ?>
+                   <svg class="mx-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" width="13">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"></path>
+                    </svg>
+                <?php endif; ?>
+                <?php if ($crumbInfo['link']): ?>
+                    <a
+                        href="<?= $escaper->escapeUrl($crumbInfo['link']) ?>"
+                        <?php if ($crumbInfo['title']): ?>
+                            aria-label="<?= $escaper->escapeHtmlAttr($crumbInfo['title']) ?>"
+                        <?php endif; ?>
+                        class="hover:underline"
+                    > 
+                    <?php if ($crumbName == 'home'): ?>
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                             stroke-width="1" stroke="currentColor" width="20">
+                          <path stroke-linecap="round" stroke-linejoin="round"
+                                d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25" />
+                        </svg>
+                    <?php else: ?>
+                        <?= $escaper->escapeHtml($crumbInfo['label']) ?>
+                    <?php endif; ?>
+                    </a>
+                <?php elseif ($crumbInfo['last']): ?>
+                    <span
+                       class="text-primary-lighter"
+                       aria-current="page"
+                    ><?= $escaper->escapeHtml($crumbInfo['label']) ?></span>
+                <?php else: ?>
+                    <?= $escaper->escapeHtml($crumbInfo['label']) ?>
+                <?php endif; ?>
+                </li>
+            <?php endforeach; ?>
+        </ol>
+    </div>
+</nav>
+<?php endif; ?>

@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<page layout="1column" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <remove src="Biztech_Deliverydate::css/style.css"/>
+        <remove src="Biztech_Deliverydatepro::css/deliverydate.css"/>
+        <remove src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css"/>
+        <remove src="Biztech_Deliverydate::css/slickslider/slick.css"/>
+        <remove src="Biztech_Deliverydate::css/slickslider/slick-theme.css"/>
+    </head>
+</page>

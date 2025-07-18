@@ -1,0 +1,79 @@
+<?php
+$disableDeliveryDate = $block->getDeliveryDate();
+$currentDate = new \DateTime();
+if (!empty($disableDeliveryDate)) {
+    $deliveryDate = new DateTime($disableDeliveryDate);
+} else {
+    // Handle the case where $disableDeliveryDate is null or empty
+    $deliveryDate = null; // Or assign a default value
+}
+$datesArray = [];
+
+$dateFormat = $block->getDeliveryDateFormat();
+$customDate = !empty($disableDeliveryDate) ? date($dateFormat, strtotime($disableDeliveryDate)) : '';
+
+?>
+<div class="custom-delivery flex mb-4">
+    <svg class="w-5 h-5 flex-shrink-0" viewBox="0 0 24 24" fill="#67b54b" xmlns="http://www.w3.org/2000/svg"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg>
+    <span class="ml-1 text-sm">
+<?php
+$formattedDeliveryDate = !empty($disableDeliveryDate) ? date($dateFormat, strtotime($disableDeliveryDate)) : '';
+
+if ($dateFormat == 'l j F' && !empty($formattedDeliveryDate)) {
+    // Translate the formatted delivery date first
+    $getTranslatedDeliveryDate = $block->getTranslatedDate($formattedDeliveryDate);
+
+    // Split the translated date into the first word and the rest of the string
+    $parts = explode(' ', $getTranslatedDeliveryDate, 2);
+    $firstWord = $parts[0];  // The first word (weekday)
+    $restOfString = isset($parts[1]) ? $parts[1] : '';  // The rest of the date
+
+    // Capitalize only the first letter of the first word
+    echo ucfirst($firstWord) . ' ' . $restOfString . ' ' . 'bezorgd';
+}
+elseif (!empty($formattedDeliveryDate)) {
+    echo $formattedDeliveryDate . ' ' . 'bezorgd';
+} else {
+    echo __('No delivery dates available.');
+}
+?>
+    </span>
+</div>
+
+<?php if ($block->enableExtension()) : ?>
+<div x-data="deliveryDateHandler()" x-init="init()"></div>
+
+<script>
+function deliveryDateHandler() {
+    return {
+        hasInitialized: false,
+        init() {
+            if (this.hasInitialized) return;
+            this.hasInitialized = true;
+            localStorage.setItem('selecteddeliverydate', '');
+            localStorage.setItem('selectedslot', '');
+            this.clearDeliveryDate();
+        },
+        async clearDeliveryDate() {
+            try {
+                const response = await fetch('/deliverydate/index/cartPageEmptyDate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+
+                const data = await response.json();
+
+                if (data.result === 'error') {
+                    alert(data.msg);
+                }
+            } catch (error) {
+                console.error('AJAX error:', error);
+            }
+        }
+    }
+}
+</script>
+<?php endif; ?>

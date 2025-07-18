@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    
+    <event name="checkout_cart_product_add_after">
+        <observer name="deliverydate_productcustomoption_checkout_cart_product_add_after" instance="Biztech\Deliverydatepro\Observer\CheckoutCartProductAddAfterObserver" />
+    </event>
+
+    <event name="checkout_cart_product_update_after">
+        <observer name="deliverydate_productcustomoption_checkout_cart_product_update_after" instance="Biztech\Deliverydatepro\Observer\CheckoutCartProductAddAfterObserver" />
+    </event>
+    
+    <event name="checkout_type_multishipping_create_orders_single">
+        <observer name="checkout_submit_all_after" instance="Biztech\Deliverydatepro\Observer\SaveMultishippingDateOrder" />
+    </event>
+    
+</config>

@@ -1,0 +1,336 @@
+<?php
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+// phpcs:disable Magento2.Files.LineLength, Magento2.Templates.ThisInTemplate
+?>
+<?php
+/**
+ * Multishipping checkout shipping template
+ *
+ * @var $block \Magento\Multishipping\Block\Checkout\Shipping
+ */
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$helper = $objectManager->create('Biztech\Deliverydate\Helper\Data');
+$proHelper = $helper->objectManager()->get('\Biztech\Deliverydatepro\Helper\Data');
+$excludeHolidayFromProcessingDay = $proHelper->excludeHolidayFromProcessingDay();
+$dayOffs = $helper->getDayOffs();
+$enableShippingMethods = '';
+if ($helper->isEnable() && $helper->getConfigValue('deliverydate/deliverydate_configuration/on_multishipping')) {
+    $off_days = [];
+    $nonworking_days = $helper->getFormattedNonWorkingDays();
+    $nonworking_period = $helper->getFormattedNonWorkingPeriod();
+
+    if ($proHelper->excludeHolidays() == 1) {
+        $holiday = $proHelper->getEnableHolidays();
+        $annualNotRepeatHoliday = [];
+        $annualRepeatHoliday = [];
+        if (isset($holiday['annualNotRepeatHoliday'])) {
+            $annualNotRepeatHoliday = (array) $holiday['annualNotRepeatHoliday'];
+        }
+        if (isset($holiday['annualRepeatHoliday'])) {
+            $annualRepeatHoliday = (array) $holiday['annualRepeatHoliday'];
+        }
+        $off_days = array_merge((array) $nonworking_days, (array) $nonworking_period, $annualNotRepeatHoliday, $annualRepeatHoliday);
+    } else {
+        $off_days = array_merge((array) $nonworking_days, (array) $nonworking_period);
+    }
+
+    $dailyQuota = $helper->disableSameDayBasedOnDailyQuota();
+
+    if ($dailyQuota['disable'] === true) {
+        $off_days = array_values(array_unique(array_merge($off_days, $dailyQuota['day_to_disable']), SORT_REGULAR));
+    }
+
+    $cutoff = $helper->disableDayBasedOnCutoff();
+    if ($cutoff['status'] === true) {
+        $off_days = array_values(array_unique(array_merge($off_days, $cutoff['day_to_disable']), SORT_REGULAR));
+    }
+
+    $enableForShipping = $helper->getConfigValue('deliverydate/deliverydate_configuration/enable_shipping');
+    if ($enableForShipping == 1) {
+        $enableShippingMethods = $helper->getConfigValue('deliverydate/deliverydate_configuration/shipping_method_option');
+        $enableShippingMethods = explode(',', $enableShippingMethods);
+    }
+}
+$ordProcessTime = [];
+?>
+<form action="<?= $block->escapeUrl($block->getPostActionUrl()) ?>" method="post" id="shipping_method_form" class="form multicheckout shipping">
+    <?php foreach ($block->getAddresses() as $_index => $_address) : ?>
+        <?php $enableShip = false; ?>
+        <div class="block block-shipping">
+            <div class="block-title"><strong><?= $block->escapeHtml(__('Address %1 <span>of %2</span>', ($_index + 1), $block->getAddressCount()), ['span']) ?></strong></div>
+            <div class="block-content">
+                <div class="box box-shipping-address">
+                    <strong class="box-title">
+                        <span><?= $block->escapeHtml(__('Shipping To')) ?></span>
+                        <a href="<?= $block->escapeUrl($block->getAddressEditUrl($_address)) ?>" class="action edit">
+                            <span><?= $block->escapeHtml(__('Change')) ?></span>
+                        </a>
+                    </strong>
+                    <div class="box-content">
+                        <address><?= /* @noEscape */ $_address->format('html') ?></address>
+                    </div>
+                </div>
+                <div class="box box-shipping-method">
+                    <strong class="box-title">
+                        <span><?= $block->escapeHtml(__('Shipping Method')) ?></span>
+                    </strong>
+                    <div class="box-content">
+                        <?php if (!($_shippingRateGroups = $block->getShippingRates($_address))) : ?>
+                            <p><?= $block->escapeHtml(__('Sorry, no quotes are available for this order right now.')) ?></p>
+                        <?php else : ?>
+                            <dl class="items methods-shipping">
+                                <?php
+                                $_sole = count($_shippingRateGroups) == 1;
+                                foreach ($_shippingRateGroups as $code => $_rates) :
+                                    ?>
+                                    <dt class="item-title"><?= $block->escapeHtml($block->getCarrierName($code)) ?></dt>
+                                    <dd class="item-content">
+                                        <fieldset class="fieldset">
+                                            <legend class="legend">
+                                                <span><?= $block->escapeHtml($block->getCarrierName($code)) ?></span>
+                                            </legend><br>
+                                            <?php
+                                            $_sole = $_sole && count($_rates) == 1;
+                                            foreach ($_rates as $_rate) :
+                                                ?>
+                                                <div class="field choice">
+                                                    <?php if ($_rate->getErrorMessage()) : ?>
+                                                        <strong><?= $block->escapeHtml($_rate->getCarrierTitle()) ?>: <?= $block->escapeHtml($_rate->getErrorMessage()) ?></strong>
+                                                    <?php else : ?>
+                                                        <div class="control">
+                                                            <?php if ($_sole) : ?>
+                                                                <?php
+                                                                if ($enableShippingMethods != '') {
+                                                                    if (in_array($_rate->getCode(), $enableShippingMethods)) {
+//                                                                        $enableShip[$_address->getId()] = ['display' => true];
+                                                                        $enableShip = true;
+                                                                    }
+                                                                }
+                                                                ?>
+                                                                <input type="radio" name="shipping_method[<?= (int) $_address->getId() ?>]" value="<?= $block->escapeHtmlAttr($_rate->getCode()) ?>" id="s_method_<?= (int) $_address->getId() ?>_<?= $block->escapeHtmlAttr($_rate->getCode()) ?>" class="radio solo method" checked="checked"/>
+                                                            <?php else : ?>
+                                                                <?php
+                                                                if ($enableShippingMethods != '') {
+                                                                    if ($_rate->getCode() === $block->getAddressShippingMethod($_address) && in_array($_rate->getCode(), $enableShippingMethods)) {
+                                                                        $enableShip[$_address->getId()] = ['display' => true];
+//                                                                        $enableShip = true;
+                                                                    }
+                                                                }
+                                                                ?>
+                                                                <input type="radio" name="shipping_method[<?= (int) $_address->getId() ?>]" value="<?= $block->escapeHtmlAttr($_rate->getCode()) ?>" id="s_method_<?= (int) $_address->getId() ?>_<?= $block->escapeHtmlAttr($_rate->getCode()) ?>" <?= ($_rate->getCode() === $block->getAddressShippingMethod($_address)) ? ' checked="checked"' : '' ?> class="radio" />
+                                                            <?php endif; ?>
+                                                        </div>
+                                                        <label for="s_method_<?= (int) $_address->getId() ?>_<?= $block->escapeHtmlAttr($_rate->getCode()) ?>">
+                                                            <?= $block->escapeHtml($_rate->getMethodTitle()) ?>
+                                                            <?php $_excl = $block->getShippingPrice($_address, $_rate->getPrice(), $this->helper(Magento\Tax\Helper\Data::class)->displayShippingPriceIncludingTax()); ?>
+                                                            <?php $_incl = $block->getShippingPrice($_address, $_rate->getPrice(), true); ?>
+                                                            <?php if ($this->helper(Magento\Tax\Helper\Data::class)->displayShippingBothPrices() && $_incl != $_excl) : ?>
+                                                                <span class="price-including-tax" data-label="<?= $block->escapeHtml(__('Incl. Tax')) ?>">
+                                                                <?php endif; ?>
+                                                                <?= $block->escapeHtml($_incl, ['span']) ?>
+                                                                <?php if ($this->helper(Magento\Tax\Helper\Data::class)->displayShippingBothPrices() && $_incl != $_excl) : ?>
+                                                                </span>
+                                                            <?php endif; ?>
+                                                            <?php if ($this->helper(Magento\Tax\Helper\Data::class)->displayShippingBothPrices() && $_incl != $_excl) : ?>
+                                                                <span class="price-excluding-tax" data-label="<?= $block->escapeHtml(__('Excl. Tax')) ?>">
+                                                                    <?= $block->escapeHtml($_excl, ['span']) ?>
+                                                                </span>
+                                                            <?php endif; ?>
+                                                        </label>
+                                                    <?php endif ?>
+                                                </div>
+                                            <?php endforeach; ?>
+                                        </fieldset>
+                                    </dd>
+                                <?php endforeach; ?>
+                            </dl>
+                        <?php endif; ?>
+                        <?= /* @noEscape */ $block->getItemsBoxTextAfter($_address) ?>
+                    </div>
+                </div>
+                <div class="box box-items">
+                    <strong class="box-title">
+                        <span><?= $block->escapeHtml(__('Items')) ?></span>
+                        <a href="<?= $block->escapeUrl($block->getItemsEditUrl($_address)) ?>" class="action edit"><span><?= $block->escapeHtml(__('Edit Items')) ?></span></a>
+                    </strong>
+                    <div class="box-content">
+                        <div class="table-wrapper">
+                            <table class="items data table" id="shipping-table-<?= (int) $_address->getId() ?>">
+                                <caption class="table-caption"><?= $block->escapeHtml(__('Items')) ?></caption>
+                                <thead>
+                                    <tr>
+                                        <th class="col item" scope="col"><?= $block->escapeHtml(__('Product Name')) ?></th>
+                                        <th class="col qty" scope="col"><?= $block->escapeHtml(__('Qty')) ?></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($block->getAddressItems($_address) as $_item) : ?>
+                                        <tr>
+                                            <td class="col item" data-th="<?= $block->escapeHtmlAttr(__('Product Name')) ?>"><?= $block->getItemHtml($_item->getQuoteItem()) ?></td>
+                                            <td class="col qty" data-th="<?= $block->escapeHtmlAttr(__('Qty')) ?>"><?= $block->escapeHtml($_item->getQty()) ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <?php
+            if (($helper->isEnable() && $helper->getConfigValue('deliverydate/deliverydate_configuration/on_multishipping')) && (($helper->getConfigValue('deliverydate/deliverydate_configuration/disable_date_on_cart') == '1') && ($_address->getGrandTotal() >= $helper->getConfigValue('deliverydate/deliverydate_configuration/cart_amount'))) || $helper->getConfigValue('deliverydate/deliverydate_configuration/disable_date_on_cart') == '0') {
+                echo $this->getLayout()->createBlock('Magento\Framework\View\Element\Template')
+                        ->setTemplate('Biztech_Deliverydatepro::multishipping/datedisplay.phtml')
+                        ->setData('address_id', $_address->getAddressId())
+                        ->toHtml();
+            }
+            if ($helper->isEnable() && $helper->getConfigValue('deliverydate/deliverydate_configuration/on_multishipping')) {
+                $orderProcessingTime = $proHelper->getQuoteAddressData($_address->getAddressId());
+                if ($orderProcessingTime > 0) {
+                    if ($excludeHolidayFromProcessingDay) {
+                        $processingDateArray = [];
+                        $processingDayArray = [];
+                        for ($i = 0; $i < $orderProcessingTime; $i++) {
+                            $modifiedDate = date('d-m-Y', strtotime('+' . $i . ' days'));
+                            $processingDateArray[] = $modifiedDate;
+                            $processingDayArray[] = date('w', strtotime($modifiedDate));
+                        }
+
+                        foreach ($processingDateArray as $processingDate) {
+                            if (in_array($processingDate, $off_days)) {
+                                $orderProcessingTime++;
+                            }
+                        }
+
+                        if ($dayOffs != "" || $dayOffs != NULL) {
+                            $dayOffsArray = explode(',', $dayOffs);
+                            $processingDayArray = array_count_values($processingDayArray);
+
+                            foreach ($processingDayArray as $key => $processingDay) {
+                                if (in_array($key, $dayOffsArray)) {
+                                    $orderProcessingTime = $orderProcessingTime + $processingDay;
+                                }
+                            }
+                        }
+                    }
+                    $ordProcessTime[$_address->getAddressId()] = $orderProcessingTime;
+                } else {
+                    $ordProcessTime[$_address->getAddressId()] = 0;
+                }
+            }
+            ?>
+        </div>
+    <?php endforeach; ?>
+    <?php
+    if ($helper->isEnable() && $helper->getConfigValue('deliverydate/deliverydate_configuration/on_multishipping')) {
+        $per_week_day_charge = $proHelper->getDayCharges();
+        $enable_same_day_charge = $proHelper->dayWiseCharge();
+        $enableTimeSlotForCalendar = $helper->getEnableTimeslotMode();
+
+        $dayDiff = $helper->getDayDiff() ? $helper->getDayDiff() : 0;
+        $timeDiff = $helper->getTimeDiff() ? $helper->getTimeDiff() : 0;
+
+        if ($proHelper->deliveryOption() == 1) {
+            if ($excludeHolidayFromProcessingDay) {
+                $processingDateArray = [];
+                $processingDayArray = [];
+                for ($i = 0; $i < $dayDiff; $i++) {
+                    $modifiedDate = date('d-m-Y', strtotime('+' . $i . ' days'));
+                    $processingDateArray[] = $modifiedDate;
+                    $processingDayArray[] = date('w', strtotime($modifiedDate));
+                }
+
+                foreach ($processingDateArray as $processingDate) {
+                    if (in_array($processingDate, $off_days)) {
+                        $dayDiff++;
+                    }
+                }
+
+                if ($dayOffs != "" || $dayOffs != NULL) {
+                    $dayOffsArray = explode(',', $dayOffs);
+                    $processingDayArray = array_count_values($processingDayArray);
+
+                    foreach ($processingDayArray as $key => $processingDay) {
+                        if (in_array($key, $dayOffsArray)) {
+                            $dayDiff = $dayDiff + $processingDay;
+                        }
+                    }
+                }
+            }
+        }
+
+        $config = [
+            'general' => [
+                'per_week_day_charge' => $per_week_day_charge,
+                'enable_same_day_charge' => $enable_same_day_charge,
+                'currencySymbol' => $helper->getStoreCurrencySymbol(),
+                'dateFormat' => $helper->convertDateFormatToJQueryUi($helper->getDeliveryDateFormat()),
+                'timeFormat' => $helper->convertDateFormatToJQueryUi($helper->getDeliveryTimeFormat()),
+                'disabledDates' => $off_days,
+                'dayOffs' => $dayOffs,
+                'dayDiff' => (int) $dayDiff,
+                'timeDiff' => $timeDiff,
+                'isMandatory' => (int) $helper->getConfigValue('deliverydate/deliverydate_front_config/is_mandatory', \Magento\Store\Model\ScopeInterface::SCOPE_STORE),
+                'enableMultishipping' => (int) $helper->getConfigValue('deliverydate/deliverydate_configuration/on_multishipping'),
+                'enabledMethod' => $helper->getDeliveryDateView(),
+                'add_comment' => $helper->getConfigValue('deliverydate/deliverydate_front_config/add_comment'),
+                'comment_required' => $helper->getConfigValue('deliverydate/deliverydate_front_config/comment_required'),
+                'enableForShipping' => $enableForShipping,
+                'sameDayCharges' => $helper->getSameDayCharges(),
+                'applyAdditionalCharge' => $helper->applyAdditionalCharge()
+            ],
+            'calendar' => [
+                'options' => [
+                    'showsTime' => (int) $helper->getConfigValue('deliverydate/deliverydate_general/deliverytime_enable_time', \Magento\Store\Model\ScopeInterface::SCOPE_STORE),
+                    'buttonImage' => $this->getViewFileUrl('Biztech_Deliverydate::images/datepicker.png'),
+                    'buttonText' => __('Select Date'),
+                    'interval' => (int) $helper->getConfigValue('deliverydate/deliverydate_general/datepicker_time_mininterval'),
+                    'buttonText' => __('Select Date'),
+                    'showAnim' => $helper->getConfigValue('deliverydate/deliverydate_front_config/datepicker_enable_animation'),
+                    'showButtonPanel' => (boolean) $helper->getConfigValue('deliverydate/deliverydate_front_config/datepicker_buttom_bar'),
+                    'isRTL' => (boolean) $helper->getConfigValue('deliverydate/deliverydate_front_config/datepicker_rtl'),
+                    'maxDate' => (int) $helper->getConfigValue('deliverydate/deliverydate_front_config/datepicker_delivery_intervals'),
+                    'dateDisplayMode' => $helper->getDateDisplayMode(),
+                    'enableTimeSlotForCalendar' => $enableTimeSlotForCalendar,
+                    'timeDisplayMode' => $helper->getTimeDisplayMode(),
+                    'deliveryOption' => $proHelper->deliveryOption(),
+                    'ordProcessTime' => $ordProcessTime,
+                ]
+            ]
+        ];
+
+        if ($enableForShipping == 1) {
+            $config['general']['enableShippingMethods'] = $enableShippingMethods;
+        }
+        ?>
+        <script>
+            window.deliverydateConfig = <?php /* @escapeNotVerified */ echo Json_encode($config); ?>;
+        </script>
+
+        <script type="text/x-magento-init">
+            {
+            ".deliverydate-main-wrapper": {
+            "Magento_Ui/js/core/app": {
+            "components": {
+            "multishipping-deliverydate": {
+            "component": "Biztech_Deliverydatepro/js/multishipping-deliverydate"
+            }
+            }
+            }
+            }
+            }
+        </script>
+    <?php } ?>
+
+    <?= $block->getChildHtml('checkout_billing_items') ?>
+    <div class="actions-toolbar">
+        <div class="primary">
+            <button class="action primary continue" id="dds-submit-validation" type="submit"><span><?= $block->escapeHtml(__('Continue to Billing Information')) ?></span></button>
+        </div>
+        <div class="secondary">
+            <a href="<?= $block->escapeUrl($block->getBackUrl()) ?>" class="action back"><span><?= $block->escapeHtml(__('Back to Select Addresses')) ?></span></a>
+        </div>
+    </div>
+</form>

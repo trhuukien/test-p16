@@ -1,0 +1,239 @@
+<?php
+$helper = $this->helper('Biztech\Deliverydate\Helper\Data');
+$isMandatory = $block->getisMandatory();
+$deliverydateLabel = $block->getDeliverydatelabel();
+$deliverydateLabel = $deliverydateLabel ? $deliverydateLabel . ':' : 'Delivery Date:';
+$deliverydateCommentsLabel = $block->getDeliveryDateCommentsLabel();
+$deliverydateCommentsLabel = $deliverydateCommentsLabel ? $deliverydateCommentsLabel . ':' : 'Delivery Comments:';
+$timeslotTableLabel = $block->getTableLabel();
+$timeslotTableLabel = $timeslotTableLabel ? $timeslotTableLabel : 'Timeslot\'s';
+$addressId = $this->getData('address_id');
+
+$enableTimeSlotForCalendar = $helper->getEnableTimeslotMode();
+
+$class = 'input-text admin__control-text';
+$required = '';
+if ($isMandatory) {
+    $class .= ' required-entry _required';
+    $required = ' required-entry _required';
+}
+if ($helper->isEnable()) {
+    $dateDisplayMode = $helper->getDateDisplayMode();
+    $getavailableDays = $helper->getavailableDays(true, $addressId);
+    $isRTL = (boolean) $helper->getConfigValue('deliverydate/deliverydate_front_config/datepicker_rtl');
+    $isRTL = $isRTL ? "datepicker-rtl" : "";
+    $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+    $this->priceHelper = $objectManager->create('Magento\Framework\Pricing\Helper\Data');
+    $add_comment = $helper->getConfigValue('deliverydate/deliverydate_front_config/add_comment');
+    $comment_required = $helper->getConfigValue('deliverydate/deliverydate_front_config/comment_required');
+    ?>
+    <div class="deliverydate-main-wrapper checkout-dds multishipping-dds">
+        <div class="date_time_container dds_container">
+            <div class="field checkout-deliverydate" name="shipping_arrival_date">
+                <label class="label calender-comment-label <?php if ($isMandatory) echo 'required'; ?>">
+                    <?php echo __($deliverydateLabel) ?>
+                </label>
+                <div class="control calander_button" class='<?php echo $isRTL ?>'>
+                    <?php if ($dateDisplayMode == 'calendar') { ?>
+                        <div class="available_date_calendar" id="shipping_arrival_date_calendar_<?php echo $addressId ?>">
+            <!--                            <input class="admin__control-text" type="text" 
+                                       data-bind=" datepicker: { storage: shiftedValue, options: options },
+                                                                                valueUpdate: valueUpdate,
+                                                                                attr: {
+                                                                                autocomplete : 'off' ,
+                                                                                readonly : 'readonly',
+                                                                                value: shiftedValue,
+                                                                                }" 
+                                       name="shipping_arrival_date"  id="deliverypicker_<?php //echo $addressId                   ?>" />-->
+                            <!-- ko template: getTemplate() --><!-- /ko -->
+                        </div>
+                    <?php } ?>
+                    <?php if ($dateDisplayMode == 'dropdown') { ?>
+                        <!-- custom drop_down -->
+                        <div class="dds_drop_down dds_drop_down_date" id="dds_dropdown_selected_<?php echo $addressId ?>">
+                            <div class="selected">
+                                <a href="javascript:void(0)"><i class="fa fa-calendar" aria-hidden="true"></i><span><?php echo __('-- Select Delivery Date --') ?></span></a>
+                            </div>
+                            <div class="options">
+                                <ul>
+                                    <?php
+                                    foreach ($getavailableDays as $daySlot) {
+                                        if ($daySlot['disable_value'] == 'true') {
+                                            ?>
+                                            <li class="disable_opt" id='<?php echo $daySlot['day_id'] . '_' . $addressId ?>'>
+                                                <span class="value" for='<?php echo $daySlot['day_id'] . '_' . $addressId ?>'>
+                                                    <?php echo $daySlot['display_value'] ?>
+                                                </span>
+                                            </li>
+                                        <?php } else { ?>
+                                            <li id='<?php echo $daySlot['day_id'] . '_' . $addressId ?>'>
+                                                <span class="value calanderdate" for='<?php echo $daySlot['day_id'] . '_' . $addressId ?>' value='<?php echo $daySlot['value'] ?>'>
+                                                    <?php echo $daySlot['display_value'] ?>
+                                                </span>
+                                            </li>
+                                            <?php
+                                        }
+                                    }
+                                    ?>
+                                </ul>
+                            </div>
+                        </div>
+                    <?php } ?>
+                    <?php if ($dateDisplayMode == 'radio') { ?>
+                        <div class="available_date_radio">
+                            <?php
+                            foreach ($getavailableDays as $daySlot) {
+                                if ($daySlot['disable_value'] == 'true') {
+                                    ?>
+                                    <div class="delivery-date-cell disable_radio">
+                                        <input type="radio" name="shipping_arrival_date[<?php echo $addressId ?>]" id='<?php echo $daySlot['day_id'] . '_' . $addressId ?>' disabled='<?php echo $daySlot['disable_value']; ?>' value='<?php echo $daySlot['value'] ?>' />
+                                        <label for='<?php echo $daySlot['day_id'] . '_' . $addressId ?>'>
+                                            <?php echo $daySlot['display_value'] ?>
+                                        </label>
+                                    </div>
+                                <?php } else { ?>
+                                    <div class="delivery-date-cell">
+                                        <input type="radio" class="delivery-date-slot" name="shipping_arrival_date[<?php echo $addressId ?>]" id='<?php echo $daySlot['day_id'] . '_' . $addressId ?>' value='<?php echo $daySlot['value'] ?>' />
+                                        <label for='<?php echo $daySlot['day_id'] . '_' . $addressId ?>'>
+                                            <?php echo $daySlot['display_value'] ?>
+                                        </label>
+                                    </div>
+                                    <?php
+                                }
+                            }
+                            ?>
+                        </div>                   
+                    <?php } ?>
+                    <?php if ($dateDisplayMode == 'button') { ?>
+                        <div class="available_date_button">
+                            <?php
+                            foreach ($getavailableDays as $daySlot) {
+                                if ($daySlot['disable_value'] == 'true') {
+                                    ?>
+                                    <div class="delivery-date-cell disable_button">
+                                        <div class="data-item calendar_date_button button_disable" id='<?php echo $daySlot['day_id'] . '_' . $addressId ?>'>
+                                            <label for='<?php echo $daySlot['day_id'] . '_' . $addressId ?>'>
+                                                <?php echo $daySlot['display_value'] ?>
+                                            </label>
+                                        </div>
+                                    </div>
+                                <?php } else { ?>
+                                    <div class="delivery-date-cell">
+                                        <div class="data-item calendar_date_button <?php echo $addressId ?>" id='<?php echo $daySlot['day_id'] . '_' . $addressId ?>' value='<?php echo $daySlot['value'] ?>'>
+                                            <label for='<?php echo $daySlot['day_id'] . '_' . $addressId ?>'>
+                                                <?php echo $daySlot['display_value'] ?>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <?php
+                                }
+                            }
+                            ?>
+                        </div> 
+                        <div afterRender="addDateSlider"> </div> 
+                    <?php } ?>
+
+                </div>
+            </div>         
+
+            <?php
+            if ($enableTimeSlotForCalendar == '1') {
+                $timeDisplayMode = $helper->getTimeDisplayMode();
+                $deliverydateSlotLabel = $helper->getDeliverydatetimeslotLabel();
+                ?>
+                <div class="time_slot_div">
+
+                    <?php if ($timeDisplayMode == 'radio') { ?>
+                        <div class="time_slot_wrap">
+                            <label class="label calender-comment-label timeslot_label_<?php echo $addressId ?> <?php if ($isMandatory) echo 'required'; ?>" style="display:none"><?php echo __($deliverydateSlotLabel); ?></label>
+                            <div class="timeslot_radio timeslot_radio_<?php echo $addressId ?>">
+                            </div>    
+                        </div> 
+                    <?php } ?>
+
+                    <?php if ($timeDisplayMode == 'dropdown') { ?>
+                        <!-- custom drop_down -->
+                        <div class="dds_drop_down_slot dds_drop_down datetimeslot datetimeslot_<?php echo $addressId ?>" style="display:none" id="slot_dropdown_selected_<?php echo $addressId ?>">
+                            <label class="label calender-comment-label timeslot_label_<?php echo $addressId ?> <?php if ($isMandatory) echo 'required'; ?>" style="display:none"><?php echo __($deliverydateSlotLabel); ?></label>
+                            <div class="selected">
+                                <a href="javascript:void(0)"><i class="fas fa-history" style="font-size: 48px;"></i><span>-- Select A Timeslot --</span></a>
+                            </div>
+                            <div class="options">
+                                <ul class="timeslot_drp_<?php echo $addressId ?>" >
+                                </ul>
+                            </div>
+                        </div>
+
+                    <?php } ?>
+
+                    <?php if ($timeDisplayMode == 'button') { ?>
+                        <div class="time_btn_wrap">
+                            <label class="label calender-comment-label timeslot_label_<?php echo $addressId ?> <?php if ($isMandatory) echo 'required'; ?>" style="display:none"><?php echo __($deliverydateSlotLabel); ?></label>
+                            <div class="timeslot_button_<?php echo $addressId ?>">
+                            </div>  
+                        </div>  
+                    <?php } ?>
+
+                </div>
+            <?php } ?>
+        </div>
+        <div class="field">
+            <?php if ($helper->applyAdditionalCharge()) { ?>
+                <div role="alert" class="message warning" style="display: none;" id="delivery_charges_day_<?php echo $addressId ?>">
+                    <span class='additional_charge'></span>
+                </div>
+            <?php } ?>
+            <?php
+            if ($add_comment == "1") {
+                $commentClass = "";
+                if ($comment_required == "1") {
+                    $commentClass = "required";
+                }
+                ?>
+                <div>
+                    <label class="label calender-comment-label <?php echo $commentClass ?>" for="shipping_arrival_comments"
+                           data-ui-id="shipping_arrival_comments">
+                        <span><?php echo __($deliverydateCommentsLabel) ?></span>
+                    </label>
+
+                    <div class="control">
+                        <textarea class="delivery-date-comment" cols="65" rows="8" name="shipping_arrival_comments[<?php echo $addressId ?>]"
+                                  id="shipping_arrival_comments_<?php echo $addressId ?>"></textarea>
+                    </div>
+                </div>
+                <?php
+            }
+            if ($helper->useCallFeature()):
+                ?>
+                <div class="control choice">
+                    <input name="call_before_delivery[<?php echo $addressId ?>]" type="checkbox" id="delivery_date_callme_<?php echo $addressId ?>" value="1" class="delivery-date-callme">
+                    <label for="delivery_date_callme_<?php echo $addressId ?>" class="label delivery-callme-label" >
+                        <span id="call_me_text_<?php echo $addressId ?>"><?= $helper->getDeliveryDateCallMeLabel(); ?></span></label>
+                </div>
+            <?php endif; ?>
+        </div>
+        <?php
+        $getShowHtml = $helper->getConfigValue('deliverydate/deliverydate_front_config/show_html', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+        if ($getShowHtml == 1) {
+            $displayHtml = nl2br($helper->getConfigValue('deliverydate/deliverydate_front_config/deliverydate_html', \Magento\Store\Model\ScopeInterface::SCOPE_STORE));
+            ?>
+            <div class="field biz-comment-note" name="show_html">
+                <ul>
+                    <li>
+                        <ul>
+                            <li>
+                                <span><?= $displayHtml ?></span>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        <?php } ?>
+        <div class="hidden-values">
+            <input type="hidden" name="shipping_arrival_date_hidden[<?php echo $addressId ?>]" id="shipping_arrival_date_<?php echo $addressId ?>" class="shipping_arrival_date_hidden"/>
+            <input type="hidden" name="shipping_arrival_slot[<?php echo $addressId ?>]" id="shipping_arrival_slot_<?php echo $addressId ?>" class="shipping_arrival_slot_hidden"/>
+            <input type="hidden" name="delivery_charges[<?php echo $addressId ?>]" id="delivery_charges_<?php echo $addressId ?>"/>
+            <input type="hidden" name="quoteAddressId[<?php echo $addressId ?>]"/>
+        </div>
+    </div>
+<?php } ?>

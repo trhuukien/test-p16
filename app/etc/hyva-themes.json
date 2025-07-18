@@ -1,0 +1,34 @@
+{
+    "extensions": [
+        {
+            "src": "vendor\/hyva-themes\/magento2-theme-module\/src"
+        },
+        {
+            "src": "app\/code\/Hyva\/BssConvertImageWebp"
+        },
+        {
+            "src": "vendor\/amasty\/module-mega-menu-lite-hyva"
+        },
+        {
+            "src": "vendor\/amasty\/module-mega-menu-pro-hyva"
+        },
+        {
+            "src": "vendor\/mageme\/module-webforms-3-hyva"
+        },
+        {
+            "src": "vendor\/mirasvit\/module-search-ultimate-hyva\/src\/MirasvitMisspell"
+        },
+        {
+            "src": "vendor\/mirasvit\/module-search-ultimate-hyva\/src\/MirasvitSearch"
+        },
+        {
+            "src": "vendor\/mirasvit\/module-search-ultimate-hyva\/src\/MirasvitSearchAutocomplete"
+        },
+        {
+            "src": "vendor\/mollie\/magento2-hyva-compatibility\/src\/Mollie_HyvaCompatibility"
+        },
+        {
+            "src": "vendor\/amasty\/module-ship-restriction-hyva"
+        }
+    ]
+}

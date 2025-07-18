@@ -1,0 +1,18 @@
+<?php
+$deliveryDate = $block->getDeliveryDate();
+$format = $block->deliveryDateFormat();
+
+$formattedDeliveryDate = !empty($deliveryDate) ? date($format, strtotime($deliveryDate)) : '';
+
+if ($format == 'l j F' && !empty($formattedDeliveryDate))
+{
+    $getTranslatedDeliveryDate = $block->getTranslatedDate($formattedDeliveryDate);
+    echo  $getTranslatedDeliveryDate . ' ' . 'bezorgd';
+}
+elseif(!empty($formattedDeliveryDate)) {
+    echo  $formattedDeliveryDate . ' ' . 'bezorgd';
+} else {
+    echo __('No delivery dates available.');
+}
+
+?>

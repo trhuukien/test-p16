@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+	<default>
+		<ec>
+			<api>
+				<measurement_id_type>0</measurement_id_type>
+			</api>
+			<ec4>
+				<conversion_event><![CDATA[purchase]]></conversion_event>
+			</ec4>
+		</ec>
+	</default>
+</config>

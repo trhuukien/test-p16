@@ -1,0 +1,28 @@
+.box-tocart>.fieldset>.control{
+    margin-bottom: 0;
+}
+.box-tocart>.fieldset>.control span:before {
+    content: '\f00c';
+    font-family: FontAwesome;
+    display: inline-block;
+    margin-right: 5px;
+    color: #67ae44;
+    font-size: 1.6rem;
+}
+.minicart-items .product-item-pricing .label{
+    width: auto;
+}
+
+body.checkout-cart-index .cart-summary .cart-totals{
+    margin-top: 7px;
+}
+.fieldset > * {
+    margin-bottom: 17px !important;
+}
+
+.additional_charge {
+    margin-bottom: 10px;
+    font-weight: 600;
+    font-size: 16px;
+    margin-top: 12px;
+}

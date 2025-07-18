@@ -1,0 +1,221 @@
+<!-- ko if:deliverydateEnabled -->
+<div class="deliverydate-main-wrapper" id="deliverydate-main-wrapper">
+    <div class="field checkout-deliverydate" name="shipping_arrival_date">
+
+        <div class="fieldset">
+
+            <div class="field">
+                <label class="label">
+                    <span data-bind="i18n: 'Delivery Date Information'"></span>
+                </label>
+            </div>
+            <div class="date_time_container" id="date_time_container">
+                <div class="field" name="shipping_arrival_date" data-bind="css: isRequired()">
+                    <label class="label calender-comment-label" data-bind="i18n: deliverydateLabel"></label>
+                    <div class="control calander_button" data-bind="css: isRtl">
+                        <!-- ko if: dateDisplayMode === 'calendar' -->
+                        <!-- ko if: isRequired() === 'required' -->
+                        <div class="available_date_calendar">
+                            <input
+                                type="text"
+                                data-bind="attr : {
+                                autocomplete : 'off' ,
+                                readonly : 'readonly',
+                                value: shiftedValue ,
+                                id : 'date-picker',
+                            },
+                    valueUpdate: valueUpdate,
+                    datepicker: { storage: shiftedValue , options: options }"
+                                name="shipping_arrival_date"
+                                data-validate="{required:true}"
+                                />
+                        </div>
+                        <!-- /ko -->
+                        <!-- ko ifnot: isRequired() === 'required' -->
+                        <div class="available_date_calendar">
+                            <input
+                                type="text"
+                                data-bind="attr : {
+                                autocomplete : 'off' ,
+                                readonly : 'readonly',
+                                value: shiftedValue ,
+                                id : 'date-picker',
+                            },
+                    valueUpdate: valueUpdate,
+                    datepicker: { storage: shiftedValue , options: options }"
+                                name="shipping_arrival_date"
+                                data-validate="{required:false}"
+                                />
+                        </div>
+                        <!-- /ko -->
+                        <!-- /ko -->
+                        <!-- ko if: dateDisplayMode === 'dropdown' -->
+                        <!-- custom drop_down -->
+                        <div class="dds_drop_down" id="dds_dropdown_selected">
+                            <div class="selected">
+                                <a href="javascript:void(0)"><i class="fa fa-calendar" aria-hidden="true"></i><span>-- Select Delivery Date --</span></a>
+                            </div>
+                            <div class="options">
+                                <ul data-bind="foreach: dateSlot" >
+                                    <!-- ko if: disable_value == 'true' -->
+                                    <li class="disable_opt" data-bind="attr : { id : day_id }">
+                                        <span class="value" data-bind="html : display_value, attr : { for : day_id }"></span>
+                                    </li>
+                                    <!-- /ko -->
+                                    <!-- ko if: disable_value == 'false' -->
+                                    <li data-bind="attr : { id : day_id }">
+                                        <span class="value calanderdate" data-bind="html : display_value, attr : { for : day_id }, value : display_value"></span>
+                                    </li>
+                                    <!-- /ko -->
+                                </ul>
+                            </div>
+                        </div>
+                        <input type="hidden" name="shipping_arrival_date" value="" id="shipping_arrival_date">
+                        <!-- /ko -->
+
+                        <!-- ko if: dateDisplayMode === 'radio' -->
+                        <div data-bind="foreach: dateSlot"  class="available_date_radio">
+                            <!-- ko if: disable_value == 'true' -->
+                            <div class="delivery-date-cell disable_radio">
+                                <input type="radio" name="shipping_arrival_date" data-bind="attr : { id : day_id, disabled : disable_value }, value : display_value" />
+                                <!--                            <span class="radio-checked"></span>-->
+                                <label data-bind="html : display_value, attr : { for : day_id }"></label>
+                            </div>
+                            <!-- /ko -->
+                            <!-- ko if: disable_value == 'false' -->
+                            <div class="delivery-date-cell">
+                                <input type="radio" class="delivery-date-slot" name="shipping_arrival_date" data-bind="attr : { id : day_id }, value : display_value" />
+                                <!--                            <span class="radio-checked"></span>-->
+                                <label data-bind="html : display_value, attr : { for : day_id }"></label>
+                            </div>
+                            <!-- /ko -->
+                        </div>                   
+                        <!-- /ko -->
+
+                        <!-- ko if: dateDisplayMode === 'button' -->
+                        <div data-bind="foreach: dateSlot" class="available_date_button">
+                            <!-- ko if: disable_value == 'true' -->
+                            <div class="delivery-date-cell disable_button">
+                                <div class="data-item calendar_date_button button_disable" data-bind="attr : { id : day_id}">
+                                    <label data-bind="html : display_value, attr : { for : day_id }"></label>
+                                </div>
+                            </div>
+                            <!-- /ko -->
+                            <!-- ko if: disable_value == 'false' -->
+                            <div class="delivery-date-cell">
+                                <div class="data-item calendar_date_button" data-bind="attr : { id : day_id }, value : display_value">
+                                    <label data-bind="html : display_value, attr : { for : day_id }"></label>
+                                </div>
+                            </div>
+                            <!-- /ko -->
+                        </div>  
+                        <input type="hidden" name="shipping_arrival_date" value="" id="shipping_arrival_date">
+                        <div afterRender="addDateSlider"> </div>  
+                        <!-- /ko -->
+                    </div>
+                </div>
+
+                <!-- ko if:useSlot -->
+
+                <!-- ko if: timeDisplayMode == 'radio' -->
+                <div class="time_slot_wrap">
+                    <label class="label calender-comment-label" data-bind="i18n: deliverydateSlotLabel" style="display:none"></label>
+                    <div class="timeslot_radio">
+                    </div>    
+                </div> 
+                <!-- /ko -->
+
+                <!-- ko if: timeDisplayMode == 'dropdown' -->
+                <!-- custom drop_down -->
+                <div class="dds_drop_down datetimeslot" style="display:none" id="slot_dropdown_selected">
+                    <label class="label calender-comment-label" data-bind="i18n: deliverydateSlotLabel" style="display:none"></label>
+                    <div class="selected">
+                        <a href="javascript:void(0)"><i class="fas fa-history" style="font-size: 48px;"></i><span>-- Select A Timeslot --</span></a>
+                    </div>
+                    <div class="options">
+                        <ul class="timeslot_drp" >
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- /ko -->
+
+                <!-- ko if: timeDisplayMode == 'button' -->
+                <div class="time_btn_wrap">
+                    <label class="label calender-comment-label" data-bind="i18n: deliverydateSlotLabel" style="display:none"></label>
+                    <div class="timeslot_button">
+                    </div>   
+                </div>  
+                <!-- /ko -->
+
+                <!-- /ko -->
+            </div>   
+
+            <!-- ko if: add_comment == '1' -->
+            <div class="field" name="shipping_arrival_comments">
+                <!-- ko if: comment_required == '1' -->
+                <label class="label calender-comment-label" data-bind="i18n: deliverydatecommentLabel, attr :{ class: 'label calender-comment-label required'}"></label>
+                <!-- /ko -->
+                <!-- ko if: comment_required == '0' -->
+                <label class="label calender-comment-label" data-bind="i18n: deliverydatecommentLabel, attr :{ class: 'label calender-comment-label'} "></label>
+                <!-- /ko -->
+
+                <div class="control">
+                    <!-- ko if: comment_required == '1' -->
+                    <textarea data-bind="attr : { id : 'shipping_arrival_comments', col: 65, row: 10 , name : 'shipping_arrival_comments' , class: 'delivery-date-comment '}, css: isMandatory"></textarea>
+                    <!-- /ko -->
+                    <!-- ko if: comment_required == '0' -->
+                    <textarea data-bind="attr : { id : 'shipping_arrival_comments', col: 65, row: 10 , name : 'shipping_arrival_comments' , class: 'delivery-date-comment '}"></textarea>
+                    <!-- /ko -->
+                </div>
+
+                <div class="control choice" data-bind="visible: useCallMe">
+                    <input type="checkbox" data-bind="attr : { id : 'delivery_date_callme', name : 'deliverydate_callme' , value : 1 } , class: 'delivery-date-callme' , checked: callfordelivery" />
+                    <label class="label delivery-callme-label" for="delivery_date_callme" data-bind="style: { color: callfordelivery() ? 'Green' : 'black' , 'font-style' : callfordelivery() ? 'italic' : 'normal' } ">
+                        <span id="call_me_text" data-bind="i18n: deliverydatecallMeLabel">Call me before Delivery</span>
+                    </label>
+                </div>
+
+            </div>
+            <!-- /ko -->
+            <div class="hidden">
+                <input type="hidden" id="shipping_arrival_slot" name="shipping_arrival_slot" />
+                <input type="hidden" id="delivery_charges" name="delivery_charges" />
+            </div>
+            <div class="additional_charge" style="display:none">
+                <label class="label additional_charge-label" data-bind="i18n: 'Additional Delivery Charge: '"></label>
+                <span class="additional_charge_value" data-bind="html: additionalCharge"></span>
+            </div>
+            <!-- ko if:displayMessage == true -->
+            <!--            <div class="estimation_message">
+                            <span class="estimation_message_icon"></span>
+                            <span class="estimatedMessage" data-bind="html: estimatedMessage"></span>
+                        </div>-->
+            <!-- /ko -->
+            <div class="field biz-comment-note" data-bind="visible: getShowHtml() === 1" name="show_html">
+                <ul>
+                    <li>
+                        <ul>
+                            <li>
+                                <span data-bind="html: displayHtml"></span>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /ko -->
+<!-- ko if:enablwOnWhichPage == "1" -->
+<div class="deliverydate-main-wrapper" id="deliverydate-main-wrapper">
+    <div class="field checkout-deliverydate" name="shipping_arrival_date">
+        <div class="fieldset">
+            <div class="additional_charge" style="display:none">
+                <label class="label additional_charge-label" data-bind="i18n: 'Additional Delivery Charge: '"></label>
+                <span class="additional_charge_value" data-bind="html: additionalCharge"></span>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /ko -->

@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<page layout="1column" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Biztech_Deliverydate::css/style.css"/>
+         <css src="Biztech_Deliverydatepro::css/deliverydate.css"/>
+        <css src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" src_type="url" rel="stylesheet" type="text/css" />
+        <css src="Biztech_Deliverydate::css/slickslider/slick.css"/>
+        <css src="Biztech_Deliverydate::css/slickslider/slick-theme.css"/>
+    </head>
+    <body>        
+        <referenceContainer name="content">
+            <block class="Magento\Framework\View\Element\Template" before="product.info.main" name="product-extra" template="Biztech_Deliverydatepro::catalog/product/view/samedaytimer.phtml"/>
+        </referenceContainer>
+        
+        <referenceBlock name="product.info.addtocart">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Biztech_Deliverydatepro::catalog/product/view/addtocart.phtml</argument>
+            </action>
+        </referenceBlock>
+ 
+        <referenceBlock name="product.info.addtocart.additional">
+            <action method="setTemplate">
+                <argument name="template" xsi:type="string">Biztech_Deliverydatepro::catalog/product/view/addtocart.phtml</argument>
+            </action>
+        </referenceBlock>
+    </body>
+</page>

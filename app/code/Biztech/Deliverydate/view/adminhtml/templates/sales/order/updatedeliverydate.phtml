@@ -1,0 +1,74 @@
+<?php
+// @codingStandardsIgnoreFile
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$config = $objectManager->create('Magento\Framework\App\Config\ScopeConfigInterface');
+$enable_method = $config->getValue('deliverydate/deliverydate_front_config/delivery_method');
+$helper = $objectManager->create('Biztech\Deliverydate\Helper\Data');
+if ($helper->isEnable() && $helper->getConfigValue('deliverydate/deliverydate_general/admin_enabled')) {
+    $id = $this->getRequest()->getParam('order_id');
+    $order = $helper->orderData($id);
+
+    if ($order->getShippingArrivalDate() == null || $order->getShippingArrivalDate() == '') {
+        $formattedDate = 'N/A';
+    } else {
+        $dateFormat = $helper->getConfigValue('deliverydate/deliverydate_front_config/deliverydate_format');
+        $timeFormat = $helper->getConfigValue('deliverydate/deliverydate_front_config/deliverytime_format');
+
+        if ($helper->getConfigValue('deliverydate/deliverydate_front_config/delivery_method') == 1 && $helper->getConfigValue('deliverydate/deliverydate_general/deliverytime_enable_time') == 1) {
+            $format = $dateFormat . ' ' . $timeFormat;
+            $formattedDate = date($format, strtotime($order->getShippingArrivalDate()));
+        } elseif ($helper->getConfigValue('deliverydate/deliverydate_front_config/delivery_method') == 2) {
+            $format = $dateFormat;
+            $formattedDate = date($format, strtotime($order->getShippingArrivalDate()));
+        } else {
+            $format = $dateFormat . ' ' . $timeFormat;
+            $formattedDate = date($format, strtotime($order->getShippingArrivalDate()));
+        }
+    }
+
+    $aSlot = '';
+    if (!is_null($order->getShippingArrivalSlot())) {
+        $arrivalSlot = explode('-', $order->getShippingArrivalSlot());
+        $aSlot = date($timeFormat, strtotime($arrivalSlot[0])) . '-' . date($timeFormat, strtotime($arrivalSlot[1]));
+    }
+    ?>
+    <section>
+        <div>
+            <strong>
+                <?php echo __('Current Delivery Date:  '); ?>
+            </strong>
+            <span class="delivery-date"><?= $formattedDate ?></span>
+            <span class="delivery-slot"><?= $aSlot ?></span>
+        </div>
+        <?php if ($order->getShippingArrivalComments() != Null) { ?>
+            <div>
+                <strong>
+                    <?php echo __('Delivery Comments:  '); ?>
+                </strong>
+                <span class="delivery-slot"><?= $order->getShippingArrivalComments() ?></span>
+            </div>
+        <?php } ?>
+    </section>
+    <section id="order-delivery-date" class="admin__page-section order-delivery-date">
+        <div class="delivery_date_title">
+            <span class="title">
+                <?php
+                /* @escapeNotVerified */
+                echo __('Update Delivery Date Information');
+                ?>
+            </span>
+        </div>
+        <div class="admin__page-section-content">
+            <?php
+            if ($enable_method == 1) {
+                $array = [
+                    'order_id' => $id,
+                    'shipping_arrival_date' => $formattedDate,
+                    'aSlot' => $aSlot,
+                ];
+                echo $this->getLayout()->createBlock('Biztech\Deliverydate\Block\Deliverydate')->setData('params', $array)->setTemplate('deliverydate/deliverydateForUpdate.phtml')->toHtml();
+            }
+            ?>
+        </div>
+    </section>
+<?php } ?>

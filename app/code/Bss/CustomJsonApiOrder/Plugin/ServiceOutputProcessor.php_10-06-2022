@@ -1,0 +1,274 @@
+<?php
+namespace Bss\CustomJsonApiOrder\Plugin;
+
+class ServiceOutputProcessor
+{
+    /**
+     * ServiceOutputProcessor constructor.
+     * @param \Magento\Framework\App\ResourceConnection $resourceConnection
+     */
+    public function __construct(
+        \Magento\Framework\App\ResourceConnection $resourceConnection
+    ) {
+        $this->resourceConnection = $resourceConnection;
+    }
+
+    /**
+     * @param $subject
+     * @param $result
+     * @param $data
+     * @param $serviceClassName
+     * @param $serviceMethodName
+     * @return array
+     */
+    public function afterProcess($subject, $result, $data, $serviceClassName, $serviceMethodName) {
+        if ($serviceClassName == 'Magento\Sales\Api\OrderRepositoryInterface' && $serviceMethodName == 'getList') {
+            if (!empty($result) && isset($result['items'])) {
+                foreach ($result['items'] as $key => $order) {
+                    // each order
+                    foreach ($order['items'] as $key1 => $item) {
+                        // each item
+                        $options = [];
+                        $sku_option = '';
+                        if (isset($item['product_option']) && !isset($item['parent_item']) && isset($item['product_option']['extension_attributes']) && isset($item['product_option']['extension_attributes']['custom_options'])) {
+                            foreach($item['product_option']['extension_attributes']['custom_options'] as $option){
+                                $options[] = $this->getOption($option['option_id'],$option['option_value'],$item['store_id']);
+                            }
+                            $result['items'][$key]['items'][$key1]['product_option']['extension_attributes']['custom_options'] = [];
+                            foreach($options as $_options) {
+                                foreach($_options as $option) {
+                                    if (isset($option['option_sku'])) {
+                                        $sku_option .= '-'.$option['option_sku'];
+                                    }
+
+                                    $result['items'][$key]['items'][$key1]['product_option']['extension_attributes']['custom_options'][] = $option;
+                                }
+                            }
+                            $productOp = [  'option_id'    => '000',
+                                'option_value' => '0000',
+                                'option_sku'   => str_replace($sku_option,'', $item['sku']),
+                                'option_price' => $item['price'] - $item['extension_attributes']['custom_option_price']
+                            ];
+                            array_unshift($result['items'][$key]['items'][$key1]['product_option']['extension_attributes']['custom_options'] , $productOp);
+
+                        }
+                        if (isset($item['parent_item']) && isset($item['parent_item']['product_option']) && isset($item['parent_item']['product_option']['extension_attributes']) && isset($item['parent_item']['product_option']['extension_attributes']['custom_options'])) {
+                            foreach($item['parent_item']['product_option']['extension_attributes']['custom_options'] as $option){
+                                $options[] = $this->getOption($option['option_id'],$option['option_value'],$item['store_id']);
+                            }
+                            $result['items'][$key]['items'][$key1]['parent_item']['product_option']['extension_attributes']['custom_options'] = [];
+                            foreach($options as $_options) {
+                                foreach($_options as $option) {
+                                    $result['items'][$key]['items'][$key1]['parent_item']['product_option']['extension_attributes']['custom_options'][] = $option;
+                                }
+                            }
+
+                            $productOp = [  'option_id'    => '000',
+                                'option_value' => '0000',
+                                'option_sku'   => $item['sku'],
+                                'option_price' => $item['parent_item']['price'] - $item['parent_item']['extension_attributes']['custom_option_price']
+                            ];
+                            array_unshift($result['items'][$key]['items'][$key1]['parent_item']['product_option']['extension_attributes']['custom_options'] , $productOp);
+                        }
+
+                        if (!isset($item['product_option']) && !isset($item['parent_item'])) {
+                            $productOp = [  'option_id'    => '000',
+                                'option_value' => '0000',
+                                'option_sku'   =>  $item['sku'],
+                                'option_price' => $item['price'] - $item['extension_attributes']['custom_option_price']
+                            ];
+                            $result['items'][$key]['items'][$key1]['product_option'] = ['extension_attributes' => ['custom_options' => $productOp]];
+                        }
+
+                        if (isset($item['product_option']) && isset($item['product_option']['extension_attributes']) && !isset($item['product_option']['extension_attributes']['custom_options'])) {
+                            $productOp = [  'option_id'    => '000',
+                                'option_value' => '0000',
+                                'option_sku'   =>  $item['sku'],
+                                'option_price' =>  isset($item['parent_item'])? $item['parent_item']['price'] - $item['parent_item']['extension_attributes']['custom_option_price'] : $item['price'] - $item['extension_attributes']['custom_option_price']
+                            ];
+                            if (!isset($item['parent_item'])) {
+                                $result['items'][$key]['items'][$key1]['product_option']['extension_attributes'] = ['custom_options' => $productOp];
+                            } else {
+                                $result['items'][$key]['items'][$key1]['parent_item']['product_option']['extension_attributes'] = ['custom_options' => $productOp];
+                            }
+                        }
+                    }
+
+                    $result['items'][$key]['customer_note'] = $this->getCustomerNote($order['entity_id']);
+                }
+            }
+        } else if ($serviceClassName == 'Magento\Sales\Api\OrderRepositoryInterface' && $serviceMethodName !== 'getList') {
+
+            foreach ($result['items'] as $key => $item) {
+                // each item
+                $options = [];
+                $sku_option = '';
+                if (isset($item['product_option']) && !isset($item['parent_item']) && isset($item['product_option']['extension_attributes']) && isset($item['product_option']['extension_attributes']['custom_options'])) {
+                    foreach($item['product_option']['extension_attributes']['custom_options'] as $option){
+                        $options[] = $this->getOption($option['option_id'],$option['option_value'],$item['store_id']);
+                    }
+                    $result['items'][$key]['product_option']['extension_attributes']['custom_options'] = [];
+                    foreach($options as $_options) {
+                        foreach($_options as $option) {
+                            if (isset($option['option_sku'])) {
+                                $sku_option .= '-'.$option['option_sku'];
+                            }
+
+                            $result['items'][$key]['product_option']['extension_attributes']['custom_options'][] = $option;
+                        }
+                    }
+                    $productOp = [  'option_id'    => '000',
+                        'option_value' => '0000',
+                        'option_sku'   => str_replace($sku_option,'', $item['sku']),
+                        'option_price' => $item['price'] - $item['extension_attributes']['custom_option_price']
+                    ];
+                    array_unshift($result['items'][$key]['product_option']['extension_attributes']['custom_options'] , $productOp);
+
+                }
+                if (isset($item['parent_item']) && isset($item['parent_item']['product_option']) && isset($item['parent_item']['product_option']['extension_attributes']) && isset($item['parent_item']['product_option']['extension_attributes']['custom_options'])) {
+                    foreach($item['parent_item']['product_option']['extension_attributes']['custom_options'] as $option){
+                        $options[] = $this->getOption($option['option_id'],$option['option_value'],$item['store_id']);
+                    }
+                    $result['items'][$key]['parent_item']['product_option']['extension_attributes']['custom_options'] = [];
+                    foreach($options as $_options) {
+                        foreach($_options as $option) {
+                            $result['items'][$key]['parent_item']['product_option']['extension_attributes']['custom_options'][] = $option;
+                        }
+                    }
+
+                    $productOp = [  'option_id'    => '000',
+                        'option_value' => '0000',
+                        'option_sku'   => $item['sku'],
+                        'option_price' => $item['parent_item']['price'] - $item['parent_item']['extension_attributes']['custom_option_price']
+                    ];
+                    array_unshift($result['items'][$key]['parent_item']['product_option']['extension_attributes']['custom_options'] , $productOp);
+                }
+
+                if (!isset($item['product_option']) && !isset($item['parent_item'])) {
+                    $productOp = [  'option_id'    => '000',
+                        'option_value' => '0000',
+                        'option_sku'   =>  $item['sku'],
+                        'option_price' => $item['price'] - $item['extension_attributes']['custom_option_price']
+                    ];
+                    $result['items'][$key]['product_option'] = ['extension_attributes' => ['custom_options' => $productOp]];
+                }
+
+                if (isset($item['product_option']) && isset($item['product_option']['extension_attributes']) && !isset($item['product_option']['extension_attributes']['custom_options'])) {
+                    $productOp = [  'option_id'    => '000',
+                        'option_value' => '0000',
+                        'option_sku'   =>  $item['sku'],
+                        'option_price' =>  isset($item['parent_item'])? $item['parent_item']['price'] - $item['parent_item']['extension_attributes']['custom_option_price'] : $item['price'] - $item['extension_attributes']['custom_option_price']
+                    ];
+                    if (!isset($item['parent_item'])) {
+                        $result['items'][$key]['product_option']['extension_attributes'] = ['custom_options' => $productOp];
+                    } else {
+                        $result['items'][$key]['parent_item']['product_option']['extension_attributes'] = ['custom_options' => $productOp];
+                    }
+                }
+            }
+            $result['customer_note'] = $this->getCustomerNote($result['entity_id']);
+        }
+        return $result;
+    }
+
+    /**
+     * @param $optionId
+     * @param $optionValue
+     * @param $store_id
+     * @return array|array[]
+     */
+    public function getOption($optionId, $optionValue, $store_id){
+        $connection = $this->resourceConnection->getConnection();
+        $select = $connection->select()
+            ->from(
+                ['cpo' => $this->resourceConnection->getTableName('catalog_product_option')],
+                ['option_id','option_sku' => 'sku','type']
+            )->joinLeft(
+                ['cop' => $this->resourceConnection->getTableName('catalog_product_option_price')],
+                'cop.option_id = cpo.option_id',
+                ['option_price' => 'price']
+            )->where(
+                'cpo.option_id = ?',
+                $optionId
+            );
+        $option = $connection->fetchRow($select);
+        if (in_array($option['type'],['drop_down','checkbox','radio','multiple'])) {
+
+            $optionTypeTable = $this->resourceConnection->getTableName('catalog_product_option_type_price');
+            $priceExpr = $connection->getCheckSql(
+                'store_value_price.price IS NULL',
+                'default_value_price.price',
+                'store_value_price.price'
+            );
+            $priceTypeExpr = $connection->getCheckSql(
+                'store_value_price.price_type IS NULL',
+                'default_value_price.price_type',
+                'store_value_price.price_type'
+            );
+
+            $joinExprDefault = 'default_value_price.option_type_id = coptv.option_type_id AND ' .
+                $connection->quoteInto(
+                    'default_value_price.store_id = ?',
+                    \Magento\Store\Model\Store::DEFAULT_STORE_ID
+                );
+            $joinExprStore = 'store_value_price.option_type_id = coptv.option_type_id AND ' .
+                $connection->quoteInto('store_value_price.store_id = ?', $store_id);
+
+            $select = $connection->select()
+                ->from(
+                    ['cpo' => $this->resourceConnection->getTableName('catalog_product_option')],
+                    ['option_id']
+                )->join(
+                    ['coptv' => $this->resourceConnection->getTableName('catalog_product_option_type_value')],
+                    'coptv.option_id = cpo.option_id',
+                    ['option_value' => 'coptv.option_type_id', 'option_sku' => 'sku' ]
+                )->joinLeft(
+                    ['default_value_price' => $optionTypeTable],
+                    $joinExprDefault,
+                    []
+                )->joinLeft(
+                    ['store_value_price' => $optionTypeTable],
+                    $joinExprStore,
+                    [
+                        'option_price' => $priceExpr
+                    ]
+                )->where(
+                    'coptv.option_type_id IN(?)',
+                    explode(',', $optionValue)
+                )->where(
+                    'cpo.option_id = ?',
+                    $optionId
+                );
+            $option = $connection->fetchAll($select);
+            return $option;
+        } else {
+            unset($option['type']);
+            $_option['option_id'] = $option['option_id'];
+            $_option['option_value'] = $optionValue;
+            $_option['option_sku'] = $option['option_sku'];
+            $_option['option_price'] = $option['option_price'];
+            return [$_option];
+        }
+    }
+
+
+    /**
+     * @param int $orderId
+     * @return array
+     */
+    public function getCustomerNote($orderId)
+    {
+        $connection = $this->resourceConnection->getConnection();
+        $select = $connection->select()
+            ->from(
+                ['so' => $this->resourceConnection->getTableName('sales_order')],
+                ['sparsh_order_comments']
+            )->where(
+                'so.entity_id = ?',
+                $orderId
+            );
+        $customer_note = $connection->fetchOne($select);
+        return $customer_note? $customer_note : '';
+    }
+}
+

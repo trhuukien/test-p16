@@ -1,0 +1,61 @@
+{
+    "quote": {
+        "column": {
+            "shipping_arrival_date": true,
+            "shipping_arrival_comments": true,
+            "shipping_arrival_slot": true,
+            "delivery_charges": true,
+            "same_day_charges": true,
+            "call_before_delivery": true
+        }
+    },
+    "sales_order": {
+        "column": {
+            "shipping_arrival_date": true,
+            "shipping_arrival_comments": true,
+            "shipping_arrival_slot": true,
+            "delivery_charges": true,
+            "base_delivery_charges": true,
+            "same_day_charges": true,
+            "call_before_delivery": true
+        }
+    },
+    "quote_address": {
+        "column": {
+            "shipping_arrival_date": true,
+            "shipping_arrival_comments": true,
+            "shipping_arrival_slot": true,
+            "delivery_charges": true,
+            "same_day_charges": true,
+            "call_before_delivery": true
+        }
+    },
+    "sales_order_grid": {
+        "column": {
+            "shipping_arrival_date": true,
+            "shipping_arrival_comments": true,
+            "shipping_arrival_slot": true,
+            "same_day_charges": true,
+            "call_before_delivery": true
+        }
+    },
+    "sales_invoice": {
+        "column": {
+            "shipping_arrival_date": true,
+            "shipping_arrival_comments": true,
+            "delivery_charges": true,
+            "same_day_charges": true,
+            "call_before_delivery": true
+        }
+    },
+    "sales_creditmemo": {
+        "column": {
+            "shipping_arrival_date": true,
+            "shipping_arrival_comments": true,
+            "shipping_arrival_slot": true,
+            "delivery_charges": true,
+            "same_day_charges": true,
+            "call_before_delivery": true
+        }
+    }
+}

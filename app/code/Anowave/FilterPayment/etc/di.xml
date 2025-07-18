@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
+    <type name="Anowave\FilterPayment\Observer\FilterPayment">
+        <arguments>
+            <argument name="filterList" xsi:type="array">
+                <item name="payment_filter" xsi:type="object">Anowave\FilterPayment\Model\Filter\Payment</item>
+                <item name="customer_filter" xsi:type="object">Anowave\FilterPayment\Model\Filter\Customer</item>
+                <item name="group_filter" xsi:type="object">Anowave\FilterPayment\Model\Filter\Group</item>
+                <item name="quote_content_filter" xsi:type="object">Anowave\FilterPayment\Model\Filter\QuoteContent</item>
+            </argument>
+        </arguments>
+    </type>
+    <type name="Magento\Shipping\Model\Shipping">
+	    <plugin name="filterpayment" type="Anowave\FilterPayment\Plugin\Shipping" sortOrder="1"/>
+	</type>
+</config>

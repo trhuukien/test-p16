@@ -1,0 +1,37 @@
+<?php
+/** @var Magento\Catalog\Block\Product\View $block */
+$product = $block->getProduct();
+
+$dataTooltip = [];
+$dataTooltipOptionValue = [];
+$dataTooltipAttribute = [];
+$objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+$data = $objectManager->get(\Bss\CustomToolTipCO\Model\ToolTipAttributeFactory::class)->create();
+$collection = $data->getCollection();
+foreach($collection as $item) {
+    if ($product->getId() == $productId =$item->getProductId()) {
+        $dataTooltipAttribute[$item->getProductAttributeId()] = $item->getContent();
+    }
+}
+foreach ($product->getOptions() as $customoption) {
+    if ($customoption->getValues()) {
+        foreach ($customoption->getValues() as $value) {
+            $dataTooltipOptionValue[$value->getOptionTypeId()] = $value->getBssTooltipContent();
+        }
+    }
+    $dataTooltip[$customoption->getOptionId()] = $customoption->getTooltipContent();
+}
+?>
+
+<script type="text/x-magento-init">
+    {
+      "*": {
+          "Bss_CustomToolTipCO/js/tooltip_customoption": {
+              "jsonTooltip": <?php /* @escapeNotVerified */ echo json_encode($dataTooltip, JSON_FORCE_OBJECT) ?>,
+              "jsonTooltipValue": <?php /* @escapeNotVerified */ echo json_encode($dataTooltipOptionValue, JSON_FORCE_OBJECT) ?>,
+              "jsonTooltipAttribute": <?php /* @escapeNotVerified */ echo json_encode($dataTooltipAttribute, JSON_FORCE_OBJECT) ?>
+          }
+      }
+    }
+
+</script>

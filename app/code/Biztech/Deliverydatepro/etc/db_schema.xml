@@ -1,0 +1,42 @@
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                 xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="deliverydatepro_holiday" comment="Biztech Deliverydatepro deliverydatepro_holiday">
+        <column xsi:type="int" name="id" nullable="false" identity="true" unsigned="true"/>
+        <column xsi:type="text" name="title"/>
+        <column xsi:type="int" name="day" nullable="false"/>
+        <column xsi:type="text" name="month"/>
+        <column xsi:type="text" name="year"/>
+        <column xsi:type="smallint" name="is_annual" nullable="false" default="0"/>
+        <column xsi:type="smallint" name="status" nullable="false" default="0"/>
+
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+        <column name="id"/>
+        </constraint>
+    </table>
+
+    <table name="quote">
+    <column xsi:type="decimal" name="delivery_charges" nullable="true" default="0.00" comment="Delivery Charges for Delivery Date Scheduler"/>
+    <column xsi:type="decimal" name="same_day_charges" nullable="true" default="0.00" comment="Same Delivery Charges for Delivery Date Scheduler"/>        
+    </table>
+
+    <table name="sales_order">
+    <column xsi:type="decimal" name="delivery_charges" nullable="true" default="0.00" comment="Delivery Charges for Delivery Date Scheduler"/>
+    <column xsi:type="decimal" name="base_delivery_charges" default="0.00" nullable="true" comment="Delivery Charges for Delivery Date Scheduler"/>
+    <column xsi:type="decimal" name="same_day_charges" nullable="true" default="0.00" comment="Same Delivery Charges for Delivery Date Scheduler"/>      
+    </table>
+
+    <table name="quote_address">
+    <column xsi:type="decimal" name="delivery_charges" nullable="true" default="0.00" comment="Delivery Charges for Delivery Date Scheduler"/>        
+    </table>
+
+    <table name="sales_invoice">
+    <column xsi:type="decimal" name="delivery_charges" nullable="true" default="0.00" comment="Delivery Charges for Delivery Date Scheduler"/>    
+    <column xsi:type="decimal" name="same_day_charges" nullable="true" default="0.00" comment="Same Delivery Charges for Delivery Date Scheduler"/>    
+    </table>
+
+    <table name="sales_creditmemo">
+    <column xsi:type="decimal" name="delivery_charges" nullable="true" default="0.00" comment="Delivery Charges for Delivery Date Scheduler"/>   
+    <column xsi:type="decimal" name="same_day_charges" nullable="true" default="0.00" comment="Same Delivery Charges for Delivery Date Scheduler"/> 
+    </table>
+
+</schema>

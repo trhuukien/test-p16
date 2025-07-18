@@ -1,0 +1,242 @@
+<?php declare(strict_types=1);
+
+/**
+ * @author Amasty Team
+ * @copyright Copyright (c) Amasty (https://www.amasty.com)
+ * @package Mega Menu Lite Hyva
+ */
+
+use Magento\Framework\Escaper;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Amasty\MegaMenuLite\Block\Container;
+use Amasty\MegaMenuLite\Api\Data\Menu\ItemInterface;
+use Amasty\MegaMenuLiteHyva\ViewModel\DesktopMenuItem;
+
+/** @var Escaper $escaper */
+/** @var Container $block */
+/** @var ViewModelRegistry $viewModels */
+/** @var HeroiconsOutline $heroIcons */
+/** @var array $item */
+/** @var bool $isFirst */
+
+$heroIcons = $viewModels->require(HeroiconsOutline::class);
+$menuItemViewModel = $viewModels->require(DesktopMenuItem::class);
+$menuItemViewModel->setBlock($block);
+
+$isFirst = $isFirst ?? false;
+$elems = $item['elems'];
+$label = $item[ItemInterface::LABEL] ?? false;
+$fontWeight = $item['desktop_font'] ?? '700';
+
+$additionalTopClass = $item['current'] ? 'text-[var(--ammenu-current-category-color)] group-hover:text-[var(--ammenu-submenu-text-hover)]'
+    : 'text-[var(--ammenu-submenu-text)] group-hover:bg-[var(--ammenu-submenu-text-hover)]';
+
+$bgClass = $item['current']
+    ? 'bg-[var(--ammenu-current-category-color)] group-hover:bg-[var(--ammenu-submenu-text-hover)]'
+    : 'bg-[var(--ammenu-third-level-menu)] group-hover:bg-[var(--ammenu-submenu-text-hover)]';
+
+$bgClass = $item['current']
+    ? 'bg-[var(--ammenu-current-category-color)]'
+    : 'bg-[var(--ammenu-submenu-text)]';
+
+$iconBlock = $block->getLayout()->getBlock('ammenu.top.menu.icon');
+$hideContent = isset($item['hide_content']) ? (bool)$item['hide_content'] : false;
+$subCatObj = $item['type'] ?? [];
+$subCatPosition = $subCatObj['label'] ?? '';
+$subCatHide = $subCatPosition === 'do not show';
+
+// phpcs:disable Generic.Files.LineLength.TooLong
+?>
+<!-- Top_Menu_Item -->
+<div class="relative w-auto border-inherit"
+     :class="{
+         'flex': submenuType,
+         'h-full': submenuType && activeTabs.includes('<?= $escaper->escapeHtmlAttr($item['id']); ?>'),
+         'mt-4': submenuType && subCatPosition?.label === 'horizontal' && '<?= $escaper->escapeJs($isFirst); ?>' && activeTabs.includes('<?= $escaper->escapeHtmlAttr($item['id']); ?>')
+     }"
+     :style="{ 'border-color': color_settings?.border ?? '' }"
+     @mouseenter="submenuType ? addTab('<?= $escaper->escapeHtmlAttr($item['id']) ?>') : null"
+     @mouseleave="submenuType ? removeTab('<?= $escaper->escapeHtmlAttr($item['id']) ?>') : null">
+
+    <template x-if="submenuType ? activeTabs.includes('<?= $escaper->escapeHtmlAttr($item['id']); ?>') : !activeTabs.includes('<?= $escaper->escapeHtmlAttr($item['id']); ?>')">
+        <div class="flex flex-wrap py-2 items-start">
+            <h3 x-show="!submenuType"
+                :class="{
+                    'mx-4': !submenuType
+                }"
+                <?php if (!$isFirst): ?>
+                @click.prevent="activeTabs.length > 1 ? activeTabs.pop() : null"
+                x-cloak
+                <?php endif; ?>
+                class="group text-sm mb-2 py-2 flex items-center w-full cursor-pointer
+                <?= $escaper->escapeHtmlAttr($additionalTopClass); ?>">
+                <?php if (!$isFirst): ?>
+                    <template x-if="activeTabs.length > 1">
+                        <span class="inline-block font-bold mr-1"
+                              :style="{
+                                  'color': color_settings?.toggle_icon_color ?? ''
+                              }">
+                            <?= $heroIcons->chevronLeftHtml('', 24, 24, [
+                                'title' => __('Back')
+                            ]); ?>
+                        </span>
+                    </template>
+                <?php endif; ?>
+
+                <?php if ($iconBlock): ?>
+                    <?= /* @noEscape */ $iconBlock->setData('item', $item)
+                        ->setData('additional_class', $bgClass)
+                        ->setData('available', ['desktop', 'both'])->toHtml() ?>
+                <?php endif ?>
+
+                <template x-if="!hide_view_all_link">
+                    <span :style="{ 'font-weight': <?= $escaper->escapeHtmlAttr($fontWeight); ?> }">
+                        <?= $escaper->escapeHtml($item['name']) ?>
+                    </span>
+                </template>
+                <template x-if="hide_view_all_link">
+                    <a class=" parent text-inherit hover:text-inherit hover:underline"
+                       href="<?= $escaper->escapeHtmlAttr($item['url']); ?>"
+                       title="<?= $escaper->escapeHtmlAttr($item['name']); ?>">
+                        <span :style="{ 'font-weight': <?= $escaper->escapeHtmlAttr($fontWeight); ?> }">
+                            <?= $escaper->escapeHtml($item['name']); ?>
+                        </span>
+                    </a>
+                </template>
+
+                <?= /** @noEscape */ $menuItemViewModel->fetchView('components/label.phtml', [
+                    'item' => $item,
+                    'classes' => 'inline-block text-xs font-bold rounded p-1 ml-2 mr-6 whitespace-nowrap overflow-hidden'
+                ]); ?>
+            </h3>
+            <?php if (!$hideContent): ?>
+            <ul>
+                <template x-if="!hide_view_all_link">
+                    <li class="flex items-center w-full">
+                        <a href="<?= $escaper->escapeUrl($item['url']); ?>"
+                           title="<?= $escaper->escapeHtmlAttr(__("View All %1", $item['name'])); ?>"
+                           class="block w-full underline text-md pb-2 text-[var(--ammenu-third-level-menu)] hover:text-[var(--ammenu-submenu-text-hover)]"
+                           :class="{
+                               'px-4': submenuType,
+                               'mx-4': !submenuType
+                           }">
+                            <?= $escaper->escapeHtml(__("View All %1", $item['name'])); ?>
+                        </a>
+                    </li>
+                </template>
+                <?php foreach ($elems as $key => $itemChild): ?>
+                    <?php
+                    $hideContent = isset($itemChild['hide_content']) ? (bool)$itemChild['hide_content'] : false;
+                    ?>
+                    <li class="flex items-center w-full group">
+                        <?php
+                        $fontChildWeight = $itemChild['desktop_font'] ?? '700';
+                        $elemsChild = $itemChild['elems'];
+                        $additionalClass = $itemChild['current']
+                            ? 'text-[var(--ammenu-current-category-color)] group-hover:text-[var(--ammenu-submenu-text-hover)]'
+                            : 'text-[var(--ammenu-third-level-menu)] group-hover:text-[var(--ammenu-submenu-text-hover)]';
+                        $bgClass = $itemChild['current']
+                            ? 'bg-[var(--ammenu-current-category-color)] group-hover:bg-[var(--ammenu-submenu-text-hover)]'
+                            : 'bg-[var(--ammenu-third-level-menu)] group-hover:bg-[var(--ammenu-submenu-text-hover)]';
+                        ?>
+                        <?php if (!empty($elemsChild) && !$hideContent): ?>
+                            <button class="flex items-center w-full py-2 px-4 border-0 background-none
+                                    <?= $escaper->escapeHtmlAttr($additionalClass); ?>"
+                                    title="<?= $escaper->escapeHtmlAttr($itemChild['name']); ?>"
+                                    @click.prevent="!submenuType ? addTab('<?= $escaper->escapeHtmlAttr($item['id']) ?>') : null"
+                                    @mouseenter="submenuType ? addTab('<?= $escaper->escapeHtmlAttr($itemChild['id']) ?>') : null"
+                                    @mouseleave="submenuType ? removeTab('<?= $escaper->escapeHtmlAttr($itemChild['id']) ?>') : null">
+
+                                <?php if ($iconBlock): ?>
+                                    <?= /* @noEscape */ $iconBlock->setData('item', $itemChild)
+                                        ->setData('additional_class', $bgClass)
+                                        ->setData('available', ['desktop', 'both'])
+                                        ->toHtml();
+                                    ?>
+                                <?php endif ?>
+
+                                <template x-if="!hide_view_all_link">
+                                    <span :style="{ 'font-weight': <?= $escaper->escapeHtmlAttr($fontChildWeight); ?> }">
+                                        <?= $escaper->escapeHtml($itemChild['name']) ?>
+                                    </span>
+                                </template>
+                                <template x-if="hide_view_all_link">
+                                    <a class="text-inherit hover:text-inherit"
+                                       href="<?= $escaper->escapeHtmlAttr($itemChild['url']); ?>"
+                                       title="<?= $escaper->escapeHtmlAttr($itemChild['name']); ?>">
+                                        <span :style="{'font-weight': <?= $escaper->escapeHtmlAttr($fontChildWeight); ?>}">
+                                            <?= $escaper->escapeHtml($itemChild['name']) ?>
+                                        </span>
+                                    </a>
+                                </template>
+
+                                <?= /** @noEscape */ $menuItemViewModel->fetchView('components/label.phtml', [
+                                    'item' => $itemChild,
+                                    'classes' => 'inline-block text-xs font-bold rounded p-1 ml-2 mr-6 whitespace-nowrap overflow-hidden'
+                                ]); ?>
+
+                                <template x-if="!submenuType">
+                                    <span class="inline-block ml-1"
+                                          :style="{
+                                              'color': color_settings?.toggle_icon_color ?? ''
+                                          }">
+                                        <?= $heroIcons->chevronRightHtml('', 24, 24, [
+                                            'title' => __('Open')
+                                        ]) ?>
+                                    </span>
+                                </template>
+                            </button>
+                        <?php else: ?>
+                            <a class="truncate hover:underline group block items-center w-full py-1 px-4 border-0 background-none
+                               hover:text-[var(--ammenu-submenu-text-hover)] <?= $escaper->escapeHtmlAttr($additionalClass); ?>"
+                               href="<?= $escaper->escapeHtmlAttr($itemChild['url']); ?>"
+                               style="max-width: 215px;"
+                               title="<?= $escaper->escapeHtmlAttr($itemChild['name']); ?>">
+
+                                <?php if ($iconBlock): ?>
+                                    <?= /* @noEscape */ $iconBlock->setData('item', $itemChild)
+                                        ->setData('additional_class', $bgClass)
+                                        ->setData('available', ['desktop', 'both'])->toHtml() ?>
+                                <?php endif ?>
+
+                                <span>
+                                    <?= $escaper->escapeHtml($itemChild['name']) ?>
+                                </span>
+
+                                <?= /** @noEscape */ $menuItemViewModel->fetchView('components/label.phtml', [
+                                    'item' => $itemChild,
+                                    'classes' => 'inline-block text-xs font-bold rounded p-1 ml-2 mr-6 whitespace-nowrap overflow-hidden'
+                                ]); ?>
+                            </a>
+                        <?php endif ?>
+                    </li>
+                <?php endforeach ?>
+            </ul>
+            <?php endif ?>
+        </div>
+    </template>
+    <?php if (!empty($elems)): ?>
+        <?php foreach ($elems as $key => $itemChild): ?>
+            <?php if (!empty($itemChild['elems'])): ?>
+                <?php
+                $hideContent = isset($itemChild['hide_content']) ? (bool)$itemChild['hide_content'] : false;
+                ?>
+                <?php if (!$hideContent): ?>
+                <template x-if="submenuType ? activeTabs.includes('<?= $escaper->escapeHtmlAttr($itemChild['id']); ?>') : activeTabs.includes('<?= $escaper->escapeHtmlAttr($item['id']); ?>')">
+                    <div class="h-full"
+                         :class="{
+                            'border-l border-inherit': submenuType
+                        }">
+                        <?= /** @noEscape */ $menuItemViewModel->fetchView('components/top_menu/item.phtml', [
+                            'item' => $itemChild,
+                            'isFirst' => false
+                        ]); ?>
+                    </div>
+                </template>
+                <?php endif ?>
+            <?php endif ?>
+        <?php endforeach ?>
+    <?php endif ?>
+</div>
+

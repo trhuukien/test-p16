@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Biztech_Deliverydate::css/style.css"/>
+        <css src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" src_type="url" rel="stylesheet" type="text/css" />
+        <css src="Biztech_Deliverydate::css/slickslider/slick.css"/>
+        <css src="Biztech_Deliverydate::css/slickslider/slick-theme.css"/>
+    </head>
+    <body>
+        <!--        <referenceContainer name="checkout.cart.widget">
+            <block class="Biztech\Deliverydate\Block\Deliverydate" after="checkout.cart.coupon" name="deliverydate.info" template="Biztech_Deliverydate::delivery_date_config.phtml"/>
+        </referenceContainer>-->
+        <referenceContainer name="checkout.cart.container">
+            <block class="Biztech\Deliverydate\Block\Deliverydate" after="cart-items" name="deliverydate.info" template="Biztech_Deliverydate::delivery_date_config.phtml"/>
+        </referenceContainer>
+        <referenceBlock name="checkout.cart.totals">
+            <arguments>
+                <argument name="jsLayout" xsi:type="array">
+                    <item name="components" xsi:type="array">
+                        <item name="block-totals" xsi:type="array">
+                            <item name="children" xsi:type="array">
+                                <item name="delivery_charges" xsi:type="array">
+                                    <item name="component"  xsi:type="string">Biztech_Deliverydate/js/view/checkout/summary/deliverycharges</item>
+                                    <item name="sortOrder" xsi:type="string">20</item>
+                                    <item name="config" xsi:type="array">
+                                        <item name="template" xsi:type="string">Biztech_Deliverydate/checkout/summary/deliverycharges</item>
+                                        <item name="title" xsi:type="string" translate="true">Specific Timeslot Charges</item>
+                                    </item>
+                                </item>
+                                <item name="same_day_charges" xsi:type="array">
+                                    <item name="component"  xsi:type="string">Biztech_Deliverydate/js/view/checkout/summary/samedaycharges</item>
+                                    <item name="sortOrder" xsi:type="string">21</item>
+                                    <item name="config" xsi:type="array">
+                                        <item name="template" xsi:type="string">Biztech_Deliverydate/checkout/summary/samedaycharges</item>
+                                        <item name="title" xsi:type="string" translate="true">Additional Delivery Charges</item>
+                                    </item>
+                                </item>
+                            </item>
+                        </item>
+                    </item>
+                </argument>
+            </arguments>
+        </referenceBlock>
+    </body>
+</page>

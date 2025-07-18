@@ -1,0 +1,166 @@
+<?php
+
+namespace Biztech\Deliverydatepro\Block\Cart;
+
+use Magento\Framework\View\Element\Template;
+use Magento\Checkout\Model\Cart;
+use Biztech\Deliverydatepro\Helper\Data;
+use Biztech\Deliverydate\Block\Deliverydate;
+use Magento\Catalog\Model\ResourceModel\Product\CollectionFactory;
+use Magento\Framework\Phrase;
+use Biztech\Deliverydatepro\Block\Product\View;
+
+class Summary extends Template
+{
+    /**
+     * @var Cart
+     */
+    protected $cart;
+    protected $proHelper;
+    protected $productCollectionFactory;
+    protected $deliverydate;
+    protected $view;
+
+    /**
+     * Summary constructor.
+     * @param Template\Context $context
+     * @param Cart $cart
+     * @param array $data
+     */
+    public function __construct(
+        Template\Context $context,
+        Cart $cart,
+        Data $proHelper,
+        CollectionFactory $productCollectionFactory,
+        Deliverydate $deliverydate,
+        View $view,
+        array $data = []
+    ) {
+        $this->cart = $cart;
+        $this->proHelper = $proHelper;
+        $this->productCollectionFactory = $productCollectionFactory;
+        $this->deliverydate = $deliverydate;
+        $this->view = $view;
+        parent::__construct($context, $data);
+    }
+
+    /**
+     * Get current products in cart
+     *
+     * @return \Magento\Quote\Model\Quote\Item[]
+     */
+    public function getDeliveryDate()
+    {
+        $items = $this->cart->getQuote()->getAllItems();
+        foreach($items as $item)
+        {
+            $productId = $item->getProductId();
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $product = $objectManager->get('Magento\Catalog\Model\Product')->load($productId);
+            $deliveryDate[] =  $this->proHelper->getFinalDeliveryDate($product);
+            $deliveryDayNumbers[] = $this->getDeliveryDayNames($product);
+        }
+
+        if (is_array($deliveryDayNumbers) && !empty($deliveryDayNumbers)) {
+            // Filter out null or empty arrays
+            $validArrays = array_filter($deliveryDayNumbers, function ($element) {
+                return is_array($element) && !empty($element);
+            });
+        
+            if (!empty($validArrays)) {
+                if (count($validArrays) === 1) {
+                    // If there's only one valid array, return it directly
+                    $commonDays = $validArrays[0];
+                } else {
+                    // Call array_intersect with the valid arrays
+                    $commonDays = call_user_func_array('array_intersect', $validArrays);
+                }
+            } else {
+                // Handle the case where no valid arrays are left after filtering
+                $commonDays = [];
+            }
+        }
+
+
+        if (is_array($deliveryDate) && !empty($deliveryDate))
+        {
+                if(count($deliveryDate) > 0)
+                {
+                    $highestDeliveryDate = $this->findHeighestDeliverydate($deliveryDate,$commonDays);
+                    return $highestDeliveryDate;
+                }
+            
+        }
+
+    }
+
+    public function deliveryDateFormat()
+    {
+        return $this->deliverydate->getDeliveryDateFormat();
+    }
+
+    public function getDeliveryDayNames($productDetails)
+    {
+        $deliveryDays = $productDetails->getDeliveryDays();
+
+        if (is_array($deliveryDays)) {
+            $deliveryDayNumbers = $deliveryDays;
+        } elseif (is_string($deliveryDays)) {
+            $deliveryDayNumbers = explode(',', $deliveryDays);
+        } else {
+            return;
+        }
+        
+        return $deliveryDayNumbers;
+    }
+
+    public function findHeighestDeliverydate($deliveryDate,$commonDays)
+    {
+        $highestDeliveryDate = null;
+        foreach($deliveryDate as $delivery)
+        {
+            if($highestDeliveryDate == null || $delivery > $highestDeliveryDate)
+            {
+                $highestDeliveryDate = $delivery;
+            }
+        }
+
+        if (empty($commonDays)) {
+            return $highestDeliveryDate;
+        }
+
+        $date = new \DateTime($highestDeliveryDate);
+
+        sort($commonDays);
+
+        // Get the numeric representation of the current day of the week (0 for Sunday, 1 for Monday, ..., 6 for Saturday)
+        $currentDayNum = $date->format('w');
+        
+        foreach ($commonDays as $dayNum) {
+            if ($dayNum >= $currentDayNum) {
+                // Set the date to the next occurrence of the common day
+                $daysUntilNextCommonDay = $dayNum - $currentDayNum;
+                $date->modify("+{$daysUntilNextCommonDay} days");
+                return $date->format('Y-m-d');
+            }
+        }
+
+        // If no common day is found after the highest delivery date, move to the first common day of the next week
+        $daysUntilNextWeekCommonDay = (7 - $currentDayNum) + $commonDays[0];
+        $date->modify("+{$daysUntilNextWeekCommonDay} days");
+        return $date->format('Y-m-d');
+
+
+    }
+
+    public function formatLocalizedDate()
+    {
+            $date = $this->getDeliveryDate();
+            if(!empty($date))
+            {
+                $translatedDate = $this->view->formatLocalizedDate($date);
+                return $translatedDate;
+            }
+    }
+
+}

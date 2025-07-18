@@ -1,0 +1,47 @@
+<div class="deliverydate-main-wrapper" id="deliverydate-main-wrapper">
+    <div class="field checkout-deliverydate" name="shipping_arrival_date">
+
+        <div class="fieldset">
+
+            <div class="field">
+                <label class="label">
+                    <span data-bind="i18n: 'Update Delivery Date'"></span>
+                </label>
+            </div>
+            <div class="field" name="shipping_arrival_date" data-bind="css: isRequired()">
+                <label class="label calender-comment-label" data-bind="i18n: deliverydateLabel"></label>
+                <div class="control" data-bind="css: isRtl">
+                    <input
+                        type="text"
+                        data-bind="attr : {
+                                autocomplete : 'off' ,
+                                readonly : 'readonly',
+                                value: shiftedValue ,
+                                id : 'date-picker',
+                            },
+                    valueUpdate: valueUpdate,
+                    datepicker: { storage: shiftedValue , options: options }"
+                        name="shipping_arrival_date"
+                        data-validate="{required:true}"
+                        />
+                </div>
+            </div>
+
+            <!-- ko if:useSlot -->
+            <label class="label calender-comment-label" data-bind="i18n: timeslotTableLabel" style="display:none"></label>
+            <!-- custom drop_down -->
+            <div class="dds_drop_down datetimeslot" style="display:none" id="slot_dropdown_selected">
+                <div class="selected">
+                    <a href="javascript:void(0)"><i class="fas fa-history" style="font-size: 48px;"></i> <span>-- Select A Timeslot --</span></a>
+                </div>
+                <div class="options">
+                    <ul class="timeslot_drp" >
+                    </ul>
+                </div>
+            </div>
+            <input type="hidden" id="shipping_arrival_slot" name="shipping_arrival_slot" />
+
+            <!-- /ko -->
+        </div>
+    </div>
+</div>

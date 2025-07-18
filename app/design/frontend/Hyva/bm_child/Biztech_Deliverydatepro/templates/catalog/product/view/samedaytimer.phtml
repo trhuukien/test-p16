@@ -1,0 +1,113 @@
+<?php
+$proHelper = $this->helper('Biztech\Deliverydatepro\Helper\Data');
+$basicHelper = $this->helper('Biztech\Deliverydate\Helper\Data');
+$status = false;
+$timervalue = '';
+if ($basicHelper->isCuttoffEnable() && $proHelper->sameDayDeliveryTimer()) {
+    $isOrderProcessingTime = false;
+    $productRegistry = $basicHelper->objectManager()->get('\Magento\Framework\Registry')->registry('current_product');
+    $deliveryOption = $proHelper->deliveryOption();
+    if ($deliveryOption == 2 && isset($productRegistry)) {
+        $isOrderProcessingTime = true;
+        $orderProcessingTime = $proHelper->getProductWiseOrderProTime();
+    }
+    if ($isOrderProcessingTime) {
+        if ($orderProcessingTime > 0) {
+            $dayIntval = $orderProcessingTime;
+        } else {
+            $dayIntval = 0;
+        }
+    } else {
+        $dayIntval = $basicHelper->getDayDiff();
+    }
+    $isProductwiseCuttoff = $basicHelper->isProductwiseCuttoff();
+    if ($isProductwiseCuttoff) {
+        if (isset($productRegistry)) {
+            if ($productRegistry->getId()) {
+
+                if ($productRegistry->getCutOffTimeHours() != "" || $productRegistry->getCutOffTimeHours() != NULL) {
+                    $hours = $productRegistry->getCutOffTimeHours();
+                } else {
+                    $hours = 00;
+                }
+                if ($productRegistry->getCutOffTimeMinutes() != "" || $productRegistry->getCutOffTimeMinutes() != NULL) {
+                    $minutes = $productRegistry->getCutOffTimeMinutes();
+                } else {
+                    $minutes = 00;
+                }
+                if ($productRegistry->getCutOffTimeSeconds() != "" || $productRegistry->getCutOffTimeSeconds() != NULL) {
+                    $seconds = $productRegistry->getCutOffTimeSeconds();
+                } else {
+                    $seconds = 00;
+                }
+                $getCuttofValue = $hours . ',' . $minutes . ',' . $seconds;
+            }
+        }
+    } else {
+        $getCuttofValue = $basicHelper->getCuttoffValue();
+    }
+    if ((($getCuttofValue === "00,00,00") === false) && $dayIntval == 0) {
+        $this->_timezone = $basicHelper->objectManager()->create('Magento\Framework\Stdlib\DateTime\TimezoneInterface');
+        $getCuttofValue = str_replace(",", ":", $getCuttofValue);
+        $cutoffobj = new DateTime($this->_timezone->date()->format('Y-m-d') . " " . $getCuttofValue);
+        $currenttimeobj = new DateTime($this->_timezone->date()->format('Y-m-d H:i:s'));
+        if ($currenttimeobj < $cutoffobj) {
+            $status = true;
+        } else {
+            $status = false;
+        }
+    } else {
+        $status = false;
+    }
+}
+if ($status == true) {
+    // $cutoffobj = new \DateTime('today 18:00:00'); //test
+    ?>
+    <div 
+    x-data="countdownTimer('<?php echo $cutoffobj->format('M j, Y H:i:s') ?>')" 
+    x-init="startTimer()" 
+    class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-xl shadow mb-4"
+>
+    <div class="text-gray-700">
+        <p class="text-lg font-medium">
+            <?= __('Same day delivery time ends in') ?>
+        </p>
+        <p class="text-red-600 text-xl font-semibold mt-1" x-text="timeLeft"></p>
+    </div>
+</div>
+
+<script>
+    function countdownTimer(targetTime) {
+        return {
+            timeLeft: '',
+            interval: null,
+            startTimer() {
+                const countDownDate = new Date(targetTime).getTime();
+
+                const update = () => {
+                    const now = new Date().getTime();
+                    const distance = countDownDate - now;
+
+                    if (distance <= 0) {
+                        clearInterval(this.interval);
+                        this.timeLeft = "EXPIRED";
+                        return;
+                    }
+
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                    this.timeLeft = `${hours}h ${minutes}m ${seconds}s`;
+                };
+
+                // Initial update
+                update();
+
+                // Update every second
+                this.interval = setInterval(update, 1000);
+            }
+        }
+    }
+</script>
+<?php } ?>

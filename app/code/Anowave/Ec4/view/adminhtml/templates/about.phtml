@@ -1,0 +1,83 @@
+<div>
+	<a href="javascript:void(0)" data-ga4-guide="true">User Guide</a>
+</div>
+<div data-ga4-guide-content="true" style="display:none">
+	<p><strong>Step 1 - Activation &amp; Licensing</strong></p>
+	<ol>
+		<li>Enable both modules e.g. Google Tag Manager and Google Tag Manager GA4 by setting Enable dropdown to 'Yes' for both.</li>
+		<li>Add license key only in Stores -> Configuration -> Anowave -> Google Tag Manager GA4 (this same page). The main module will activate automatically.</li>
+	</ol>
+	<p><strong>Step 2 - Adding GTM snippet</strong></p>
+	<ol>
+		<li>Go to <a href="https://tagmanager.google.com/#/home" target="_blank">GTM</a> -> (Pick a container) -> Admin -> Install Google Tag Manager</li>
+		<li>Copy both HEAD and BODY snippets and insert them in Stores -> Configuration -> Anowave -> Google Tag Manager -> Google Tag Manager Code (Head) &amp; Google Tag Manager Code (Body) respectively.</li>
+	</ol>
+	<p><strong>Step 3 - Configure GTM Container using the built-in API</strong></p>
+	<ol>
+		<li>Go to Stores -> Configuration -> Anowave -> Google Tag Manager -> Google Tag Manager <sup>API</sup> section</li>
+		<li>Insert your GA4 Measurement ID (obtained from your Google Analytics 4 property settings)</li>
+		<li>Insert your GTM Account ID (available in <a href="https://tagmanager.google.com/#/home" target="_blank">GTM</a> -> (Pick a container) -> Admin -> Account Settings</li>
+		<li>Once added, Save config. Once config is Saved, click 'Sign in with Google'</li>
+		<li>Authorize the application with permissions to create and edit tags, triggers and variables</li>
+		<li>
+			Once process is over, you shall see the config screen again but now with 3 different checkboxes available that allow you to configure your container automatically.<br />
+        	<svg width="300" height="80" xmlns="http://www.w3.org/2000/svg">
+            	<style>
+                    g text { font-size:12px; }
+                </style>
+            	<g transform="translate(0,10)">
+            		<rect x="1" y="1" width="15" height="15" fill="transparent" stroke="rgb(200,200,200,1)" />
+            		<text x="25" y="12">Create variables (Google Analytics 4)</text>
+            		<path d="M3 8 L8 12 L14 4" stroke="rgba(0,0,0,1)" fill="transparent" filter="drop-shadow(1px 1px 1px rgb(0 0 0 / 0.2))" />
+            	</g>
+            	<g transform="translate(0,30)">
+            		<rect x="1" y="1" width="15" height="15" fill="transparent" stroke="rgb(200,200,200,1)" />
+            		<text x="25" y="12">Create triggers (Google Analytics 4)</text>
+            		<path d="M3 8 L8 12 L14 4" stroke="rgba(0,0,0,1)" fill="transparent" filter="drop-shadow(1px 1px 1px rgb(0 0 0 / 0.2))" />
+            	</g>
+            	<g transform="translate(0,50)">
+            		<rect x="1" y="1" width="15" height="15" fill="transparent" stroke="rgb(200,200,200,1)" />
+            		<text x="25" y="12">Create tags (Google Analytics 4)</text>
+            		<path d="M3 8 L8 12 L14 4" stroke="rgba(0,0,0,1)" fill="transparent" filter="drop-shadow(1px 1px 1px rgb(0 0 0 / 0.2))" />
+            	</g>
+            </svg>
+		</li>
+		<li>Select ALL checkboxes and click "Save config". Once done, you shall see a confirmation that GTM container is configured successfully.</li>
+		<li>Go to <a href="https://tagmanager.google.com/#/home" target="_blank">GTM</a> -> (Pick a container) -> Click 'PUBLISH' so changes could take effect.</li>
+	</ol>
+	<p><strong>Step 4 - Advanced Configuration</strong></p>
+	<ol>
+		<li>
+			For detailed User Guide go to <a href="https://www.anowave.com/marketplace/magento-2-extensions/magento-2-google-analytics-4-enhanced-ecommerce-tracking-gtm/" target="_blank">Magento 2 Google Analytics 4 Enhanced Ecommerce Tracking </a> -> User Guide & Documentation
+		</li>
+	</ol>
+</div>
+<script>
+	require(['jquery','Magento_Ui/js/modal/modal'],function($,modal)
+	{
+		$('a[data-ga4-guide]').on('click', function()
+		{
+			var content = $('[data-ga4-guide-content]').html();
+
+			$('<div />').html(content).modal(
+			{
+	            title: 'Google Analytics 4',
+	            autoOpen: true,
+	            closed: function () {},
+	            buttons: 
+		        [
+			        {
+		                text: 'I understand',
+		                attr: 
+			            {
+		                    'data-action': 'confirm'
+		                },
+		                'class': 'action-primary'
+		            }
+		         ]
+	         });
+
+			return false;
+		});
+	});
+</script>

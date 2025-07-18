@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column" xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <head>
+        <css src="Biztech_Deliverydatepro::css/deliverydate.css"/>
+    </head>
+    <body>
+        <referenceContainer name="checkout.cart.totals.container">
+            <block class="Biztech\Deliverydatepro\Block\Cart\Summary" name="checkout.cart.custom.block" before="checkout.cart.totals" template="Biztech_Deliverydatepro::cart/summary.phtml" />
+        </referenceContainer>
+    </body>
+</page>

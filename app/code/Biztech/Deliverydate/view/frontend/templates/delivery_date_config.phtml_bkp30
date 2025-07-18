@@ -1,0 +1,492 @@
+<?php
+$disableDeliveryDate = $block->getDeliveryDate();
+$currentDate = new \DateTime();
+if (!empty($disableDeliveryDate)) {
+    $deliveryDate = new DateTime($disableDeliveryDate);
+} else {
+    // Handle the case where $disableDeliveryDate is null or empty
+    $deliveryDate = null; // Or assign a default value
+}
+$datesArray = [];
+
+$dateFormat = $block->getDeliveryDateFormat();
+$customDate = date($dateFormat, strtotime($disableDeliveryDate));
+
+?>
+<div class="delivery-date">
+<?php
+$formattedDeliveryDate = !empty($disableDeliveryDate) ? date($dateFormat, strtotime($disableDeliveryDate)) : '';
+
+if (!empty($formattedDeliveryDate)) {
+    $formattedDeliveryDate = date('d-m-Y', strtotime($disableDeliveryDate));
+    echo $formattedDeliveryDate;
+}
+else {
+    echo __('No delivery dates available.');
+}
+
+?>
+</div>
+<?php
+
+// Loop through the dates from current date to delivery date
+while ($currentDate <= $deliveryDate) {
+    // Add the current date to the array in Y-m-d format
+    $datesArray[] = $currentDate->format('d-m-Y');
+    // Move to the next day
+    $currentDate->modify('+1 day');
+}
+
+// if ($this->getHelper()->isEnable()) :
+$enabledMethod = $block->getenabledMethod();
+$deliverydateProEnable = $this->getHelper()->checkModuleStatus('Biztech_Deliverydatepro');
+
+$off_days = [];
+
+array_push($off_days,$datesArray);
+$nonworking_days = $this->getHelper()->getFormattedNonWorkingDays();
+$nonworking_period = $this->getHelper()->getFormattedNonWorkingPeriod();
+
+$isOrderProcessingTime = false;
+if ($deliverydateProEnable == true) {
+    $proHelper = $this->getHelper()->objectManager()->get('\Biztech\Deliverydatepro\Helper\Data');
+    $deliveryOption = $proHelper->deliveryOption();
+    if ($deliveryOption == 2) {
+        $isOrderProcessingTime = true;
+        $orderProcessingTime = $proHelper->getQuoteData();
+    }
+
+    if ($proHelper->excludeHolidays() == 1) {
+        $holiday = $proHelper->getEnableHolidays();
+        $annualNotRepeatHoliday = [];
+        $annualRepeatHoliday = [];
+        if (isset($holiday['annualNotRepeatHoliday'])) {
+            $annualNotRepeatHoliday = (array) $holiday['annualNotRepeatHoliday'];
+        }
+        if (isset($holiday['annualRepeatHoliday'])) {
+            $annualRepeatHoliday = (array) $holiday['annualRepeatHoliday'];
+        }
+        $off_days = array_merge((array) $nonworking_days, (array) $nonworking_period, $annualNotRepeatHoliday, $annualRepeatHoliday);
+    } else {
+        $off_days = array_merge((array) $nonworking_days, (array) $nonworking_period);
+    }
+} else {
+    $off_days = array_merge((array) $nonworking_days, (array) $nonworking_period);
+}
+$dailyQuota = $this->getHelper()->disableSameDayBasedOnDailyQuota();
+
+if ($dailyQuota['disable'] === true) {
+    $off_days = array_values(array_unique(array_merge($off_days, $dailyQuota['day_to_disable']), SORT_REGULAR));
+}
+
+$cutoff = $this->getHelper()->disableDayBasedOnCutoff();
+if ($cutoff['status'] === true) {
+    $off_days = array_values(array_unique(array_merge($off_days, $cutoff['day_to_disable']), SORT_REGULAR));
+}
+
+switch ($enabledMethod) {
+    case 1:
+        $template = 'Biztech_Deliverydate/deliverydate/calendar';
+        break;
+
+    case 2:
+        $template = 'Biztech_Deliverydate/deliverydate/timeslot';
+        break;
+    default:
+        $template = 'Biztech_Deliverydate/deliverydate/calendar';
+        break;
+}
+
+
+$deliverydateLabel = $block->getDeliverydatelabel() ? $block->getDeliverydatelabel() : 'Deliverydate Date';
+$deliverydateCommentsLabel = $block->getDeliveryDateCommentsLabel() ? $block->getDeliveryDateCommentsLabel() : 'Deliverydate Comments';
+$timeslotTableLabel = $block->getTableLabel();
+$timeslotTableLabel = $timeslotTableLabel ? $timeslotTableLabel : 'Timeslot\'s';
+$dayOffs = $block->getDayOffs();
+
+if ($isOrderProcessingTime) {
+    if ($orderProcessingTime > 0) {
+        $dayDiff = $orderProcessingTime;
+    } else {
+        $dayDiff = 0;
+    }
+} else {
+    $dayDiff = $block->getDayDiff() ? $block->getDayDiff() : 0;
+}
+
+
+$excludeHolidayFromProcessingDay = $proHelper->excludeHolidayFromProcessingDay();
+if ($excludeHolidayFromProcessingDay) {
+    $processingDateArray = [];
+    $processingDayArray = [];
+    for ($i = 0; $i < $dayDiff; $i++) {
+        $modifiedDate = date('d-m-Y', strtotime('+' . $i . ' days'));
+        $processingDateArray[] = $modifiedDate;
+        $processingDayArray[] = date('w', strtotime($modifiedDate));
+    }
+
+    foreach ($processingDateArray as $processingDate) {
+        if (in_array($processingDate, $off_days)) {
+            $dayDiff++;
+        }
+    }
+    if ($dayOffs != "" || $dayOffs != NULL) {
+        $dayOffsArray = explode(',', $dayOffs);
+        $processingDayArray = array_count_values($processingDayArray);
+
+        foreach ($processingDayArray as $key => $processingDay) {
+            if (in_array($key, $dayOffsArray)) {
+                $dayDiff = $dayDiff + $processingDay;
+            }
+        }
+    }
+}
+
+$timeDiff = $block->getTimeDiff() ? $block->getTimeDiff() : 0;
+
+$timeslot = $block->getavailableTimeslot();
+$sameDayCharges = $this->getHelper()->getSameDayCharges();
+$enableTimeSlotForCalendar = $this->getHelper()->getEnableTimeslotMode();
+$selectedDeliveryDate = $block->getDeliveryDate();
+$config = [
+    'templateConfig' => [
+        'template' => $template,
+        'enabledMethod' => $enabledMethod,
+        'deliverydateLabel' => __($deliverydateLabel),
+        'deliverydateComments' => __($deliverydateCommentsLabel),
+        'showHtml' => (int) $block->getShowHtml(),
+        'displayHtml' => nl2br($block->getDeliveryHtml()),
+    ],
+    'general' => [
+        'enabled' => (int) $block->enableExtension(),
+        'disabledDates' => array_merge($off_days,$datesArray),
+        'dayOffs' => $block->dayOff(),
+        'dateFormat' => $this->getHelper()->convertDateFormatToJQueryUi('d-m-Y'),
+        'timeFormat' => $this->getHelper()->convertDateFormatToJQueryUi($block->getDeliveryTimeFormat()),
+        'dayDiff' => (int) $dayDiff,
+        'timeDiff' => $timeDiff,
+        'sameDayCharges' => $sameDayCharges,
+        'sameDayChargesWithCurruncy' => $this->getHelper()->displaySamedaycharges(),
+        'isMandatory' => (int) $block->getisMandatory(),
+        'useCallFeature' => (int) $block->getConfigValue('deliverydate/deliverydate_front_config/show_callme', \Magento\Store\Model\ScopeInterface::SCOPE_STORE),
+        'callMeLabel' => $this->getHelper()->getDeliveryDateCallMeLabel(),
+        'currencySymbol' => $this->getHelper()->getStoreCurrencySymbol(),
+        'deliverydateProEnable' => $deliverydateProEnable,
+        'add_comment' => $block->getConfigValue('deliverydate/deliverydate_front_config/add_comment'),
+        'comment_required' => $block->getConfigValue('deliverydate/deliverydate_front_config/comment_required'),
+        'applyAdditionalCharge' => $this->getHelper()->applyAdditionalCharge(),
+        'isEnableAtProductPage' => $this->getHelper()->isEnableAtProductPage(),
+        'selecteddeliverydate' => date('D M d Y H:i:s \G\M\TP', strtotime($selectedDeliveryDate)),
+        'customDate'=> $customDate,
+    ],
+    'calendar' => [
+        'options' => [
+            'showsTime' => (int) $block->getCalendarTime(),
+            'buttonImage' => $this->getViewFileUrl('Biztech_Deliverydate::images/datepicker.png'),
+            'buttonText' => __('Select Date'),
+            'interval' => (int) $block->getConfigValue('deliverydate/deliverydate_general/datepicker_time_mininterval'),
+            'buttonText' => __('Select Date'),
+            'showAnim' => $block->getConfigValue('deliverydate/deliverydate_front_config/datepicker_enable_animation'),
+            'showButtonPanel' => (boolean) $block->getConfigValue('deliverydate/deliverydate_front_config/datepicker_buttom_bar'),
+            'isRTL' => (boolean) $block->getConfigValue('deliverydate/deliverydate_front_config/datepicker_rtl'),
+            'maxDate' => (int) $block->getConfigValue('deliverydate/deliverydate_front_config/datepicker_delivery_intervals'),
+            'dateDisplayMode' => $this->getHelper()->getDateDisplayMode(),
+            'getavailableDays' => $this->getHelper()->getavailableDays(),
+            'enableTimeSlotForCalendar' => $enableTimeSlotForCalendar,
+            'timeDisplayMode' => $this->getHelper()->getTimeDisplayMode(),
+            'deliverydateSlotLabel' => $this->getHelper()->getDeliverydatetimeslotLabel(),
+            'imageUrl' => $this->getViewFileUrl("Biztech_Deliverydate::images"),
+        ]
+    ],
+    'timeslot' => [
+        'enabled_timeslots' => $timeslot,
+        'timeslotTableLabel' => __($timeslotTableLabel),
+    ]
+];
+
+//TODO remove this code from basic if want
+if ($deliverydateProEnable == true) {
+    $enableForShipping = $block->getConfigValue('deliverydate/deliverydate_configuration/enable_shipping');
+    if ($enableForShipping == 1) {
+        $config['general']['enableShippingMethods'] = $block->getConfigValue('deliverydate/deliverydate_configuration/shipping_method_option');
+    }
+    if ($this->getHelper()->objectManager()->get('\Biztech\Deliverydatepro\Helper\Data')->excludeHolidays() == 1) {
+        $holiday = $this->getHelper()->objectManager()->get('\Biztech\Deliverydatepro\Helper\Data')->getEnableHolidays();
+        if (isset($holiday['annualRepeatHoliday'])) {
+            $holidayArray = [];
+            foreach ($holiday['annualRepeatHoliday'] as $holiday) {
+                $date = strtotime($holiday);
+                //n means month without leading zero in two digits, j means date without leading zero (did as in js we get value without leading zero)
+                $holidayArray[] = date("j", $date) . '-' . date("n", $date);
+            }
+            $config['calendar']['options']['annualRepeatHoliday'] = $holidayArray;
+        }
+    }
+    $config['general']['restrictCartAmount'] = $block->getConfigValue('deliverydate/deliverydate_configuration/disable_date_on_cart');
+    $config['general']['cartAmount'] = $block->getConfigValue('deliverydate/deliverydate_configuration/cart_amount');
+    $config['general']['per_week_day_charge'] = $this->getHelper()->objectManager()->get('\Biztech\Deliverydatepro\Helper\Data')->getDayCharges();
+    $config['general']['enable_same_day_charge'] = $this->getHelper()->objectManager()->get('\Biztech\Deliverydatepro\Helper\Data')->dayWiseCharge();
+}
+?>
+<?php
+$handle = $this->getLayout()->getUpdate()->getHandles();
+if (in_array('checkout_cart_index', $handle)) {
+    if ($block->isEnableAtCartPage()):
+        $config['general']['enabled'] = 1;
+        $config['general']['cartPageEnabled'] = 1;
+        ?>
+        <div id="appjetty-deliverydate" data-bind="scope:'deliverydate'">
+            <!-- ko template: getTemplate() --><!-- /ko -->
+            <script type="text/x-magento-init">
+                {
+                "#appjetty-deliverydate": {
+                "Magento_Ui/js/core/app": {
+                "components": {
+                "deliverydate": {
+                "component": "Biztech_Deliverydate/js/deliverydate"
+                }
+                }
+                }
+                }
+                }
+            </script>
+        </div>
+        <?php
+    endif;
+}
+?>
+
+<script>
+    window.deliverydateConfig = <?php /* @escapeNotVerified */ echo json_encode($config); ?>;
+</script>
+<script type="text/javascript">
+    require([
+        'jquery',
+        'Magento_Ui/js/modal/alert',
+        'mage/translate',
+        'Magento_Checkout/js/model/full-screen-loader',
+        'mage/url'
+    ], function ($, alert, $t, fullScreenLoader, getUrl) {
+        jQuery(document).ready(function () {
+<?php
+if (!$block->isEnableAtCartPage()) {
+    ?>
+                window.localStorage.setItem('selecteddeliverydate', "");
+                window.localStorage.setItem('selectedslot', "");
+    <?php
+}
+if (in_array('checkout_cart_index', $handle)) {
+    if ($block->isEnableAtCartPage()) {
+        ?>
+                    window.localStorage.setItem('selecteddeliverydate', "");
+                    window.localStorage.setItem('selectedslot', "");
+        <?php
+    }
+}
+?>
+            if (window.deliverydateConfig.general.enabled !== 0) {
+<?php
+//if (in_array('checkout_cart_index', $handle)) {
+//    if ($block->isEnableAtCartPage()):
+?>
+
+                $.ajax({
+                    type: 'POST',
+                    url: getUrl.build('deliverydate/index/cartPageEmptyDate'),
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data['result'] == 'error') {
+                            alert({
+                                title: $t('Attention'),
+                                content: data['msg'],
+                                actions: {
+                                    always: function () {
+                                        fullScreenLoader.stopLoader();
+                                    }
+                                }
+                            });
+                            event.preventDefault();
+                            return false;
+                        }
+                    }
+                });
+<?php
+//    endif;
+//}
+?>
+
+                var enabledMethod = "<?php echo $enabledMethod; ?>";
+                jQuery(document).on('click', '.continue', function (event) {
+                    if (enabledMethod == 2) {
+                        if (jQuery(this).data('role') === 'opc-continue') {
+                            if (!jQuery('.delivery-slot').is(':checked')) {
+                                if (window.deliverydateConfig.general.isMandatory === 1) {
+                                    alert({
+                                        title: $t('Attention'),
+                                        content: $t('Please Select A Timeslot'),
+                                        actions: {
+                                            always: function () {
+                                                fullScreenLoader.stopLoader();
+                                            }
+                                        }
+                                    });
+                                    event.preventDefault();
+                                }
+                            }
+                            if (window.deliverydateConfig.general.comment_required == "1" && window.deliverydateConfig.general.add_comment == "1") {
+                                //var commetData = jQuery("#store-pickup").find("#shipping_arrival_comments").val().trim();
+                                var commetData = jQuery("#shipping_arrival_comments").val();
+                                if (!commetData && jQuery('.delivery-slot').is(':checked')) {
+                                    alert({
+                                        title: $t('Attention'),
+                                        content: $t('Please add a comment'),
+                                        actions: {
+                                            always: function () {
+                                                fullScreenLoader.stopLoader();
+                                            }
+                                        }
+                                    });
+                                    event.preventDefault();
+                                }
+                            }
+
+
+                        }
+                    }
+                    if (enabledMethod == 1) {
+                        if (jQuery(this).data('role') === 'opc-continue') {
+                            var calendarMode = "<?php echo $this->getHelper()->getDateDisplayMode() ?>";
+                            var calendarInput = jQuery("input[name=shipping_arrival_date]").val(); // Default selected mode
+                            var timeSlotMode = "<?php echo $this->getHelper()->getTimeDisplayMode() ?>";
+                            var timeSlotInput = true;
+
+                            if (calendarMode == 'dropdown') {
+                                calendarInput = jQuery('#calanderdate').val();
+                            }
+                            if (calendarMode == 'radio') {
+                                if (!jQuery('.delivery-date-slot').is(':checked')) {
+                                    calendarInput = "";
+                                }
+                            }
+                            if (calendarMode == 'button') {
+                                if (!jQuery('.calendar_date_button').hasClass("active")) {
+                                    calendarInput = "";
+                                }
+                            }
+
+                            if (timeSlotMode == 'button' && !$('.arrival_slot_time_button').hasClass("active")) {
+                                timeSlotInput = false;
+                            }
+                            if (timeSlotMode == 'radio') {
+                                if (jQuery('.arrival_slot_time').length > 0) {
+                                    if (!jQuery('.arrival_slot_time').is(':checked')) {
+                                        timeSlotInput = false;
+                                    }
+                                }
+                            }
+                            if (timeSlotMode == 'dropdown') {
+                                if (jQuery('#shipping_arrival_slot').val() == "" || jQuery('#shipping_arrival_slot').val() == undefined) {
+                                    timeSlotInput = false;
+                                }
+                            }
+                            if (calendarInput == "") {
+                                if (window.deliverydateConfig.general.isMandatory === 1) {
+                                    alert({
+                                        title: $t('Attention'),
+                                        content: $t('Please Select Delivery Date'),
+                                        actions: {
+                                            always: function () {
+                                                fullScreenLoader.stopLoader();
+                                            }
+                                        }
+                                    });
+                                    event.preventDefault();
+                                }
+                            }
+                            var enableTimeslot = "<?php echo $enableTimeSlotForCalendar ?>";
+                            if (enableTimeslot == 1) {
+                                if (timeSlotInput == false && calendarInput != '') {
+                                    if (window.deliverydateConfig.general.isMandatory === 1) {
+                                        alert({
+                                            title: $t('Attention'),
+                                            content: $t('Please Select A Timeslot'),
+                                            actions: {
+                                                always: function () {
+                                                    fullScreenLoader.stopLoader();
+                                                }
+                                            }
+                                        });
+                                        event.preventDefault();
+                                        return;
+                                    }
+                                }
+                            }
+                            if (window.deliverydateConfig.general.comment_required == "1" && window.deliverydateConfig.general.add_comment == "1") {
+                                //var commetData = jQuery("#store-pickup").find("#shipping_arrival_comments").val().trim();
+                                var commetData = jQuery("#shipping_arrival_comments").val();
+                                if (!commetData && calendarInput != '') {
+                                    alert({
+                                        title: $t('Attention'),
+                                        content: $t('Please add a comment'),
+                                        actions: {
+                                            always: function () {
+                                                fullScreenLoader.stopLoader();
+                                            }
+                                        }
+                                    });
+                                    event.preventDefault();
+                                }
+                            }
+                        }
+                    }
+
+                });
+
+                jQuery(document).on('click', '.delivery-slot', function (event) {
+                    var res = this.id.split('_');
+                    var selecteddate = res[0];
+                    var visiblesamedayCharges = false;
+                    selecteddate = selecteddate.split("-");
+                    selecteddate = new Date(selecteddate[2], (selecteddate[1] - 1), selecteddate[0]);
+                    today = new Date();
+                    visiblesamedayCharges = (selecteddate.getDate() == today.getDate() &&
+                            selecteddate.getMonth() == today.getMonth() &&
+                            selecteddate.getFullYear() == today.getFullYear());
+
+                    if (visiblesamedayCharges && window.deliverydateConfig.general.sameDayCharges) {
+                        jQuery("#delivery_charges_day").fadeIn();
+                    } else {
+                        jQuery("#delivery_charges_day").fadeOut();
+                    }
+
+                    fullScreenLoader.startLoader();
+
+                    jQuery('#shipping_arrival_date').val(res[0]);
+                    window.localStorage.setItem('selecteddeliverydate', res[0]);
+                    jQuery('#shipping_arrival_slot').val(jQuery(this).val());
+                    window.localStorage.setItem('selectedslot', jQuery(this).val());
+                    jQuery('#delivery_charges').val(res[2]);
+
+                    fullScreenLoader.stopLoader();
+                });
+
+                jQuery(document).on('click', '.delivery-date-slot', function (event) {
+                    fullScreenLoader.startLoader();
+                    jQuery('#shipping_arrival_date').val(jQuery(this).val());
+                    fullScreenLoader.stopLoader();
+                });
+
+                jQuery(document).on('click', '.continue', function (event) {
+                    if (jQuery(this).data('role') === 'opc-continue') {
+                        var selectedDeliveryDate = window.localStorage.getItem('selecteddeliverydate');
+                        // Update the HTML content of the div with the selected delivery date
+                        jQuery('.delivery-date').html(selectedDeliveryDate);
+                    }
+                });
+                
+            }
+
+        });
+    });
+</script>
+<?php //endif;     ?>

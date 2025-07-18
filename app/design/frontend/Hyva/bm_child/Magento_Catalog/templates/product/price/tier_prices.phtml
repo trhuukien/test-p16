@@ -1,0 +1,52 @@
+<?php
+
+use Magento\Catalog\Pricing\Price\TierPrice;
+use Magento\Catalog\Pricing\Render\PriceBox;
+use Magento\Framework\Escaper;
+
+/** @var PriceBox $block */
+/** @var Escaper $escaper */
+
+/** @var TierPrice $tierPriceModel */
+$tierPriceModel = $block->getPrice();
+$tierPrices = $tierPriceModel->getTierPriceList();
+$product = $block->getSaleableItem();
+
+if (count($tierPrices) === 0) {
+    return '';
+}
+?>
+
+<ul
+    role="list"
+    class="<?= $escaper->escapeHtmlAttr((
+        $block->hasListClass() ? $block->getListClass() : 'prices-tier items'
+    )) ?> mb-4 border-b"
+>
+    <?php foreach ($tierPrices as $index => $price): ?>
+        <li class="item mb-2 flex w-full justify-between">
+            <?php
+            $productId = $product->getId();
+            $isSaleable = $product->isSaleable();
+            $priceAmountBlock = $block->renderAmount(
+                $price['price'],
+                [
+                    'price_id'          => $index,
+                    'id_suffix'         => '-' . $index,
+                    'include_container' => true,
+                    'zone' => \Magento\Framework\Pricing\Render::ZONE_ITEM_OPTION
+                ]
+            );
+            ?>
+            <?= /* @noEscape */ ($block->getShowDetailedPrice() !== false)
+            ? __(
+                '%2'.
+                '<span class="staffel-stuks staffel-stuks text-sm flex flex-col justify-end"><span>%1+ stuks</span></span>',
+                $price['price_qty'],
+                $priceAmountBlock
+            )
+            : __('Buy %1 for %2 each', $price['price_qty'], $priceAmountBlock);
+            ?>
+        </li>
+    <?php endforeach; ?>
+</ul>

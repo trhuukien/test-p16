@@ -1,0 +1,77 @@
+<?php
+/**
+ * Anowave Magento 2 Filter Payment Method
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Anowave license that is
+ * available through the world-wide-web at this URL:
+ * http://www.anowave.com/license-agreement/
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade this extension to newer
+ * version in the future.
+ *
+ * @category 	Anowave
+ * @package 	Anowave_FilterPayment
+ * @copyright 	Copyright (c) 2021 Anowave (http://www.anowave.com/)
+ * @license  	http://www.anowave.com/license-agreement/
+ */
+
+
+namespace Anowave\FilterPayment\Model\Filter;
+
+use Anowave\FilterPayment\Model\FilterInterface;
+use Magento\Customer\Api\Data\CustomerInterface;
+use Magento\Framework\DataObject;
+use Magento\Payment\Model\MethodInterface;
+use Magento\Quote\Api\Data\CartInterface;
+
+class Customer implements FilterInterface
+{
+    /**
+     * Execute
+     *
+     * @param MethodInterface $paymentMethod
+     * @param CartInterface $quote
+     * @param DataObject $result
+     *
+     * @return void
+     */
+    public function execute(MethodInterface $paymentMethod, CartInterface $quote, DataObject $result)
+    {
+        $customer = $quote->getCustomer();
+
+        if (!$customer || !($customer instanceof CustomerInterface) || !$customer->getId()) 
+        {
+            return;
+        }
+
+        /**
+         * Get customer payment filter attribute 
+         * 
+         * @var Ambigous <\Magento\Framework\Api\AttributeInterface, NULL> $attribute
+         */
+        $attribute = $customer->getCustomAttribute(\Anowave\FilterPayment\Setup\InstallData::ATTRIBUTE);
+
+        /**
+         * Check if attribute is set/exists
+         */
+        if ($attribute === null) 
+        {
+            return;
+        }
+
+        $allowed = $attribute->getValue();
+
+        if ($allowed == '') 
+        {
+            return;
+        }
+
+        $allowed = explode(chr(44), $allowed);
+        
+        $result->setData('is_available', in_array($paymentMethod->getCode(), $allowed));
+    }
+}

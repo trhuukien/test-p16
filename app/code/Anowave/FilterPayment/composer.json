@@ -1,0 +1,24 @@
+{
+	"name" : "anowave/filterpayment",
+	"description" : "Magento 2 Filter Payment Method",
+	"require" : {
+		"php" : "~5.5.0|~5.6.0|~7.0.0|~7.1.0|~7.2.0|~7.3.0|~7.4.0|~8.1.0",
+		"anowave/package" : "0.0.*"
+	},
+	"type" : "magento2-module",
+	"version" : "100.0.7",
+	"autoload" : {
+		"files" : [
+			"registration.php"
+		],
+		"psr-4" : {
+			"Anowave\\FilterPayment\\" : ""
+		}
+	},
+	"homepage" : "http://www.anowave.com/marketplace/magento-2-extensions/magento-2-google-tag-manager-enhanced-ecommerce-ua-tracking/",
+	"authors" : [{
+			"name" : "Anowave",
+			"homepage" : "https://www.anowave.com"
+		}
+	]
+}

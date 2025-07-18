@@ -1,0 +1,27 @@
+{
+    "name": "biztech/deliverydate",
+    "description": "Delivery Date Scheduler for Magento 2 with Calendar and Timeslot view format.",
+    "require": {
+        "php": "~7.4.0||~8.1.0",
+        "biztech/deliverydatepro": "100.0.*",
+        "biztech/deliverydateapi": "1.0.*",
+        "biztech/deliverydateapigraphql": "1.0.*"
+    },
+    "suggest": {
+        "magento/module-checkout": "100.0.*"
+    },
+    "type": "magento2-module",
+    "version": "100.2.4",
+    "license": [
+        "OSL-3.0",
+        "AFL-3.0"
+    ],
+    "autoload": {
+        "files": [
+            "registration.php"
+        ],
+        "psr-4": {
+            "Biztech\\Deliverydate\\": ""
+        }
+    }
+}

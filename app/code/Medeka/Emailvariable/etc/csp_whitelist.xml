@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Copyright © Magento, Inc. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+-->
+<csp_whitelist xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Csp:etc/csp_whitelist.xsd">
+        <policies>
+            <policy id="connect-src">
+                <values>
+                    <value id="postcode-checkout-api" type="host">https://www.postcode-checkout.nl</value>
+                    <value id="cookiebot" type="host">https://consent.cookiebot.com</value>
+                    <value id="doubleclick" type="host">https://stats.g.doubleclick.net</value>
+                    <value id="googleads" type="host">https://googleads.g.doubleclick.net</value>
+                    <value id="consentcdn" type="host">https://consentcdn.cookiebot.com</value>
+                    <value id="smartsup" type="host">https://smartsuppcdn.com</value>
+                    <value id="smartsuppchat" type="host">https://bootstrap.smartsuppchat.com</value>
+                    <value id="smartsuppchat widget" type="host">https://widget-v3.smartsuppcdn.com</value>
+                    <value id="analytics" type="host">analytics.google.com</value>
+                    <value id="translations.smartsuppcdn" type="host">https://translations.smartsuppcdn.com/</value>
+                    <value id="websocket-visitors smartsub" type="host">wss://websocket-visitors.smartsupp.com</value>
+                    <value id="clarity" type="host">https://www.clarity.ms</value>
+                    <value id="clarity" type="host">https://q.clarity.ms</value>
+                    <value id="bat.bing.net" type="host">https://bat.bing.net</value>
+                    <value id="clarity.ms" type="host">https://o.clarity.ms</value>
+                </values>
+            </policy>
+            <policy id="img-src">
+                <values>
+                    <value id="data" type="host">data:</value>
+                    <value id="google-ads" type="host">https://www.google.nl</value>
+                    <value id="cookiebot-img" type="host">https://imgsct.cookiebot.com</value>
+                    <value id="benem" type="host">https://benem.nl</value>
+                    <value id="bing" type="host">https://bat.bing.com</value>
+                    <value id="bat.bing.net" type="host">https://bat.bing.net</value>
+                </values>
+            </policy>
+            <policy id="script-src">
+                <values>
+                    <value id="cookiebot-uc-js" type="host">https://consent.cookiebot.com</value>
+                    <value id="cookiebot-uc-js" type="host">https://consentcdn.cookiebot.com</value>
+                    <value id="cookiebot-widget-icon" type="host">https://consent.cookiebot.com</value>
+                    <value id="smartsub" type="host">https://www.smartsuppchat.com</value>
+                    <value id="smartsub widget v3" type="host">https://widget-v3.smartsuppcdn.com</value>
+                    <value id="smartsub widget v3" type="host">https://widget-v3.smartsuppcdn.com</value>
+                    <value id="googleads" type="host">www.googleadservices.com</value>
+                    <value id="bing" type="host">https://bat.bing.com</value>
+                    <value id="clarity" type="host">https://www.clarity.ms</value>
+                </values>
+            </policy>
+            <policy id="style-src">
+                <values>
+                    <value id="smartsub widget v3" type="host">https://widget-v3.smartsuppcdn.com</value>
+                </values>
+            </policy>
+        </policies>
+</csp_whitelist>

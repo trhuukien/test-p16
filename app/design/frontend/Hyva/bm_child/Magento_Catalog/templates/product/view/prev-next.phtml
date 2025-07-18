@@ -1,0 +1,82 @@
+<?php
+use Hyva\Theme\Model\ViewModelRegistry;
+use Magento\Framework\Escaper;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+// phpcs:disable Generic.Files.LineLength.TooLong
+
+/** @var Template $block */
+/** @var Escaper $escaper */
+/** @var ViewModelRegistry $viewModels */
+
+/** @var HeroiconsOutline $heroicons */
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+
+$portoHelper = $this->helper('Bss\HyvaCustomize\Helper\Data');
+$imageHelper = $this->helper('Magento\Catalog\Helper\Image');
+
+$_product = $block->getProduct();
+$prevProduct = $portoHelper->getPrevProduct($_product);
+$nextProduct = $portoHelper->getNextProduct($_product);
+?>
+
+<?php if ($prevProduct || $nextProduct): ?>
+    <div class="prev-next-products flex" x-cloak
+         x-data="{ openProductPrev: false, openProductNext: false }"
+    >
+        <?php if ($prevProduct): ?>
+            <?php
+            $prevImage = $imageHelper->init($prevProduct, 'category_page_grid')
+                ->constrainOnly(false)
+                ->keepAspectRatio(true)
+                ->keepFrame(false)
+                ->resize(80);
+            ?>
+            <div class="product-nav product-prev relative" @mouseenter="openProductPrev = true"
+                 @mouseleave="openProductPrev = false">
+                <a href="<?= $prevProduct->getProductUrl(); ?>" title="<?= __('Previous Product') ?>"
+                   >
+                    <button
+                            type="button"
+                            aria-label="<?= $escaper->escapeHtmlAttr(__('Previous slide')) ?>"
+                            class="flex-none p-1 color-base"
+                    >
+                        <?= $heroicons->chevronLeftHtml("w-6 h-6", 26, 26, ['aria-hidden' => 'true']) ?>
+                    </button>
+                </a>
+                <div class="product-pop theme-border-color z-20 bg-white text-center w-full absolute" x-show="openProductPrev" x-transition>
+                    <img class="product-image"
+                         src="<?= $prevImage->getUrl(); ?>"
+                         alt="<?= $this->escapeHtml($prevImage->getLabel() ?: $prevProduct->getName()) ?>" />
+                    <h3 class="product-name"><?= $this->escapeHtml($prevProduct->getName()) ?></h3>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <?php if ($nextProduct): ?>
+            <?php
+            $nextImage = $imageHelper->init($nextProduct, 'category_page_grid')
+                ->constrainOnly(false)
+                ->keepAspectRatio(true)
+                ->keepFrame(false)
+                ->resize(80);
+            ?>
+            <div class="product-nav product-next relative" @mouseenter="openProductNext = true"
+                 @mouseleave="openProductNext = false">
+                <a href="<?= $nextProduct->getProductUrl(); ?>" title="<?= __('Next Product') ?>">
+                    <button
+                            type="button"
+                            class="flex-none p-1 color-base"
+                    >
+                        <?= $heroicons->chevronRightHtml("w-6 h-6", 26, 26, ['aria-hidden' => 'true']) ?>
+                    </button>
+                </a>
+                <div class="product-pop theme-border-color z-20 bg-white text-center w-full absolute" x-show="openProductNext" x-transition>
+                    <img class="product-image"
+                         src="<?= $nextImage->getUrl(); ?>"
+                         alt="<?= $this->escapeHtml($nextImage->getLabel() ?: $nextProduct->getName()) ?>" />
+                    <h3 class="product-name"><?= $this->escapeHtml($nextProduct->getName()) ?></h3>
+                </div>
+            </div>
+        <?php endif; ?>
+    </div>
+<?php endif; ?>

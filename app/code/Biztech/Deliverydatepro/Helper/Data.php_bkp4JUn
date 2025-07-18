@@ -1,0 +1,845 @@
+<?php
+
+namespace Biztech\Deliverydatepro\Helper;
+
+use Magento\Framework\App\Helper\Context;
+use Magento\Framework\App\Helper\AbstractHelper;
+use Magento\Framework\View\Asset\Repository;
+use Biztech\Deliverydate\Block\Deliverydate;
+
+class Data extends AbstractHelper
+{
+
+    const DAYS = ' days';
+    protected $assetRepo;
+    protected $basicHelper;
+    protected $holidayCollection;
+    protected $registry;
+    protected $quoteAddressFactory;
+    protected $checkoutSession;
+    protected $productFactory;
+    protected $addressItemCollectionFactory;
+    protected $dayCharge;
+    protected $deliverydate;
+
+ /**
+     *
+     * @param Context $context
+     * @param EncryptorInterface $encryptor
+     * @param ModuleListInterface $moduleList
+     * @param StoreManagerInterface $storeManager
+     * @param Config $resourceConfig
+     * @param ObjectManagerInterface $objectmanager
+     * @param ReinitableConfigInterface $coreConfig
+     * @param Website $web
+     * @param CollectionFactory $collectionFactory
+     * @param TimezoneInterface $timezone
+     * @param PricingHelper $priceHelper
+     * @param TransportBuilder $transportBuilder
+     * @param DateTime $date
+     * @param Repository $assetRepo
+     * @param SerializerInterface $serializer
+     * @param StateInterface $inlineTranslation
+     */
+    public function __construct(
+            Context $context, Repository $assetRepo, \Biztech\Deliverydate\Helper\Data $basicHelper, \Biztech\Deliverydatepro\Model\HolidayFactory $holidayCollection, \Magento\Framework\Registry $registry, \Magento\Quote\Model\Quote\AddressFactory $quoteAddressFactory, \Magento\Checkout\Model\Session $checkoutSession, \Magento\Catalog\Model\ProductFactory $productFactory, \Magento\Quote\Model\ResourceModel\Quote\Address\Item\CollectionFactory $addressItemCollectionFactory,
+            Deliverydate $deliverydate
+    ) {
+        $this->assetRepo = $assetRepo;
+        $this->basicHelper = $basicHelper;
+        $this->holidayCollection = $holidayCollection;
+        $this->registry = $registry;
+        $this->quoteAddressFactory = $quoteAddressFactory;
+        $this->checkoutSession = $checkoutSession;
+        $this->productFactory = $productFactory;
+        $this->addressItemCollectionFactory = $addressItemCollectionFactory;
+        $this->deliverydate = $deliverydate;
+        parent::__construct($context);
+    }
+
+    public function getProductLevelConfig()
+    {
+        $enabledMethod = $this->basicHelper->getDeliveryDateView();
+        switch ($enabledMethod) {
+            case 1:
+                $template = 'Biztech_Deliverydatepro/product/view/product-calender';
+                break;
+
+            case 2:
+                $template = 'Biztech_Deliverydatepro/product/view/product-timeslot';
+                break;
+            default:
+                $template = 'Biztech_Deliverydatepro/product/view/product-calender';
+                break;
+        }
+
+        $dateDisplayMode = $this->basicHelper->getDateDisplayMode();
+        
+        $timeDisplayMode = $this->basicHelper->getTimeDisplayMode();
+        $enableTimeslotMode = $this->basicHelper->getEnableTimeslotMode();
+
+        $nonworkingdays = $this->basicHelper->getFormattedNonWorkingDays();
+        $nonworkingperiod = $this->basicHelper->getFormattedNonWorkingPeriod();
+        if ($this->excludeHolidays() == 1) {
+            $holiday = $this->getEnableHolidays();
+            $annualNotRepeatHoliday = [];
+            $annualRepeatHoliday = [];
+            if (isset($holiday['annualNotRepeatHoliday'])) {
+                $annualNotRepeatHoliday = (array) $holiday['annualNotRepeatHoliday'];
+            }
+            if (isset($holiday['annualRepeatHoliday'])) {
+                $annualRepeatHoliday = (array) $holiday['annualRepeatHoliday'];
+            }
+            $offdays = array_merge((array) $nonworkingdays, (array)
+            $nonworkingperiod, $annualNotRepeatHoliday, $annualRepeatHoliday);
+        } else {
+            $offdays = array_merge((array) $nonworkingdays, (array) $nonworkingperiod);
+        }
+
+        $cutoff = $this->basicHelper->disableDayBasedOnCutoff();
+        if ($cutoff['status'] === true) {
+            $offdays = array_values(array_unique(array_merge($offdays, $cutoff['day_to_disable']), SORT_REGULAR));
+        }
+        $deliverydateLabel = $this->basicHelper->getDeliverydatelabel() ? $this->basicHelper->
+        getDeliverydatelabel() : 'Deliverydate Date';
+        $deliverydateCommentsLabel = $this->basicHelper->
+        getDeliveryDateCommentsLabel() ? $this->basicHelper->getDeliveryDateCommentsLabel() : 'Deliverydate Comments';
+        $timeslotTableLabel = $this->basicHelper->getTableLabel();
+        $timeslotTableLabel = $timeslotTableLabel ? $timeslotTableLabel : 'Timeslot\'s';
+        $dayOffs = $this->basicHelper->getDayOffs();
+
+        $isOrderProcessingTime = false;
+        $deliveryOption = $this->deliveryOption();
+        if ($deliveryOption == 2) {
+            $isOrderProcessingTime = true;
+            $orderProcessingTime = $this->getProductWiseOrderProTime();
+        }
+        if ($isOrderProcessingTime) {
+            if ($orderProcessingTime > 0) {
+                $dayDiff = $orderProcessingTime;
+            } else {
+                $dayDiff = 0;
+            }
+        } else {
+            $dayDiff = $this->basicHelper->
+            getConfigValue('deliverydate/deliverydate_configuration/deliverytime_day_diff',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+            ) ? $this->basicHelper->
+            getConfigValue('deliverydate/deliverydate_configuration/deliverytime_day_diff',
+            \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+            ) : 0;
+        }
+
+        $excludeHolidayFromProcessingDay = $this->excludeHolidayFromProcessingDay();
+        if ($excludeHolidayFromProcessingDay) {
+            $processingDateArray = [];
+            $processingDayArray = [];
+            for ($i = 0; $i < $dayDiff; $i++) {
+                $modifiedDate = date('d-m-Y', strtotime('+' . $i . self::DAYS));
+                $processingDateArray[] = $modifiedDate;
+                $processingDayArray[] = date('w', strtotime($modifiedDate));
+            }
+
+            foreach ($processingDateArray as $processingDate) {
+                if (in_array($processingDate, $offdays)) {
+                    $dayDiff++;
+                }
+            }
+            if ($dayOffs != "" || $dayOffs != null) {
+                $dayOffsArray = explode(',', $dayOffs);
+                $processingDayArray = array_count_values($processingDayArray);
+
+                foreach ($processingDayArray as $key => $processingDay) {
+                    if (in_array($key, $dayOffsArray)) {
+                        $dayDiff = $dayDiff + $processingDay;
+                    }
+                }
+            }
+        }
+
+
+
+        $timeDiff = $this->basicHelper->getConfigValue('deliverydate/deliverydate_timeslots/deliverytime_diff',
+        \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        ) ? $this->basicHelper->
+        getConfigValue('deliverydate/deliverydate_timeslots/deliverytime_diff',
+        \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        ) : 0;
+        $timeslot = $this->basicHelper->getavailableTimeslot();
+
+        $display = false;
+        if ($this->basicHelper->isEnable() && $this->basicHelper->getOnWhichPage() == 2) {
+            $display = true;
+        }
+        $productDetail = $this->registry->registry('current_product');
+        $config = [
+            'templateConfig' => [
+                'template' => $template,
+                'enabledMethod' => $enabledMethod,
+                'deliverydateLabel' => __($deliverydateLabel),
+                'deliverydateComments' => __($deliverydateCommentsLabel),
+                'showHtml' => (int) $this->basicHelper->
+                getConfigValue('deliverydate/deliverydate_front_config/show_html',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                ),
+                'displayHtml' => nl2br($this->basicHelper->
+                getConfigValue('deliverydate/deliverydate_front_config/deliverydate_html',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                )
+            ),
+            ],
+            'general' => [
+                'enabled' => (int) $display,
+                'disabledDates' => $offdays,
+                'dayOffs' => $dayOffs,
+                'dateFormat' => $this->basicHelper->
+                convertDateFormatToJQueryUi($this->basicHelper->getDeliveryDateFormat()),
+                'timeFormat' => $this->basicHelper->
+                convertDateFormatToJQueryUi($this->basicHelper->getDeliveryTimeFormat()),
+                'dayDiff' => (int) $dayDiff,
+                'timeDiff' => $timeDiff,
+                'isMandatory' => (int) $this->basicHelper->
+                getConfigValue('deliverydate/deliverydate_front_config/is_mandatory',
+                \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                ),
+                'useCallFeature' => (int) $this->basicHelper->useCallFeature(),
+                'callMeLabel' => $this->basicHelper->getDeliveryDateCallMeLabel(),
+                'ProductWiseCharges' => $this->getProductWiseCharges(),
+                'deliveryOption' => $this->deliveryOption(),
+                //'estimatedMessage' => $this->estimationMsgOnProduct(),
+                'add_comment' => $this->basicHelper->
+                getConfigValue('deliverydate/deliverydate_front_config/add_comment'),
+                'comment_required' => $this->basicHelper->
+                getConfigValue('deliverydate/deliverydate_front_config/comment_required'),
+                'applyAdditionalCharge' => $this->basicHelper->applyAdditionalCharge(),
+                'sameDayCharges' => $this->basicHelper->getSameDayCharges(),
+                'per_week_day_charge' => $this->getDayCharges(),
+                'enable_same_day_charge' => $this->dayWiseCharge(),
+                'allowProductWiseCharge' => $this->allowProductWiseCharge(),
+                'currencySymbol' => $this->basicHelper->getStoreCurrencySymbol(),
+                'enablwOnWhichPage' => $this->basicHelper->getOnWhichPage(),
+                'FinalDeliveryDate' => $this->getFinalDeliveryDate($productDetail),
+            ],
+            'calendar' => [
+                'options' => [
+                    'showsTime' => (int) $this->basicHelper->
+                    getConfigValue('deliverydate/deliverydate_general/deliverytime_enable_time',
+                    \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                    ),
+                    'buttonImage' => $this->assetRepo->getUrl("Biztech_Deliverydate::images/datepicker.png"),
+                    'interval' => (int) $this->basicHelper->
+                    getConfigValue('deliverydate/deliverydate_general/datepicker_time_mininterval',
+                    \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                    ),
+                    'buttonText' => __('Select Date'),
+                    'showAnim' => $this->basicHelper->
+                    getConfigValue('deliverydate/deliverydate_front_config/datepicker_enable_animation',
+                    \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                    ),
+                    'showButtonPanel' => (bool) $this->basicHelper->
+                    getConfigValue('deliverydate/deliverydate_front_config/datepicker_buttom_bar',
+                    \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                    ),
+                    'isRTL' => (bool) $this->basicHelper->
+                    getConfigValue('deliverydate/deliverydate_front_config/datepicker_rtl',
+                    \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                    ),
+                    'maxDate' => (int) $this->basicHelper->
+                    getConfigValue('deliverydate/deliverydate_front_config/datepicker_delivery_intervals',
+                    \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+                    ),
+                    'dateDisplayMode' => $dateDisplayMode,
+                    'getavailableDays' => $this->basicHelper->getavailableDays(),
+                    'enableTimeSlotForCalendar' => $enableTimeslotMode,
+                    'timeDisplayMode' => $timeDisplayMode,
+                    'deliverydateSlotLabel' => $this->basicHelper->getDeliverydatetimeslotLabel(),
+                    'imageUrl' => $this->assetRepo->getUrl("Biztech_Deliverydate::images"),
+                ]
+            ],
+            'timeslot' => [
+                'enabled_timeslots' => $timeslot,
+                'timeslotTableLabel' => __($timeslotTableLabel),
+            ]
+        ];
+
+        if ($this->excludeHolidays() == 1) {
+            $holiday = $this->getEnableHolidays();
+            if (isset($holiday['annualRepeatHoliday'])) {
+                $holidayArray = [];
+                foreach ($holiday['annualRepeatHoliday'] as $holiday) {
+                    $date = strtotime($holiday);
+                    $holidayArray[] = date("j", $date) . '-' . date("n", $date);
+                }
+                $config['calendar']['options']['annualRepeatHoliday'] = $holidayArray;
+            }
+        }
+        return $config;
+    }
+
+    public function isAppliableWithCategory($product)
+    {
+        if ($this->useCategoryForProduct()) {
+            $allowedCategory = $this->getSelectApplicableCategoryForProduct();
+            $categoryIds = $product->getCategoryIds();
+            $result = array_intersect($allowedCategory, $categoryIds);
+            return (empty($result) === false);
+        } else {
+            return true;
+        }
+    }
+
+    public function useCategoryForProduct()
+    {
+        return (bool) $this->basicHelper->getConfigValue('deliverydate/deliverydate_configuration/allow_for_category',
+        \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    public function getSelectApplicableCategoryForProduct()
+    {
+        $selectedCategories = $this->basicHelper->getConfigValue('deliverydate/deliverydate_configuration/use_category',
+        \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+        if (strlen($selectedCategories) > 0) {
+            return explode(',', $selectedCategories);
+        } else {
+            return [];
+        }
+    }
+
+    public function checkCurrentUserAllowed($userGroupId)
+    {
+        if ($this->useCustomerGroup()) {
+            return in_array($userGroupId, $this->useAllowedCustomerGroup());
+        } else {
+            return true;
+        }
+    }
+
+    public function useCustomerGroup()
+    {
+        return (bool) $this->basicHelper->getConfigValue('deliverydate/deliverydate_configuration/use_customer_group',
+        \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    public function useAllowedCustomerGroup()
+    {
+        $selectedGroups = $this->basicHelper->getConfigValue('deliverydate/deliverydate_configuration/selected_group',
+        \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+        if (strlen($selectedGroups) > 0) {
+            return explode(',', $selectedGroups);
+        } else {
+            return [];
+        }
+    }
+
+    public function excludeHolidays()
+    {
+        return (bool) $this->basicHelper->getConfigValue('deliverydate/deliverydate_dayoff/exclude_holiday',
+        \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    public function getEnableHolidays()
+    {
+        $annualRepeatHoliday = $this->holidayCollection->create()->getCollection()->
+        addFieldToFilter('status', 1)->addFieldToFilter('is_annual', 1);
+        $annualNotRepeatHoliday = $this->holidayCollection->create()->getCollection()->
+        addFieldToFilter('status', 1)->addFieldToFilter('is_annual', 0);
+
+        $result = [];
+        if (count($annualNotRepeatHoliday) > 0) {
+            foreach ($annualNotRepeatHoliday->getData() as $key => $value) {
+                $result['annualNotRepeatHoliday'][] = date('d-m-Y',
+                strtotime(date($value['day'] . '-' . $value['month'] . '-' . $value['year'])));
+            }
+        }
+        if (count($annualRepeatHoliday) > 0) {
+            foreach ($annualRepeatHoliday->getData() as $key => $value) {
+                $result['annualRepeatHoliday'][] = date('d-m-Y',
+                strtotime(date($value['day'] . '-' . $value['month'] . '-' . date('Y'))));
+            }
+        }
+        return $result;
+    }
+
+    public function dayWiseCharge()
+    {
+        return $this->basicHelper->getConfigValue('deliverydate/deliverydate_configuration/day_wise_charge',
+        \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    public function getDayCharges()
+    {
+        $dayCharge = $this->basicHelper->getConfigValue('deliverydate/deliverydate_configuration/per_day_of_week',
+        \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+        $this->dayCharge = [];
+        if ($dayCharge) {
+            $this->dayCharge = $this->basicHelper->getConfigData($dayCharge);
+        }
+        return $this->dayCharge;
+    }
+
+    public function addWeekDayCharges($selectedDate)
+    {
+        $weekDayCharages['addCharge'] = false;
+        $weekDayEnable = $this->getDayCharges();
+        if (!empty($weekDayEnable)) {
+            $selectedDate = date('Y-m-d', strtotime($selectedDate));
+            $dayOfWeek = date("N", strtotime($selectedDate));
+            foreach ($weekDayEnable as $weekDetails) {
+                if ($weekDetails['day'] == $dayOfWeek) {
+                    $weekDayCharages['addCharge'] = true;
+                    $weekDayCharages['charges'] = $weekDetails['price'];
+                }
+            }
+        }
+        return $weekDayCharages;
+    }
+
+    public function deliveryOption()
+    {
+        return $this->basicHelper->getConfigValue('deliverydate/deliverydate_configuration/delivery_option',
+        \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    public function getProductWiseCharges()
+    {
+        $productDetails = $this->registry->registry('current_product');
+        if (isset($productDetails))
+        {
+            return $productDetails->getAdditionalDeliveryCharge();
+        }
+    }
+    
+    public function getFinalDeliveryDate($productDetails)
+    {   
+        if (isset($productDetails)) {
+            $cutOffHours = $productDetails->getCutOffTimeHours();
+            $cutOffMinutes = $productDetails->getCutOffTimeMinutes();
+            $cutOffSeconds = $productDetails->getCutOffTimeSeconds();
+            $deliveryDays = $productDetails->getData('delivery_days');
+
+            $cutOffTime = new \DateTime();
+            $cutOffTime->setTime($cutOffHours,$cutOffMinutes,$cutOffSeconds);
+
+            $dates = [];
+            if (is_array($deliveryDays)) {
+                $deliveryDayNumbers = $deliveryDays;
+            } elseif (is_string($deliveryDays)) {
+                $deliveryDayNumbers = explode(',', $deliveryDays);
+            } else {
+                return;
+            }
+
+            $orderProcessingTime = $productDetails->getOrderProcessingTime();
+            $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+            $timezone = $objectManager->get(\Magento\Framework\Stdlib\DateTime\TimezoneInterface::class);
+
+
+            $currentDateTime = $timezone->date()->format('Y-m-d H:i:s');
+            $formattedCutOffTime = $cutOffTime->format('Y-m-d H:i:s');
+
+            $currentDate = new \DateTime();
+            if($currentDateTime > $formattedCutOffTime)
+            {
+                $currentDate->modify('+1 day');
+            }
+            $dayOffs = $this->deliverydate->getDayOffs();
+
+            $daysOffArray = explode(',', $dayOffs);
+            for ($i = 0; $i < $orderProcessingTime; $i++) {
+                $currentDate->modify('+1 day');
+                while (in_array($currentDate->format('w'), $daysOffArray)) {
+                    $currentDate->modify('+1 day');
+                }
+            }
+            $currentDate->format('Y-m-d');
+            $dates = [];
+            $currentDayOfWeek = $currentDate->format('N'); // 1 for Monday, 2 for Tuesday, etc.
+
+            // Loop through each delivery day name
+            foreach ($deliveryDayNumbers as $deliveryDayOfWeek) {
+                $daysUntilDelivery = ($deliveryDayOfWeek >= $currentDayOfWeek) ? ($deliveryDayOfWeek - $currentDayOfWeek) : (7 - $currentDayOfWeek + $deliveryDayOfWeek);
+                $deliveryDate = clone $currentDate;
+                $deliveryDate->add(new \DateInterval("P{$daysUntilDelivery}D"));
+                $dates[] = $deliveryDate;
+            }
+            $nearestDate = null;
+            $minDifference = PHP_INT_MAX;
+
+            foreach ($dates as $date) {
+                $difference = abs($date->getTimestamp() - $currentDate->getTimestamp());
+                if ($difference < $minDifference) {
+                    $nearestDate = $date;
+                    $minDifference = $difference;
+                }
+            }
+            if ($nearestDate !== null) {
+                return $nearestDate->format('Y-m-d');
+            }
+
+        }
+        
+    }
+    
+
+    public function getProductWiseOrderProTime()
+    {
+        $productDetails = $this->registry->registry('current_product');
+        $orderProcessingTime = 0;
+        if (isset($productDetails)) {
+            if ($productDetails->getId())
+            {
+                $orderProcessingTime = $productDetails->getOrderProcessingTime();
+            }
+        }
+        return $orderProcessingTime;
+    }
+
+    public function estimationMsgOnProduct()
+    {
+        $isMessage = $this->basicHelper->getConfigValue('deliverydate/date_display/estimation_message_on_product',
+        \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+        $result = ['display' => false];
+        if ($isMessage == 1 && $this->basicHelper->getOnWhichPage() == 2 && $this->deliveryOption() == 2) {
+            $productDetails = $this->registry->registry('current_product');
+            if ($productDetails->getId())
+            {
+                $orderProcessingTime = $productDetails->getOrderProcessingTime();
+            }
+            $message = __('Estimated Delivery: ' . $orderProcessingTime . self::DAYS);
+            $result = ['display' => true,
+                'message' => $message];
+        }
+        return $result;
+    }
+
+    /* save date selection data in address table for multishipping checkout */
+
+    public function saveMultiShippingData($dateSelection)
+    {
+        $quoteAddress = $this->quoteAddressFactory->create();
+        $isPreSelectDate = $this->basicHelper->isPreSelectDate();
+        $is_mandatory = $this->basicHelper->getConfigValue('deliverydate/deliverydate_front_config/is_mandatory',
+        \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+        foreach ($dateSelection['shipping_method'] as $addressId => $address) {
+            $loadAddress = $quoteAddress->load($addressId);
+            $enabledMethod = $this->basicHelper->getDeliveryDateView();
+            //save date
+            if ((isset($dateSelection['shipping_arrival_date_hidden'][$addressId]) && $enabledMethod == '1') ||
+            (isset($dateSelection['shipping_arrival_date'][$addressId]) && $enabledMethod == '2')) {
+
+                //check if calendar mode or timeslot mode
+                if ($enabledMethod == '1')
+                {
+                    $deliveryDate = $dateSelection['shipping_arrival_date_hidden'][$addressId]; // calendar mode
+                }
+                else
+                {
+                    $deliveryDate = $dateSelection['shipping_arrival_date'][$addressId]; // timeslot mode
+                }
+
+                if ($deliveryDate == '' || $deliveryDate == null) {
+                    if (!$is_mandatory && $isPreSelectDate) {
+                        $selectedDate = $this->getPreSelectDate($addressId);
+                        $loadAddress->setData('shipping_arrival_date', $selectedDate);
+                        $loadAddress->setSameDayCharges(0);
+                    } else {
+                        $loadAddress->setData('shipping_arrival_date', null);
+                    }
+                } else {
+                    $loadAddress->setData('shipping_arrival_date', $deliveryDate);
+                }
+
+                if ($this->basicHelper->applyAdditionalCharge() && !($deliveryDate == '' || $deliveryDate == null)) {
+                    $finalAdditionalCharge = 0;
+                    $loadAddress->setSameDayCharges(0);
+
+                    $dayWiseChargeType = $this->dayWiseCharge();
+                    if ($dayWiseChargeType == 1) {
+                        $addressItem = $this->addressItemCollectionFactory->create()->
+                        addFieldToFilter('quote_address_id', $addressId);
+                        if ($addressItem->getSize() > 0) {
+                            foreach ($addressItem->getData() as $item) {
+                                if ($this->allowProductWiseCharge()) {
+                                    $product = $this->getProduct($item['product_id']);
+                                    $additionalCharge = $product->getAdditionalDeliveryCharge();
+                                    $finalAdditionalCharge += $additionalCharge;
+                                }
+                            }
+                        }
+                        $sameDayCharges = $this->basicHelper->addSameDayCharges($deliveryDate);
+                        if ($sameDayCharges['addCharge'] === true) {
+                            $finalAdditionalCharge += $sameDayCharges['charges'];
+                        }
+                        $loadAddress->setSameDayCharges($finalAdditionalCharge);
+                    } elseif ($dayWiseChargeType == 2) {
+                        $addressItem = $this->addressItemCollectionFactory->create()->
+                        addFieldToFilter('quote_address_id', $addressId);
+                        if ($addressItem->getSize() > 0) {
+                            foreach ($addressItem->getData() as $item) {
+                                if ($this->allowProductWiseCharge()) {
+                                    $product = $this->getProduct($item['product_id']);
+                                    $additionalCharge = $product->getAdditionalDeliveryCharge();
+                                    $finalAdditionalCharge += $additionalCharge;
+                                }
+                            }
+                        }
+                        $weekDayCharges = $this->addWeekDayCharges($deliveryDate);
+                        if ($weekDayCharges['addCharge'] === true) {
+                            $finalAdditionalCharge += $weekDayCharges['charges'];
+                        }
+                        $loadAddress->setSameDayCharges($finalAdditionalCharge);
+                    }
+                } else {
+                    $loadAddress->setSameDayCharges(0);
+                }
+            } else {
+                if (!$is_mandatory && $isPreSelectDate) {
+                    $selectedDate = $this->getPreSelectDate($addressId);
+                    $loadAddress->setData('shipping_arrival_date', $selectedDate);
+                    $loadAddress->setSameDayCharges(0);
+                } else {
+                    $loadAddress->setData('shipping_arrival_date', null);
+                    $loadAddress->setSameDayCharges(0);
+                }
+            }
+            //save time slot
+            if (isset($dateSelection['shipping_arrival_slot'][$addressId])) {
+                $loadAddress->setData('shipping_arrival_slot', $dateSelection['shipping_arrival_slot'][$addressId]);
+            } else {
+                $loadAddress->setData('shipping_arrival_slot', null);
+            }
+
+            //save charges
+            if (isset($dateSelection['delivery_charges'][$addressId])) {
+                $loadAddress->setData('delivery_charges', $dateSelection['delivery_charges'][$addressId]);
+            } else {
+                $loadAddress->setData('delivery_charges', null);
+            }
+
+            //save comment
+            if (isset($dateSelection['shipping_arrival_comments'][$addressId])) {
+                $loadAddress->setData('shipping_arrival_comments',
+                $dateSelection['shipping_arrival_comments'][$addressId]
+                );
+            } else {
+                $loadAddress->setData('shipping_arrival_comments', null);
+            }
+            //save call me before details
+            if (isset($dateSelection['call_before_delivery'][$addressId])) {
+                $loadAddress->setData('call_before_delivery', $dateSelection['call_before_delivery'][$addressId]);
+            } else {
+                $loadAddress->setData('call_before_delivery', 0);
+            }
+            $loadAddress->save();
+        }
+        return $this;
+    }
+
+    public function getPreSelectDate($addressId)
+    {
+        $offdays = [];
+        $nonworkingdays = $this->basicHelper->getFormattedNonWorkingDays();
+        $nonworkingperiod = $this->basicHelper->getFormattedNonWorkingPeriod();
+
+        $isOrderProcessingTime = false;
+        $deliveryOption = $this->deliveryOption();
+        if ($deliveryOption == 2) {
+            $isOrderProcessingTime = true;
+            $orderProcessingTime = $this->getQuoteAddressData($addressId);
+        }
+
+        if ($this->excludeHolidays() == 1) {
+            $holiday = $this->getEnableHolidays();
+            $annualNotRepeatHoliday = [];
+            $annualRepeatHoliday = [];
+            if (isset($holiday['annualNotRepeatHoliday'])) {
+                $annualNotRepeatHoliday = (array) $holiday['annualNotRepeatHoliday'];
+            }
+            if (isset($holiday['annualRepeatHoliday'])) {
+                $annualRepeatHoliday = (array) $holiday['annualRepeatHoliday'];
+            }
+            $offdays = array_merge((array) $nonworkingdays, (array)
+            $nonworkingperiod, $annualNotRepeatHoliday, $annualRepeatHoliday
+            );
+        } else {
+            $offdays = array_merge((array) $nonworkingdays, (array) $nonworkingperiod);
+        }
+
+        $dayOffs = $this->basicHelper->getDayOffs();
+        if ($dayOffs) {
+            $dayOffsArray = explode(',', $dayOffs);
+            $dayArray = [];
+            foreach ($dayOffsArray as $k => $v) {
+                $dayName = $this->basicHelper->dayName($v);
+                $dayArray[] = date('d-m-Y', strtotime($dayName));
+                $dayArray[] = date('d-m-Y', strtotime('next ' . $dayName));
+                $dayArray[] = date('d-m-Y', strtotime('second ' . $dayName));
+            }
+        }
+
+        $dailyQuota = $this->basicHelper->disableSameDayBasedOnDailyQuota();
+
+        if ($dailyQuota['disable'] === true) {
+            $offdays = array_values(array_unique(array_merge($offdays, $dailyQuota['day_to_disable']), SORT_REGULAR));
+        }
+
+        $cutoff = $this->basicHelper->disableDayBasedOnCutoff();
+        if ($cutoff['status'] === true) {
+            $offdays = array_values(array_unique(array_merge($offdays, $cutoff['day_to_disable']), SORT_REGULAR));
+        }
+
+        if ($isOrderProcessingTime) {
+            if ($orderProcessingTime > 0) {
+                $dayDiff = $orderProcessingTime;
+            } else {
+                $dayDiff = 0;
+            }
+        } else {
+            $dayDiff = $this->basicHelper->getDayDiff() ? $this->basicHelper->getDayDiff() : 0;
+        }
+
+        $excludeHolidayFromProcessingDay = $this->excludeHolidayFromProcessingDay();
+        if ($excludeHolidayFromProcessingDay) {
+            $processingDateArray = [];
+            $processingDayArray = [];
+            for ($i = 0; $i < $dayDiff; $i++) {
+                $modifiedDate = date('d-m-Y', strtotime('+' . $i . self::DAYS));
+                $processingDateArray[] = $modifiedDate;
+                $processingDayArray[] = date('w', strtotime($modifiedDate));
+            }
+
+            foreach ($processingDateArray as $processingDate) {
+                if (in_array($processingDate, $offdays)) {
+                    $dayDiff++;
+                }
+            }
+
+            if ($dayOffs) {
+                $processingDayArray = array_count_values($processingDayArray);
+                foreach ($processingDayArray as $key => $processingDay) {
+                    if (in_array($key, $dayOffsArray)) {
+                        $dayDiff = $dayDiff + $processingDay;
+                    }
+                }
+            }
+        }
+        $preSelectDateOption = $this->basicHelper->preSelectDateOption();
+        $dayDiff = $dayDiff + $preSelectDateOption;
+        $selectedDate = date('d-m-Y', strtotime('+' . $dayDiff . self::DAYS));
+        $i = 1;
+        if (in_array($selectedDate, $offdays)) {
+            while (in_array($selectedDate, $offdays)) {
+                $selectedDate = date('d-m-Y', strtotime($selectedDate . '+' . $i . self::DAYS));
+                $i++;
+            }
+        }
+
+        return $selectedDate;
+    }
+
+    /**
+     * Get quote object associated with cart. By default it is current customer session quote
+     *
+     * @return \Magento\Quote\Model\Quote
+     */
+    public function getQuoteData()
+    {
+        $quote = $this->checkoutSession->getQuote();
+        $orderProcessingTime = [];
+        foreach ($quote->getAllVisibleItems() as $_item) {
+            $productDetails = $this->getProduct($_item->getProductId());
+            $orderProcessingTime[] = $productDetails->getOrderProcessingTime();
+        }
+        arsort($orderProcessingTime);
+        return reset($orderProcessingTime);
+    }
+
+    public function getProduct($productId)
+    {
+        return $this->productFactory->create()->load($productId);
+    }
+
+    public function getQuoteAddressData($addressId)
+    {
+        $addressItem = $this->addressItemCollectionFactory->create()->addFieldToFilter('quote_address_id', $addressId);
+        if ($addressItem->getSize() > 0) {
+            $orderProcessingTime = [];
+            foreach ($addressItem->getData() as $item) {
+                $productDetails = $this->getProduct($item['product_id']);
+                $orderProcessingTime[] = $productDetails->getOrderProcessingTime();
+            }
+            arsort($orderProcessingTime);
+            return reset($orderProcessingTime);
+        }
+    }
+
+    public function allowProductWiseCharge()
+    {
+        return $this->basicHelper->getConfigValue('deliverydate/deliverydate_configuration/allow_product_base_charge',
+        \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    public function sameDayDeliveryTimer()
+    {
+        return $this->basicHelper->getConfigValue('deliverydate/deliverydate_configuration/end_same_day_delivery',
+        \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    public function excludeHolidayFromProcessingDay()
+    {
+        return $this->basicHelper->getConfigValue('deliverydate/deliverydate_dayoff/exclude_holiday_from_processing',
+        \Magento\Store\Model\ScopeInterface::SCOPE_STORE
+        );
+    }
+
+    public function getQuoteProductCutOffData()
+    {
+        $quote = $this->checkoutSession->getQuote();
+        $cutOffTime = [];
+        foreach ($quote->getAllVisibleItems() as $_item) {
+            $productDetails = $this->getProduct($_item->getProductId());
+            if ($productDetails->getCutOffTimeHours() != "" || $productDetails->getCutOffTimeHours() != null) {
+                $hours = $productDetails->getCutOffTimeHours();
+            } else {
+                $hours = 00;
+            }
+            if ($productDetails->getCutOffTimeMinutes() != "" || $productDetails->getCutOffTimeMinutes() != null) {
+                $minutes = $productDetails->getCutOffTimeMinutes();
+            } else {
+                $minutes = 00;
+            }
+            if ($productDetails->getCutOffTimeSeconds() != "" || $productDetails->getCutOffTimeSeconds() != null) {
+                $seconds = $productDetails->getCutOffTimeSeconds();
+            } else {
+                $seconds = 00;
+            }
+            $cutOffTime[] = $hours . ',' . $minutes . ',' . $seconds;
+        }
+        if (!empty($cutOffTime)) {
+            $times = [];
+            foreach ($cutOffTime as $time) {
+                $times[] = str_replace(',', ':', $time);
+            }
+            $times = array_map('strtotime', $times);
+
+            $minCutOffTime = date('H:i:s', min($times));
+            $minCutOffTime = str_replace(':', ',', $minCutOffTime);
+        } else {
+            $minCutOffTime = '00,00,00';
+        }
+        return $minCutOffTime;
+    }
+
+}

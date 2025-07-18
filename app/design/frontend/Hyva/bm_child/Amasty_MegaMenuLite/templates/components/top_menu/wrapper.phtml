@@ -1,0 +1,123 @@
+<?php declare(strict_types=1);
+
+/**
+ * @author Amasty Team
+ * @copyright Copyright (c) Amasty (https://www.amasty.com)
+ * @package Mega Menu Lite Hyva
+ */
+
+use Magento\Framework\Escaper;
+use Magento\Framework\View\Element\Template;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Amasty\MegaMenuLite\ViewModel\Store\Menu;
+use Amasty\MegaMenuLiteHyva\ViewModel\DesktopMenuItem;
+
+/**
+ * @var Template $block
+ * @var Escaper $escaper
+ * @var ViewModelRegistry $viewModels
+ * @var DesktopMenuItem $menuItemViewModel
+ * @var Menu $viewModelMenu
+**/
+
+$viewModelMenu = $viewModels->require(Menu::class);
+
+$menuItemViewModel = $viewModels->require(DesktopMenuItem::class);
+$menuItemViewModel->setBlock($block);
+$menuItems = $block->getItems();
+// phpcs:disable Generic.Files.LineLength.TooLong
+?>
+<a href="/" class="py-2 mr-4 hidden">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="currentColor" width="20">
+      <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 12 8.954-8.955c.44-.439 1.152-.439 1.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75M8.25 21h8.25"></path>
+    </svg>
+</a>
+<template x-if="!isMobile">
+    <div x-ref="nav-desktop" class="bg-[var(--ammenu-main-menu-background)]" x-data="{ open: false }"  @mouseenter="open = true" @mouseleave="open = false">
+        <div class="main-cte py-2 px-2 flex items-center" :class="open ? 'active' : ''">
+            <span class="font-bold"><?= $escaper->escapeHtml(__('Products')); ?></span>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 44.93 54.17" class=" ml-2 arrow" :class="open ? 'r-up' : 'r-down'">
+              <path d="M6.6,9.31,35.3,27.09,6.6,44.87V9.3M3.21,0A3.21,3.21,0,0,0,0,3.21V51a3.2,3.2,0,0,0,4.89,2.72L43.41,29.81a3.19,3.19,0,0,0,1-4.4,3.23,3.23,0,0,0-1-1L4.89.48A3.34,3.34,0,0,0,3.21,0Z"></path>
+            </svg>
+        </div>
+        <nav class="menu-dropdown flex absolute w-full left-0 right-0 text-sm" aria-label="<?= $escaper->escapeHtmlAttr(__('Main Menu'))  ?>" x-show="open" style="background-color: #fff;" >
+            <ul class="" role="menubar" style="width: 22%;">
+                <?php foreach ($menuItems as $key => $item): ?>
+                    <?php if ($item['status'] === 1 || $item['status'] === 2): ?>
+                        <?= /** @noEscape */ $menuItemViewModel->fetchView('components/top_menu/submenu-item.phtml', [
+                            'item' => $item
+                        ]) ?>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </ul>
+        </nav>
+    </div>
+</template>
+<style type="text/css" media="screen">
+    .top-menu-c {
+        background-color: #67ae44;
+    }
+    .left-1\/4 {
+        left: 22%;
+        top: 0;
+        max-width: 78%;
+    }
+    nav.menu-dropdown {
+        box-shadow: 0 3px 15px -2px rgba(0, 0, 0, .3);
+        border: solid 1px #dae2e6;
+        border-top-width: 0;
+        margin: 0px 15px;
+    }
+    nav.menu-dropdown a.parent {
+        color: #67ae44;
+    }
+
+    .main-cte.flex.items-center.active {
+        background-color: #fff;
+        color: #67ae44;
+        border-top-left-radius: .5rem;
+        border-top-right-radius: .5rem;
+    }
+
+    nav.menu-dropdown> ul > li a.cate-1:hover {
+        color: #ffff;
+        background: #67ae44;
+    }
+    nav.menu-dropdown> ul > li a.cate-1:hover svg {
+        fill: #ffff;
+    }
+
+    li .grid div.relative:after {
+            background-image: url('https://www.elektramat.nl/static/version1749039896/frontend/Wise/elektramat-3/nl_NL/images/vertical-shadow.png');
+            content: "";
+            width: 1.25rem;
+            height: 100%;
+            background-size: contain;
+            position: absolute;
+            bottom: 0;
+            top: 0;
+            left: 0;
+            background-position: 0;
+            background-repeat: no-repeat;
+    }
+    .main-cte {
+        color: #fff;
+    }
+    .active .main-cte {
+        color: #ffff;
+    }
+    svg.arrow.r-down {
+        rotate: 90deg;
+        fill: #ffff;
+    }
+
+    .arrow {
+        width: .75rem;
+        height: .625rem;
+    }
+
+    svg.arrow.r-up {
+        fill: #67ae44;
+        rotate: 270deg;
+    }
+</style>

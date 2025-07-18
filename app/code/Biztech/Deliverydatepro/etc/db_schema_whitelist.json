@@ -1,0 +1,46 @@
+{
+    "deliverydatepro_holiday": {
+        "column": {
+            "id": true,
+            "title": true,
+            "day": true,
+            "month": true,
+            "year": true,
+            "is_annual": true,
+            "status": true
+        },
+        "constraint": {
+            "PRIMARY": true
+        }
+    },
+    "quote": {
+        "column": {
+            "delivery_charges": true,
+            "same_day_charges": true
+        }
+    },
+    "sales_order": {
+        "column": {
+            "delivery_charges": true,
+            "base_delivery_charges": true,
+            "same_day_charges": true
+        }
+    },
+    "quote_address": {
+        "column": {
+            "delivery_charges": true
+        }
+    },
+    "sales_invoice": {
+        "column": {
+            "delivery_charges": true,
+            "same_day_charges": true
+        }
+    },
+    "sales_creditmemo": {
+        "column": {
+            "delivery_charges": true,
+            "same_day_charges": true
+        }
+    }
+}

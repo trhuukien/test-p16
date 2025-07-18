@@ -1,0 +1,142 @@
+<?php
+$isMandatory = $block->getisMandatory();
+$deliverydateLabel = $block->getDeliverydatelabel();
+$deliverydateLabel = $deliverydateLabel ? $deliverydateLabel . ':' : 'Delivery Date:';
+$deliverydateCommentsLabel = $block->getDeliveryDateCommentsLabel();
+$deliverydateCommentsLabel = $deliverydateCommentsLabel ? $deliverydateCommentsLabel . ':' : 'Delivery Comments:';
+$timeslotTableLabel = $block->getTableLabel();
+$timeslotTableLabel = $timeslotTableLabel ? $timeslotTableLabel : 'Timeslot\'s';
+$addressId = $this->getData('address_id');
+$required = '';
+if ($isMandatory) {
+    $required = ' required-entry _required required';
+}
+?>
+<div class="deliverydate-main-wrapper">
+    <div class="fieldset">
+        <?php if (count($this->getHelper()->getTimeSlots()) > 0) { ?>
+            <div class="field checkout-timeslot deliverydate-timeslot multishipping-timeslot <?php echo $required ?>"
+                 data-ui-id="shipping_arrival_date">
+                <label class="label calender-comment-label" for="shipping_arrival_date" data-ui-id="shipping_arrival_date">
+                    <?php echo __($deliverydateLabel) ?>
+                    <?php
+                    if ($isMandatory) {
+                        echo '<span class="' . $required . '"></span>';
+                    }
+                    ?>
+                </label>
+
+                <div class="timeslottable">
+                    <table class="table-checkout-delivery-method" data-role="grid">
+                        <thead>
+                            <tr>
+                                <th><?php echo __('Date-Day') ?></th>
+                                <th colspan="<?php echo count($this->getHelper()->getTimeSlots()) + 1; ?>"><?php echo __($timeslotTableLabel) ?></th>
+                            </tr>
+                        </thead>
+                        <tbody class="slots">
+                            <?php
+                            foreach ($block->getavailableTimeslot(true, $addressId) as $key => $value) {
+                                echo '<tr class="row slots-data">';
+                                echo '<td class="col delivery-wrapper">' . __($value['row_heading']) . '</td>';
+                                for ($i = 0; $i < count($value['slots']); $i++) {
+                                    if (isset($value['slots'][$i]['disabled']) && $value['slots'][$i]['disabled'] == 1) {
+                                        echo '<td class="col delivery-wrapper delivery-time-slots time-slot-disabled">';
+                                    } else {
+                                        echo '<td class="col delivery-wrapper delivery-time-slots time-slot-enabled">';
+                                    }
+                                    $required = '';
+                                    $onClick = '';
+                                    $selected = false;
+
+
+                                    if ($block->getisMandatory()) {
+                                        $required = 'required-entry admin__control-radio required-entry _required';
+                                    }
+
+
+                                    if (isset($value['slots'][$i]['disabled']) && $value['slots'][$i]['disabled'] == 1) {
+                                        echo "<input type='radio' id='{$value['slots'][$i]['slot_id']}_$addressId' name='radio' class='" . $required . "' onClick='" . $onClick . "' value='{$value['slots'][$i]['slot_value']}' disabled='disabled' /><span class='radio-checked'></span>";
+                                        echo "<label for='{$value['slots'][$i]['slot_id']}'>" . html_entity_decode($value['slots'][$i]['slot_value_html']) . "</label>";
+                                    } else {
+                                        if (isset($selected) && $selected == true) {
+                                            echo "<input type='radio' id='{$value['slots'][$i]['slot_id']}_$addressId' name='radio[$addressId]' class='{$required} delivery-slot' onClick='{$onClick}' value='{$value['slots'][$i]['slot_value']}' checked='checked' /><span class='radio-checked'></span>";
+                                        } else {
+                                            echo "<input type='radio' id='{$value['slots'][$i]['slot_id']}_$addressId' name='radio[$addressId]' class='{$required} delivery-slot' onClick='{$onClick}' value='{$value['slots'][$i]['slot_value']}'/><span class='radio-checked'></span>";
+                                        }
+                                        echo "<label for='{$value['slots'][$i]['slot_id']}_$addressId'>" . html_entity_decode($value['slots'][$i]['slot_value_html']) . "</label>";
+                                    }
+
+                                    echo '</td>';
+                                }
+                                echo '</tr>';
+                            }
+                            ?>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <?php if ($this->getHelper()->applyAdditionalCharge()) { ?>
+                <div role="alert" class="message warning" style="display: none;" id="delivery_charges_day_<?php echo $addressId ?>">
+                    <span class='additional_charge'></span>
+                </div>
+            <?php } ?>
+
+            <div class="hidden-values">
+                <input type="hidden" name="shipping_arrival_date[<?php echo $addressId ?>]" id="shipping_arrival_date_<?php echo $addressId ?>" class="shipping_arrival_date_hidden"/>
+                <input type="hidden" name="shipping_arrival_slot[<?php echo $addressId ?>]" id="shipping_arrival_slot_<?php echo $addressId ?>"/>
+                <input type="hidden" name="delivery_charges[<?php echo $addressId ?>]" id="delivery_charges_<?php echo $addressId ?>"/>
+                <input type="hidden" name="quoteAddressId[<?php echo $addressId ?>]"/>
+            </div>
+            <div class="field" data-ui-id="shipping_arrival_comments">
+                <?php
+                $add_comment = $this->getHelper()->getConfigValue('deliverydate/deliverydate_front_config/add_comment');
+                $comment_required = $this->getHelper()->getConfigValue('deliverydate/deliverydate_front_config/comment_required');
+                if ($add_comment == "1") {
+                    $commentClass = "";
+                    if ($comment_required == "1") {
+                        $commentClass = "required";
+                    }
+                    ?>
+                    <label class="label calender-comment-label <?php echo $commentClass ?>" for="shipping_arrival_comments"
+                           data-ui-id="shipping_arrival_comments">
+                        <span><?php echo __($deliverydateCommentsLabel) ?></span>
+                    </label>
+
+                    <div class="control">
+                        <textarea cols="65" rows="8" class="delivery-date-comment" name="shipping_arrival_comments[<?php echo $addressId ?>]" id="shipping_arrival_comments_<?php echo $addressId ?>"></textarea>
+                    </div>
+                <?php } if ($this->getHelper()->useCallFeature()): ?>
+                    <div class=" choice control">
+                        <input name="call_before_delivery[<?php echo $addressId ?>]" type="checkbox" id="delivery_date_callme_<?php echo $addressId ?>" value="1" class="delivery-date-callme">
+                        <label class="label delivery-callme-label" for="delivery_date_callme_<?php echo $addressId ?>" >
+                            <span  id="call_me_text_<?php echo $addressId ?>"> <?= $this->getHelper()->getDeliveryDateCallMeLabel(); ?> </span>
+                        </label>
+                    </div>
+                <?php endif; ?>
+            </div>
+            <?php
+            $getShowHtml = $this->getHelper()->getConfigValue('deliverydate/deliverydate_front_config/show_html', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+            if ($getShowHtml == 1) {
+                $displayHtml = nl2br($this->getHelper()->getConfigValue('deliverydate/deliverydate_front_config/deliverydate_html', \Magento\Store\Model\ScopeInterface::SCOPE_STORE));
+                ?>
+                <div class="field biz-comment-note" name="show_html">
+                    <ul>
+                        <li>
+                            <ul>
+                                <li>
+                                    <span><?= $displayHtml ?></span>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            <?php } ?>
+        <?php } else { ?>
+            <div class="field" name="shipping_arrival_slot">
+                <p><?php echo __('No Timeslot available') ?></p>
+            </div>
+        <?php } ?>
+    </div>
+</div>

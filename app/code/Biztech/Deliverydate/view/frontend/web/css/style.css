@@ -1,0 +1,930 @@
+.col.delivery-wrapper { text-align: center; }*/
+.col.delivery-wrapper > label { display: inline-block; text-align: center; }
+.checkout-index-index .columns .column.main, .deliverydate-index-deliveryview .columns .column.main { display: inline-block; flex-basis: auto; width: 100%; }
+.col.delivery-wrapper > label { white-space: nowrap; }
+.my-delivery-dates .cal th, .my-delivery-dates .cal td { width: 15.4%; }
+.calender-title { display: inline-block; padding: 10px 0; }
+.my-delivery-dates { overflow-x: auto; width: 100%; }
+.table-checkout-delivery-method { display: block; overflow-x: auto; width: 100%; }
+.my-delivery-dates .prev { margin-right: 10px; }
+.my-delivery-dates .next { margin-left: 10px; }
+.table-checkout-delivery-method .row:before { content: none; }
+#deliverydate-form .fieldset { display: block; overflow-x: auto; width: 100%; }
+.deliverydate-main-wrapper .fieldset > .field { margin: 10px 0; }
+.deliverydate-index-deliveryview #calendar thead, .deliverydate-index-deliveryview #calendar tbody { display: table; width: 100%; }
+#deliverydate-form label { color: #636363; display: inline-block; float: none; max-width: none; min-width: 250px; padding: 6px 10px 6px 0; width: auto; -moz-user-select: none; display: inline; font-family: "Raleway", "Helvetica Neue", Verdana, Arial, sans-serif; font-size: 13px; font-weight: 600; vertical-align: middle; }
+#deliverydate-form .delivery-slot { vertical-align: middle; }
+.standard-delivery-1916, .express-delivery-1916 { display: inline-block; height: 50px; max-width: 32%; position: relative; width: 32%; }
+.express-label-charge, .standard-label-charge { display: block; font-size: 12px; font-style: italic; font-weight: 300; text-align: left; padding-left: 35px; }
+.table-checkout-delivery-method { border-top: 1px solid #dadada; font-family: "Raleway", "Helvetica Neue", Verdana, Arial, sans-serif; }
+.table-checkout-delivery-method thead th:first-child { border-right: 1px solid #dadada; }
+.table-checkout-delivery-method .col.delivery-wrapper:first-child:hover { background-color: transparent; }
+.table-checkout-delivery-method .col.delivery-wrapper:hover, .table-checkout-delivery-method.same-day-slot .col:hover { background-color: #f5f5f5; }
+/*#deliverydate-form .table-checkout-delivery-method .col.delivery-wrapper:hover label, #deliverydate-form .table-checkout-delivery-method.same-day-slot .col:hover label { color: white; }*/
+#deliverydate-form label.calender-comment-label { color: #333; display: inline-block; font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif; font-size: 16px; margin-bottom: 5px; padding-left: 0; }
+.field.biz-comment-note li { background-color: #f5f5f5; font-size: 12px; list-style: outside none none; margin: 0; padding: 5px; }
+.field.biz-comment-note ul { margin: 0; padding: 0; }
+.field.biz-comment-note li span {
+    background: rgba(0, 0, 0, 0) url(../images/delivery-info-icon.png) no-repeat scroll left top / 28px auto; line-height: 30px; padding-left: 35px;
+    content: " ";
+    display: inline-block;
+    font-weight: bold;
+    height: 25px;
+    letter-spacing: 0.5px;
+    line-height: 25px;
+    padding-left: 45px;
+}
+/*calendar*/
+#calendar .cal-nav { background: #e3e3e3 none repeat scroll 0 0; border: 0.1rem solid #adadad; color: #41362f; display: inline-block; line-height: 14px; margin: 0 10px; padding: 6px; vertical-align: middle; }
+#calendar .cal-nav:hover { background: #D6D6D6 none repeat scroll 0 0; text-decoration: none; }
+/*#calendar { text-align: center; }*/
+/*end calendar*/
+
+/*24/7/2019*/
+
+.table-checkout-delivery-method .delivery-time-slots { text-align: center; position: relative;}
+.checkout-deliverydate .control{position: relative;}
+.checkout-deliverydate .control .ui-datepicker-trigger{position: absolute; top: 7px; left: 5px; max-width: 25px; }
+.checkout-deliverydate .control ._has-datepicker{padding-left: 35px;}
+
+.ui-datepicker .ui-datepicker-calendar .ui-state-disabled span{color: #CE1515;}
+.ui-datepicker-unselectable.ui-state-disabled.undefined{background: #f5e7e4;}
+/*.ui-datepicker .ui-datepicker-calendar .ui-state-disabled{background: #f5e7e4;}*/
+.ui-datepicker td a{color: #078F07;}
+.delivery-time-slots input[type="radio"], .delivery-time-slots input[type="radio"]:disabled{position: absolute; opacity: 0; left: 50%; transform: translateX(-50%); z-index: 30; cursor: pointer;}
+.radio-checked{position: absolute; display: block; height: 13px; width: 13px; border: 2px solid #26a9e0; border-radius: 100%; left: 50%; transform: translateX(-50%); top: 11px; cursor: pointer; z-index: 10;}
+.radio-checked:after{ position: absolute; content: ''; height: 7px; width: 7px; background: transparent; border-radius: 100%; left: 3px; top: 3px; -webkit-transition: background 0.25s linear; }
+.delivery-time-slots input[type="radio"]:checked ~ .radio-checked:after{background-color: #26a9e0; z-index: 21;}
+.delivery-time-slots label{padding-top: 20px; z-index: 9; -webkit-transition: all 0.25s linear;}
+.delivery-time-slots input[type="radio"]{background-color: #26a9e0;} 
+.table-checkout-delivery-method .delivery-time-slots.time-slot-disabled, .time-slot-disabled label, .time-slot-disabled .radio-checked{cursor: not-allowed;}
+.time-slot-disabled .radio-checked:after{background-color: #26a9e0;}
+.radio-checked:before{content: ''; position: absolute; height: 3px; width: 16px; background: transparent; transform: rotate(-45deg); left: -1px; top: 5px; z-index: 11;}
+.time-slot-disabled .radio-checked:before{background-color: #ff0000;}
+
+#slots tr td:first-child{background-color: #eee; position: absolute; width: 90px; z-index: 21; top: auto; left: 0; transform: translate3d(0, 0, 0); -webkit-transform: translate3d(0, 0, 0); }
+.table-checkout-delivery-method thead tr th:first-child{display: block; min-width: 88px; transform: translate3d(0, 0, 0); -webkit-transform: translate3d(0, 0, 0); }
+/*.ui-datepicker .ui-datepicker-calendar .ui-datepicker-today span{color: #1978c3;}*/
+/*.ui-datepicker .ui-datepicker-calendar .ui-datepicker-today{background-color: #f3d7d2;}*/
+/*#slots{padding-top: 40px; display: block;}
+.table-checkout-delivery-method thead{position: absolute;}*/
+
+.ui-datepicker-calendar .ui-datepicker-today a, .ui-datepicker-calendar .ui-datepicker-today a:hover, .ui-datepicker-unselectable.ui-state-disabled.ui-datepicker-today a,
+.ui-datepicker-unselectable.ui-state-disabled.ui-datepicker-today a:hover{background-color:#bfddf3;}
+.ui-datepicker-unselectable.ui-state-disabled.ui-datepicker-today span{color:#076db7; }
+.ui-datepicker-calendar .ui-datepicker-today a{color:#076db7; }
+
+/*24/7/2019*/
+
+/*25/7/2019*/
+.checkout-timeslot{position: relative;}
+.table-checkout-delivery-method thead{position: absolute; z-index: 21; left: 0; top: auto;}
+#slots{padding-top: 40px; display: block;}
+#slots tr td:nth-child(2){padding-left: 120px;}
+#slots tr td:nth-child(2) .radio-checked{left: 65%;}
+#slots tr td:nth-child(2) input[type="radio"]{left: 65%;}
+#ui-datepicker-div .undefined:hover{background-color:#eee !important;}
+#ui-datepicker-div .undefined .ui-state-default.ui-state-hover{background-color:#eee !important;}
+.ui-datepicker .ui-datepicker-calendar .ui-state-active{background: #cde7f5;}
+/*25/7/2019*/
+
+/*26/7/2019*/
+
+.deliverydate-timeslot #slots tr td:not(:first-child){padding-top: 30px;}
+.deliverydate-timeslot #slots tr td:nth-child(2) input[type="radio"], .deliverydate-timeslot .delivery-time-slots input[type="radio"], 
+.deliverydate-timeslot .delivery-time-slots input[type="radio"]:disabled{top: 11px;}
+
+/*26/7/2019*/
+
+/*29/7/2019*/
+#product_addtocart_form .datepicker-rtl .ui-datepicker-trigger{top:2px;}
+.checkout-deliverydate .control.datepicker-rtl .ui-datepicker-trigger{top:2px}
+
+/*29/7/2019*/
+
+@media (max-width:767px) {
+    #deliverydate-form .standard-delivery-1916, #deliverydate-form .express-delivery-1916 { max-width: 100%; width: 100% !important; }
+    .col.delivery-wrapper { text-align: center; }
+    #deliverydate-form label { padding: 0; }
+} 
+.ui-datepicker {    z-index: 999 !important; }
+#timeslottable {
+    max-height: 500px;
+    overflow-y: auto;
+    position: relative;
+    -webkit-overflow-scrolling: touch;
+}
+table.table-checkout-delivery-method>thead>tr>th:nth-child(2){
+    transform: translate3d(0, 0, 0); -webkit-transform: translate3d(0, 0, 0); 
+}
+
+/*21/8/2019*/
+#deliverydate-form .field.biz-comment-note li span{background: rgba(0, 0, 0, 0) url(../images/delivery-info-icon.png) no-repeat scroll left top / 28px auto; line-height: 30px; padding-left: 35px;}
+
+/*12/10/2020 - update delivery date button*/
+#update-deliverydate{font-size: 1.4rem; margin-top: 3px; text-align: center; padding: 5px 7px; border: 1px solid #056bb3; background: #056bb3; color: #fff; border-radius: 1px; opacity: 1; cursor: pointer; -webkit-transition: all 0.3s ease;-o-transition: all 0.3s ease;transition: all 0.3s ease; box-shadow: none; font-weight: 400}
+
+/*19-10-2020 delivery date and time design*/
+
+.dds_drop_down a{text-decoration: none;}
+.dds_drop_down .options ul{padding: 0; padding: 0 25px;}
+.dds_drop_down .options ul li{list-style: none; padding: 10px 0; border-bottom: 1px solid #dfdfdf; margin-bottom: 0; position: relative;}
+.dds_drop_down .options ul li a{display: block; color: #2c2c2c; font-size: 15px; padding-left: 20px;}
+.dds_drop_down .options ul li:last-child{border-bottom: none;}
+/* .dds_drop_down{max-width: 50%;} */
+.dds_drop_down .selected{border: 1px solid #aaa; border-radius: 7px; position: relative; cursor: pointer; background: #fff;}
+.dds_drop_down .selected a{display: inline-block; padding: 7px 15px; box-sizing: border-box; position: relative; color: #2c2c2c;} 
+.dds_drop_down .options ul li span{color: #2c2c2c; font-size: 16px; cursor: pointer;}
+.dds_drop_down .selected:after{content: ''; height: 8px; width: 8px; border-left: 2px solid #4e72d9; border-bottom: 2px solid #4e72d9; position: absolute; right: 15px; top: 11px; -webkit-transform: rotate(-45deg); -ms-transform: rotate(-45deg); transform: rotate(-45deg); -webkit-transition: all 0.3s ease;-o-transition: all 0.3s ease;transition: all 0.3s ease;}
+.dds_drop_down .options ul li .dds_calendar_radio{position: absolute; left: 0; top: 50%; -webkit-transform: translateY(-50%); -ms-transform: translateY(-50%); transform: translateY(-50%);}
+.dds_drop_down .options{box-shadow: 0 0 11px 0px rgba(0, 0, 0, 0.3); height: 0; overflow: hidden;}
+.dds_drop_down .options.open_option{height: 180px; overflow-y: auto;}
+.dds_drop_down .options ul li.disable_opt, 
+.dds_drop_down .options ul li.disable_opt span{color: #959191; cursor: not-allowed;}
+.calender-comment-label{margin-bottom: 5px; position: relative; font-weight: 600;}
+.calender-comment-label:after{content: '*'; color: #e02b27; font-size: 1.2rem; margin: 0 0 0 5px;}
+.dds_drop_down .selected a span{padding-left: 10px;}
+.calander_button .selected a i{color: #4e72d9; font-size: 16px;}
+
+/*dds time slot css*/
+
+/*radio*/
+
+.timeslot_radio.available_slot_radio{padding: 0 15px; /*-webkit-box-shadow: 0 0 11px 0px rgba(0, 0, 0, 0.3); box-shadow: 0 0 11px 0px rgba(0, 0, 0, 0.3);*/ border:1px solid #aaa; max-width: 50%; margin-top: 20px; height: 182px; overflow-y: auto; border-radius: 4px;}
+.timeslot_radio .delivery-date-cell{padding: 10px; border-bottom: 1px solid #dfdfdf; margin-bottom: 0; position: relative;  cursor: pointer;}
+.timeslot_radio .delivery-date-cell label{color: #2c2c2c; font-size: 16px; position: relative; padding-left: 35px; cursor: pointer;}
+
+.timeslot_radio .delivery-date-cell label:before{content: ''; height: 16px; width: 16px; border-radius: 100%; border: 1px solid #c1c1c1; position: absolute; left: 0; top: 50%; -webkit-transform: translateY(-50%); -ms-transform: translateY(-50%); transform: translateY(-50%); -webkit-transition: all 0.3s ease;-o-transition: all 0.3s ease;transition: all 0.3s ease; cursor: pointer;}  
+
+.timeslot_radio .delivery-date-cell label:after { content: ''; height: 10px; width: 10px; background: #4e72d9; position: absolute; border-radius: 100%; left: 4px; top: 5px; opacity: 0;}
+.timeslot_radio .delivery-date-cell input[type="radio"]{opacity: 0; z-index: 99; position: absolute; left: 13px; top: 13px; cursor: pointer;}
+.timeslot_radio .delivery-date-cell input[type="radio"]:checked + label:before{border-color: #4e72d9;}
+.timeslot_radio .delivery-date-cell input[type="radio"]:checked + label:after{opacity: 1;}
+.timeslot_radio .delivery-date-cell:last-child{border-bottom: none;}
+.timeslot_radio .delivery-date-cell.disable_radio{cursor: not-allowed;}
+.timeslot_radio .delivery-date-cell.disable_radio input,
+.timeslot_radio .delivery-date-cell.disable_radio label{cursor: not-allowed; color: #959191;}
+
+/*calendar type css start*/
+
+/*.control.calander_button{width: 50%;}*/
+.control.calander_button input[type="text"]{border-radius: 8px;}
+.checkout-deliverydate .control.calander_button{display: block; /*width: 50%;*/cursor: pointer;}
+.checkout-deliverydate .control.calander_button input{box-shadow: none !important; position: relative; border:none; cursor: pointer;}
+.checkout-deliverydate .control.calander_button .available_date_calendar:after{content: ''; height: 8px; width: 8px; border-left: 2px solid #4e72d9; border-bottom: 2px solid #4e72d9; position: absolute; right: 15px; top: 8px; -webkit-transform: rotate(-45deg); -ms-transform: rotate(-45deg); transform: rotate(-45deg); -webkit-transition: all 0.3s ease;-o-transition: all 0.3s ease;transition: all 0.3s ease;}
+#ui-datepicker-div{padding: 0 !important; background: #fff; border:none; margin-top: 4px !important; margin-left: -14px;}
+#ui-datepicker-div .ui-datepicker-header{background: #4e72d9; padding-bottom: 0; padding: 12px;}
+#ui-datepicker-div .ui-datepicker-header .ui-datepicker-title span{color: #fff; font-size: 18px; font-weight: 600;}
+#ui-datepicker-div .ui-datepicker-header .ui-datepicker-next .ui-icon{border-bottom: 3px solid #fff; border-left: 3px solid #fff; height: 7px; width: 7px; border-top: none; position: static; display: block; margin: 0; border-right: none; -webkit-transform: rotate(-135deg);-ms-transform: rotate(-135deg);transform: rotate(-135deg);}
+#ui-datepicker-div .ui-datepicker-header .ui-datepicker-next{width: 10px; height: 10px; right: 20px; top: 50%; -webkit-transform: translateY(-50%); -ms-transform: translateY(-50%); transform: translateY(-50%); display: inline-block;}
+
+#ui-datepicker-div .ui-datepicker-header .ui-datepicker-prev .ui-icon{border-bottom: 3px solid #fff; border-left: 3px solid #fff; height: 7px; width: 7px; border-top: none; position: static; display: block; margin: 0; border-right: none; -webkit-transform: rotate(45deg);-ms-transform: rotate(45deg);transform: rotate(45deg);}
+#ui-datepicker-div .ui-datepicker-header .ui-datepicker-prev{width: 10px; height: 10px; right: auto; left: 20px; top: 50%; -webkit-transform: translateY(-50%); -ms-transform: translateY(-50%); transform: translateY(-50%); display: inline-block;}
+
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar th{border: none !important; background: #fff !important; padding: 6px !important; text-align: center;}
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar th span{ font-weight: normal !important; font-size: 10px !important;}
+
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar td span, 
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar td a{text-align: center !important; color: #333333 !important; font-weight: 700 !important; padding: 0 !important; font-size: 14px !important; cursor: pointer !important; position: relative !important; background:transparent !important;}
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar td{background: #fff !important; padding: 13px !important; vertical-align: top !important; cursor: pointer !important;}
+/*#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar .ui-datepicker-today a{background-color: #fff !important;}*/
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar td span:after, 
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar td a:after{height: 4px; width: 4px; background-color: #fff; border-radius: 100%; content: ''; position: absolute; bottom: -7px; left: 50%; transform: translateX(-50%); opacity: 0;}
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar .ui-datepicker-today, 
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar .ui-datepicker-current-day{background: rgb(56,109,255) !important;
+                                                                                    background: linear-gradient(180deg, rgba(56,109,255,1) 38%, rgba(56,129,255,1) 69%) !important;}
+
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar .ui-datepicker-today a, 
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar .ui-datepicker-current-day a{color: #fff !important; text-shadow: 0px 2px 5px rgba(0, 0, 0, 0.5);}
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar .ui-datepicker-today a:after, 
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar .ui-datepicker-current-day a:after{opacity: 1; background-color: #fff; -webkit-box-shadow: 0px 2px 5px 0px rgb(0,0,0,0.6);    box-shadow: 0px 2px 5px 0px rgb(0,0,0,0.6);}
+#ui-datepicker-div.ui-datepicker .undefined .ui-state-default.ui-state-hover{background: transparent !important;}
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar .ui-state-disabled span{color: #959595 !important; cursor: not-allowed !important;}
+#ui-datepicker-div.ui-datepicker .ui-datepicker-unselectable.ui-state-disabled.undefined{cursor: not-allowed !important;}
+.checkout-timeslot .table-checkout-delivery-method{border: 1px solid #dadada;}
+.checkout-timeslot .table-checkout-delivery-method thead{display: none;}
+.checkout-timeslot .delivery-time-slots label{padding-top: 0;}
+.checkout-timeslot .table-checkout-delivery-method #slots{padding-top: 0;}
+.checkout-timeslot .table-checkout-delivery-method .delivery-time-slots{padding-top: 15px; padding-bottom: 9px;}
+.checkout-timeslot .delivery-time-slots .radio-checked{left: 20px; height: 16px; width: 16px; border:1px solid #b0b0b0; border-radius: 100%; top: 26px;}
+.checkout-timeslot .delivery-time-slots .radio-checked:before{content: none;}
+.checkout-timeslot #slots tr td:nth-child(2) .radio-checked{left: 13%;}
+.checkout-timeslot .delivery-time-slots label{padding-left: 28px; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif;}
+.checkout-timeslot #slots tr td:first-child{font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f7ff; width: 170px;}
+.checkout-timeslot .delivery-time-slots .radio-checked:after{ height: 10px; width: 10px; background-color: #4e72d9; opacity: 0;}
+
+/*.checkout-timeslot .table-checkout-delivery-method #slots .col.delivery-wrapper > label{padding:15px 10px;}*/
+/*.checkout-timeslot .table-checkout-delivery-method #slots tr td:first-child{left: 6px;}*/
+.checkout-timeslot .table-checkout-delivery-method #slots tr td:nth-child(2){padding-left: 10px;}
+.checkout-timeslot .delivery-time-slots input[type="radio"], 
+.checkout-timeslot .delivery-time-slots input[type="radio"]:disabled{left: 20px;}
+.checkout-timeslot .delivery-time-slots input[type="radio"]:checked ~ .radio-checked:after{background-color: #4e72d9; opacity: 1;}
+.checkout-timeslot .delivery-time-slots input[type="radio"]:checked ~ .radio-checked{border-color: #4e72d9;}
+.checkout-timeslot #slots tr td:nth-child(2) input[type="radio"]{left: 59%;}
+.checkout-timeslot .table-checkout-delivery-method #slots tr td{/*border-bottom: 1px solid #dfdfdf;*/ position: relative; vertical-align: middle;}
+.checkout-timeslot .table-checkout-delivery-method #slots tr td:after{content: ''; width: 100%; height: 1px; background-color:#dfdfdf;position: absolute; left: 0; bottom: 0;}
+.checkout-timeslot .delivery-time-slots.time-slot-disabled label{color: #d9d9d9;}
+/*.checkout-timeslot tr.row.slots-data:after{content: ''; height: 1px; width: 100%; background: #000; position: absolute; top: 43px; left: 40%;}
+.checkout-timeslot tr.row.slots-data{position: relative;}*/
+
+#deliverydate-main-wrapper .data-item{border-color: #a6a6a6 !important; width: 170px !important; font-size: 14px !important; margin: 0 auto !important; padding: 10px !important; border-radius: 7px; cursor: pointer;}
+#deliverydate-main-wrapper .data-item:active{box-shadow: none !important; background: transparent !important;}
+#deliverydate-main-wrapper .data-item label{color: #a6a6a6; cursor: pointer;}
+#deliverydate-main-wrapper .data-item:hover{background: transparent !important;}
+#deliverydate-main-wrapper .delivery-date-cell{margin-bottom: 0px;}
+#deliverydate-main-wrapper .timeslot_button.available_slot{height: 198px; overflow-y: auto; width: 50%; border: 1px solid #ccc; padding: 10px; border-radius: 6px;}
+#deliverydate-main-wrapper .data-item.active{border-color: #4e72d9 !important; box-shadow: 0 2px 9px 0px rgba(0,0,0,0.1) !important;}
+#deliverydate-main-wrapper .data-item.active label{color:#4e72d9 !important; font-weight: 600 !important;}
+#deliverydate-main-wrapper .delivery-date-cell.disable_button .data-item.button_disable{background:#ededed; border-color: #ededed !important; cursor: not-allowed; pointer-events: none;}
+#deliverydate-main-wrapper .delivery-date-cell.disable_button{cursor: not-allowed !important;}
+#deliverydate-main-wrapper .available_date_button .data-item{padding: 7px !important;}
+#deliverydate-main-wrapper .available_date_button .data-item label:after, 
+#deliverydate-main-wrapper .available_date_button .data-item label:before{content: none !important;}
+#deliverydate-main-wrapper .calander_button .available_date_button .delivery-date-cell label{padding-left: 0;}
+#deliverydate-main-wrapper .timeslot_button.available_slot .delivery-date-cell{margin-bottom: 10px;}
+#deliverydate-main-wrapper .available_date_button .data-item.active label{color: #4e72d9 !important}
+
+
+
+/*calendar button css start*/
+
+.checkout-deliverydate .control.calander_button:after{content: none;}
+.checkout-deliverydate .control.calander_button .available_date_radio{height: 184px; overflow-y: auto; padding: 12px; border: 1px solid #aaa; border-radius: 5px; width: 50%; box-sizing: border-box;}
+#deliverydate-main-wrapper .calander_button .available_date_button .delivery-date-cell{border-bottom: none; padding: 6px;}
+/*#deliverydate-main-wrapper .calander_button .available_date_button{border: 1px solid #cccccc; height: 220px; overflow-y: auto; padding: 8px; border-radius: 6px;}*/
+
+
+/*calendar radio css start*/
+
+#deliverydate-main-wrapper .calander_button .delivery-date-cell label{color: #2c2c2c; font-size: 14px; position: relative; padding-left: 35px; cursor: pointer;}
+#deliverydate-main-wrapper .calander_button .delivery-date-cell label:after{content: ''; height: 10px; width: 10px; background: #4e72d9; position: absolute; border-radius: 100%; left: 4px; top: 6px; opacity: 0;}
+#deliverydate-main-wrapper .calander_button .delivery-date-cell label:before{content: ''; height: 16px; width: 16px; border-radius: 100%; border: 1px solid #c1c1c1; position: absolute; left: 0; top: 50%; -webkit-transform: translateY(-50%); -ms-transform: translateY(-50%); transform: translateY(-50%); -webkit-transition: all 0.3s ease; -o-transition: all 0.3s ease; transition: all 0.3s ease; cursor: pointer;}
+
+#deliverydate-main-wrapper .calander_button .delivery-date-cell input[type="radio"]{opacity: 0; z-index: 99; position: absolute; left: 13px; top: 13px; cursor: pointer;}
+#deliverydate-main-wrapper .calander_button .delivery-date-cell input[type="radio"]:checked + label:after{opacity: 1;}
+#deliverydate-main-wrapper .calander_button .delivery-date-cell input[type="radio"]:checked + label:before{ border-color: #4e72d9;}
+#deliverydate-main-wrapper .calander_button .delivery-date-cell{padding: 10px; border-bottom: 1px solid #dfdfdf; position: relative; cursor: pointer;}
+#deliverydate-main-wrapper .calander_button .delivery-date-cell.disable_radio{cursor: not-allowed;}
+#deliverydate-main-wrapper .calander_button .delivery-date-cell.disable_radio label{color: #cacaca !important; cursor: not-allowed;}
+#deliverydate-main-wrapper .calander_button .available_date_radio .delivery-date-cell label{font-size: 16px;}
+
+/* time dropdown css start */
+
+.dds_drop_down.datetimeslot{width: 50%;}
+#deliverydate-main-wrapper .calander_button{margin-bottom: 30px;}
+#deliverydate-main-wrapper .calander_button .available_date_button .delivery-date-cell label{color: #9d9d9d;}
+.available_date_calendar{border: 1px solid #c2c2c2; border-radius: 5px; position: relative; width: 50%;}
+.dds_drop_down.datetimeslot .selected a i{ font-size: 18px !important; color: #4e72d9; position: absolute; top: 8px; left: 12px; }
+.dds_drop_down.datetimeslot .selected a span{padding-left: 20px;}
+#dds_dropdown_selected{width: 50%;}
+
+
+
+
+
+@media(min-width: 768px) and (max-width: 900px){
+    #deliverydate-main-wrapper .timeslot_button.available_slot{width: 66%;}
+}
+
+@media(max-width: 767px){
+    #deliverydate-main-wrapper .timeslot_button.available_slot{width: 57%;}
+    .dds_drop_down.datetimeslot{width: 60%;}
+    .checkout-deliverydate .control.calander_button .available_date_radio{width: 100%;}
+    .timeslot_radio.available_slot_radio{width: 60%;}
+    #deliverydate-main-wrapper .calander_button .available_date_button{padding: 3px;}
+    #dds_dropdown_selected{width: 100%;}
+}
+
+@media(max-width: 320px){
+    #ui-datepicker-div.ui-datepicker .ui-datepicker-calendar td{padding: 10px !important;}
+    .timeslot_radio.available_slot_radio{width: 80%;}
+    #deliverydate-main-wrapper .timeslot_button.available_slot{width: 67%;}
+    .checkout-deliverydate .control.calander_button{width: 80%;}
+    .dds_drop_down.datetimeslot{width: 80%;}
+}
+
+/*account page date-time css start*/
+
+#appjetty-deliverydate-1 .dds_drop_down.datetimeslot{width: 100%;}
+#appjetty-deliverydate-1 .dds_drop_down .options ul{padding: 0px 15px;}
+#appjetty-deliverydate-1 .calender-comment-label input{border-radius: 6px !important;}
+
+#appjetty-deliverydate-1 .checkout-deliverydate .control ._has-datepicker{border-radius: 6px;}
+
+/*checkout page css changes start*/
+
+.deliverydate-main-wrapper.checkout-dds .dds_drop_down{margin-left: 10px;}
+.checkout-dds .available_date_radio .delivery-date-cell label:after{top:12px !important;}
+.checkout-dds .available_date_radio .delivery-date-cell label{font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important; color: #a6a6a6 !important; font-weight: normal !important;}
+.checkout-dds .available_slot_radio label{padding-left: 30px !important; font-weight: normal !important; font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important ; color: #a6a6a6 !important; font-size: 15px !important;}
+.checkout-dds .timeslot_button.available_slot #deliverydate-main-wrapper .data-item label{font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;  font-weight: normal !important;}
+
+
+#deliverydate-main-wrapper.checkout-dds .data-item{border:1px solid; text-align: center; padding: 8px !important;}
+#deliverydate-main-wrapper.checkout-dds .data-item label{padding: 0; cursor: pointer; font-size: 15px; font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif; font-weight: normal;}
+#deliverydate-main-wrapper .delivery-date-cell.disable_button .data-item.button_disable:hover{background-color: #ededed !important;}
+
+.checkout-dds .checkout-deliverydate .control.calander_button{width: 60%;}
+#deliverydate-main-wrapper.checkout-dds .timeslot_button.available_slot{width: 70%; padding: 0 30px;}
+#deliverydate-main-wrapper .delivery-date-cell.disable_button .data-item.button_disable label{cursor: not-allowed;}
+.checkout-dds .timeslot_radio.available_slot_radio{width: 30%;}
+.checkout-dds .timeslot_radio .delivery-date-cell label:after{top: 11px;}
+.checkout-dds .dds_drop_down.datetimeslot{width: 30%;}
+#deliverydate-edit{display: block; max-width: 50px; background: #1979c3; text-align: center; color: #fff; padding: 4px; font-size: 14px; border-radius: 4px; cursor: pointer; margin-top: 10px;}
+#deliverydate-main-wrapper .available_date_button .data-item.calendar_date_button, 
+#deliverydate-main-wrapper .data-item.arrival_slot_time_button{border:1px solid;}
+
+
+
+#deliverydate-main-wrapper.checkout-dds .timeslot_button.available_slot{padding: 20px 0; width: 31%; height: 142px; overflow-y: auto; -webkit-box-shadow: 0 0 6px 2px rgba(0, 0, 0, 0.1); box-shadow: 0 0 6px 2px rgba(0, 0, 0, 0.1); margin-left: 7px;}
+
+
+#deliverydate-main-wrapper .available_date_button .data-item.calendar_date_button, 
+#deliverydate-main-wrapper .delivery-date-cell.slick-slide .data-item.arrival_slot_time_button { border: 1px solid #aaa; padding: 6px 0 !important; text-align: center; width: 100% !important;}
+#deliverydate-main-wrapper .calander_button .available_date_button .delivery-date-cell { text-align: center; border-bottom: none; padding: 6px;}
+#deliverydate-main-wrapper .calander_button .delivery-date-cell label{font-size: 14px;}
+#deliverydate-main-wrapper .timeslot_button.available_slot .delivery-date-cell.slick-slide{padding: 8px !important  ; margin-bottom: 0px !important;}
+#deliverydate-main-wrapper .timeslot_button.available_slot{height: auto; overflow-y: initial; width: 100%; border: none; padding: 0; border-radius: 0;}
+
+#deliverydate-main-wrapper .calander_button .available_date_button { border: none; height: auto;}
+#deliverydate-main-wrapper .slick-prev, #deliverydate-main-wrapper .slick-next { box-shadow: none !important; border: none !important;}
+#deliverydate-main-wrapper .slick-prev{left: 0;}
+#deliverydate-main-wrapper .slick-next{right: 0;}
+#deliverydate-main-wrapper .slick-prev:before, 
+#deliverydate-main-wrapper .slick-next:before { height: 12px; width: 12px; border-bottom: 3px solid #c0c0c0; border-left: 3px solid #c0c0c0; position: absolute; -webkit-transform: rotate(45deg); -ms-transform: rotate(45deg); transform: rotate(45deg); top: 0; left: 0;}
+
+#deliverydate-main-wrapper .slick-prev:before, #deliverydate-main-wrapper .slick-next:before { content: '' !important;}
+
+#deliverydate-main-wrapper .slick-next:before { -webkit-transform: rotate(-135deg); -ms-transform: rotate(-135deg); transform: rotate(-135deg); left: auto; right: 0;}  
+#deliverydate-main-wrapper .slick-prev{left: -15px;}
+#deliverydate-main-wrapper .slick-next{right: -15px;}
+
+
+#deliverydate-main-wrapper.checkout-dds .calander_button .available_date_button{padding: 0px 30px; margin-left: 6px; border-radius: 7px; max-width: 100%; background: #fff; margin-left: 0;}
+#deliverydate-main-wrapper.checkout-dds .slick-prev{left: 12px;}
+#deliverydate-main-wrapper.checkout-dds .slick-next{right: 6px;}
+
+
+@media(min-width: 1100px) and (max-width: 1185px){
+    #deliverydate-main-wrapper .data-item.arrival_slot_time_button label{font-size: 13px;}
+}
+
+@media(min-width: 992px) and (max-width: 1024px){
+    #deliverydate-main-wrapper .slick-prev{left: -8px;}
+    #deliverydate-main-wrapper .slick-next{right: -8px;}
+    #deliverydate-main-wrapper .calander_button .available_date_button{width: 90%; margin: 0 auto;}
+}
+
+@media(max-width: 991px){
+    #deliverydate-main-wrapper .calander_button .available_date_button{width: 80%; margin: 0 auto;}
+    #deliverydate-main-wrapper .timeslot_button.available_slot{width: 80% !important; margin: 0 auto;}
+    #deliverydate-main-wrapper.checkout-dds .timeslot_button.available_slot{margin: 0;}
+}
+
+@media(max-width: 767px){
+    #deliverydate-main-wrapper .timeslot_button.available_slot{margin: 0 auto;}
+    #deliverydate-main-wrapper .timeslot_button.available_slot{width: 78% !important;}
+    #deliverydate-main-wrapper .calander_button .available_date_button{width: 75% !important; margin: 0; margin-top: 15px;}
+    #deliverydate-main-wrapper.checkout-dds .calander_button .available_date_button{width: 100% !important;}
+    #deliverydate-main-wrapper .calander_button .available_date_button.date_slider{margin: 0 auto;}
+}
+
+@media(max-width: 320px){
+    /*.checkout-deliverydate .control.calander_button{margin: 0 auto;}*/
+}
+
+
+/*5-11-2020*/
+
+.dds_drop_down.datetimeslot, 
+#dds_dropdown_selected{position: relative;}
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar .ui-datepicker-today span{color: #fff !important;}
+.dds_drop_down .options.open_option{position: absolute; left: 0; background: #fff; width: 100%; z-index: 99;}
+.ui-datepicker .ui-datepicker-buttonpane{padding: 12px 0; text-align: center;}
+.ui-datepicker .ui-datepicker-buttonpane button{float: none !important;}
+.ui-datepicker .ui-datepicker-buttonpane button.ui-datepicker-current{margin-right: 12px;}
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar .ui-datepicker-today span:after{opacity: 1;}
+#deliverydate-main-wrapper .timeslot_button.available_slot{padding: 20px !important; -webkit-box-shadow: 0 0 5px 1px rgba(0,0,0,0.1); box-shadow: 0 0 5px 1px rgba(0,0,0,0.1); margin-top: 15px !important; width: 42%; height: 187px; overflow-y: auto;}
+#deliverydate-main-wrapper .timeslot_button.available_slot .delivery-date-cell .arrival_slot_time_button{text-align: center;}
+#deliverydate-main-wrapper .timeslot_button.available_slot.time_slider{width: 100%; box-shadow: none; overflow: unset; height: auto; padding: 0 !important;}
+#deliverydate-main-wrapper .delivery-date-cell.disable_button .data-item.button_disable label{color: #a6a6a6 !important;}
+
+/*.date_time_container{display: -webkit-box; display: -ms-flexbox; display: flex; -ms-flex-wrap: wrap; flex-wrap: wrap;}
+.date_time_container  .field{width: 46%;} */
+
+.date_time_container  .field #dds_dropdown_selected{width: 100%;}
+.date_time_container .dds_drop_down.datetimeslot{width: 45%; padding-left: 40px;}
+.date_time_container .dds_drop_down.datetimeslot .options.open_option{width: 85%; left: 40px;}
+.date_time_container .time_slot_wrap .timeslot_radio.available_slot_radio{max-width: 100%; margin-top: 15px;}
+.date_time_container .time_slot_wrap {width: 47%; padding-left: 30px;}
+.date_time_container .time_slot_wrap .timeslot_radio .delivery-date-cell label{font-size: 14px; padding-left: 29px;}
+.checkout-deliverydate .date_time_container .control.calander_button .available_date_radio{width: 100%; height: 185px; margin-top: 15px;}
+.date_time_container .available_date_button{-webkit-box-shadow: 0 0 5px 1px rgba(0,0,0,0.1); box-shadow: 0 0 5px 1px rgba(0,0,0,0.1); height: 218px !important; overflow-y: auto;}
+.date_time_container .available_date_calendar{width: 100%;}
+.date_time_container .time_btn_wrap{margin-left: 50px; width: 42%;}
+#deliverydate-main-wrapper .date_time_container .time_btn_wrap .timeslot_button.available_slot{width: 100%; background-color: #fff; border-radius: 7px;}
+.date_time_container.date_time_button > .field{width: 100%;}
+.date_time_container.date_time_button .available_date_button.date_slider{height: auto !important; overflow: unset; box-shadow: none;}
+.date_time_container.date_time_button .time_btn_wrap{width: 100%; margin-left: 0;}
+.date_time_button  .field{width: 100% !important;}
+.date_time_button{display: block !important;}
+.dds_drop_down .selected{margin-top: 15px;}
+
+/*checkout page css*/
+
+#deliverydate-main-wrapper .calander_button .delivery-date-cell label{color: #2c2c2c !important;}
+.checkout-dds .timeslot_radio.available_slot_radio .delivery-date-cell label{color: #2c2c2c !important;}
+.checkout-dds .timeslot_radio.available_slot_radio .delivery-date-cell.disable_radio label{color: #cacaca !important;}
+#deliverydate-main-wrapper.checkout-dds .delivery-date-cell.disable_button .data-item.button_disable label{color: #acacac !important;}
+#deliverydate-main-wrapper.checkout-dds .data-item.arrival_slot_time_button label{color: #2c2c2c !important;}
+#deliverydate-main-wrapper.checkout-dds .data-item.arrival_slot_time_button.active label{color:#4e72d9 !important;}
+
+
+#deliverydate-main-wrapper.checkout-dds .timeslot_button.available_slot.time_slider{box-shadow: none; width: 100%; padding: 0 20px !important; height: auto; overflow: unset;}
+#deliverydate-main-wrapper.checkout-dds .timeslot_button.available_slot.time_slider .slick-prev{left: 0;}
+#deliverydate-main-wrapper.checkout-dds .timeslot_button.available_slot.time_slider .slick-next{right: 0;}  
+.checkout-dds .date_time_container .checkout-deliverydate .control.calander_button{width: 80%;}
+.checkout-dds .date_time_container .time_slot_wrap .timeslot_radio.available_slot_radio{width: 63%; background-color: #fff;}
+.checkout-dds .date_time_container .time_slot_wrap{padding-left: 0;}
+.checkout-dds .date_time_container .dds_drop_down.datetimeslot{padding: 0; width: 49%; max-width: 280px;}
+.checkout-dds .date_time_container .time_btn_wrap{margin-left: 0;  width: 32%;}
+.checkout-dds .checkout-deliverydate .control.calander_button .available_date_radio{width: 100%; max-width: 280px;}
+.checkout-dds .date_time_container{margin-top: 10px;}
+
+#deliverydate-main-wrapper.checkout-dds .date_time_container .calander_button{width: 100%; margin-bottom: 0;}
+#deliverydate-main-wrapper.checkout-dds .date_time_container .calander_button .available_date_button.date_slider{height: auto !important; box-shadow: none;}
+.deliverydate-main-wrapper.checkout-dds .dds_drop_down{ margin-left: 70px;}
+.checkout-dds .date_time_container .dds_drop_down.datetimeslot .options.open_option{left: 0;}
+.deliverydate-main-wrapper.checkout-dds .date_time_container .dds_drop_down{margin-left: 4px;}
+.checkout-dds .date_time_container .field{width: 50%;}
+.checkout-dds .date_time_container .field #dds_dropdown_selected{max-width: 280px;}
+.checkout-dds .date_time_container .dds_drop_down.datetimeslot .options.open_option{width: 100%;}
+.checkout-dds .date_time_container .available_date_calendar{max-width: 280px;}
+#deliverydate-main-wrapper.checkout-dds .date_time_container.date_time_button .calander_button .available_date_button{max-width: 70%;  }
+.checkout-dds .date_time_container.date_time_button .time_btn_wrap{width: 70%;}
+#deliverydate-main-wrapper.checkout-dds .date_time_container.date_time_button .timeslot_button.available_slot.time_slider{background-color: transparent;}
+
+
+
+#deliverydate-main-wrapper.checkout-dds .date_time_container.date_time_button .calander_button .available_date_button{max-width: 70%;}
+#deliverydate-main-wrapper.checkout-dds .date_time_container.date_time_button .timeslot_button.available_slot{width: 100%; height: auto; overflow: unset; box-shadow: none; padding: 0 25px; margin: 0;}
+.checkout-dds .date_time_container.date_time_button .checkout-deliverydate .control.calander_button{width: 70%;}
+#deliverydate-main-wrapper.checkout-dds .date_time_container.date_time_button .timeslot_button.available_slot.time_slider{margin-left: 15px;}
+
+#deliverydate-main-wrapper.checkout-dds .date_time_container .calander_button .available_date_button.date_slider{max-width: 100%;}
+.checkout-dds .date_time_container .time_btn_wrap{width: 100%;}
+.checkout-dds .checkout-deliverydate .control.calander_button{width: 100%;}
+#deliverydate-main-wrapper.checkout-dds .timeslot_button.available_slot.time_slider{width: 93%;}
+.checkout-dds .checkout-deliverydate .control.calander_button{width: 95%;}
+#deliverydate-main-wrapper.checkout-dds .calander_button .available_date_button.slick-slider{background: transparent;}
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar td a.ui-state-active:after{opacity: 1; background: #fff;}
+
+#deliverydate-main-wrapper .timeslot_button.available_slot{height: 145px;}
+.dds_drop_down .options.open_option{height: 148px;}
+.checkout-dds .date_time_container .time_btn_wrap{width: 30%; margin-top: 6px !important;}
+.checkout-dds .dds_drop_down .selected{margin-top: 0;}
+.checkout-dds .timeslot_radio.available_slot_radio{height: 215px;}
+#deliverydate-main-wrapper.checkout-dds .timeslot_button.available_slot{margin-top: 0 !important;}
+#deliverydate-main-wrapper.checkout-dds .timeslot_button.available_slot{height: 173px;}
+.checkout-dds .checkout-deliverydate .control.calander_button .available_date_radio{height: 215px;}
+
+
+@media(min-width: 1151px) and (max-width: 1300px){
+    .date_time_container .time_btn_wrap{margin-left: 20px;}
+}
+
+@media(min-width: 992px) and (max-width: 1120px){
+    .checkout-dds .date_time_container .time_slot_wrap .timeslot_radio.available_slot_radio{width: 72%;}
+}
+
+@media(min-width: 768px) and (max-width: 991px){
+    #deliverydate-main-wrapper.checkout-dds .date_time_container.date_time_button .calander_button .available_date_button{max-width: 60%;}
+}
+
+@media(min-width: 768px) and (max-width: 990px){
+    .checkout-dds .checkout-deliverydate .control.calander_button{width: 75%;}
+    #deliverydate-main-wrapper .timeslot_button.available_slot.slick-slider{width: 58% !important;}
+    #deliverydate-main-wrapper .time_btn_wrap .timeslot_button.available_slot.slick-slider{width: 75% !important;}
+}
+
+@media(max-width: 1150px){
+    .date_time_container .dds_drop_down.datetimeslot{width: 70%; padding-left: 0;}
+    .date_time_container .dds_drop_down.datetimeslot .options.open_option{width: 100%; left: 0;}
+    .date_time_container .field{width: 70%;}
+    .date_time_container .time_slot_wrap{    width: 70%; padding-left: 0;}
+
+    .date_time_container .time_btn_wrap{margin-left: 0; width: 52%;}
+
+    /*product page css end*/
+}
+
+@media(max-width: 991px){
+
+    .date_time_container .time_btn_wrap{margin-left: 0; width: 80%;}
+
+    /*product page css end*/
+
+    .checkout-dds .date_time_container .field{width: 100%;}
+    .date_time_container .field #dds_dropdown_selected{width: 100%;}
+    .checkout-dds .date_time_container .dds_drop_down.datetimeslot{width: 100%; margin-top: 20px;}
+    .date_time_container .time_slot_wrap{width: 86%; margin-top: 10px;}
+    .checkout-dds .date_time_container .time_btn_wrap{margin-left: 6px; width: 80%; margin-top: 20px;}
+    .date_time_container .available_date_calendar{width: 80%;}
+}
+
+@media(max-width: 767px){
+
+    .date_time_container .time_slot_wrap{ padding-left: 0; margin-top: 0;}
+    .date_time_container .time_btn_wrap{margin-left: 0; width: 73%;}
+
+    /*product page css end*/
+
+
+    .date_time_container .time_slot_wrap{width: 100%; margin: 0; margin-top: 20px;}
+    .checkout-dds .timeslot_radio .delivery-date-cell label:after{top:5px;}
+    .checkout-dds .available_date_radio .delivery-date-cell label:after{top: 6px !important;}
+    #deliverydate-main-wrapper.checkout-dds .date_time_container.date_time_button .calander_button .available_date_button{max-width: 90%; background-color: transparent; margin: 0 auto;}
+    #deliverydate-main-wrapper.checkout-dds .date_time_container.date_time_button .calander_button .available_date_button{max-width: 100%; }
+    #deliverydate-main-wrapper .date_time_container.date_time_button .timeslot_button.available_slot{width: 100% !important;}
+    .checkout-dds .date_time_container.date_time_button .time_btn_wrap{width: 90%; margin: auto;}
+
+    .checkout-dds .checkout-deliverydate .control.calander_button{margin: 0 auto; width: 80%;}
+    #deliverydate-main-wrapper .timeslot_button.available_slot.slick-slider{margin: 0 auto !important;}
+}
+
+
+/*.checkout-dds .field{width: 100%;}*/
+
+.date_time_container{display: -webkit-box; display: -ms-flexbox; display: flex; -ms-flex-wrap: wrap; flex-wrap: wrap;}
+
+.date_time_container .field{width: 36%;}
+.date_time_container .dds_drop_down.datetimeslot{width: 45%;}
+.date_time_container .dds_drop_down.datetimeslot .options.open_option{width: 100%;}
+.dds_drop_down .options ul li span{font-size: 15px;}
+.dds_drop_down .options ul{padding: 0 15px;}
+.date_time_container .time_slot_wrap{width: 60%; padding-left: 10px;}
+
+.delivery-time-slots  label span{font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; font-weight: normal !important; font-size: 17px !important;}
+#deliverydate-form .table-checkout-delivery-method .delivery-time-slots label{padding-left: 40px !important;}
+.delivery-time-slots{padding-top: 17px !important;}
+
+/*12-11-2020*/
+
+#deliverydate-form .table-checkout-delivery-method .delivery-time-slots.time-slot-disabled label{color: #cacaca;}
+.checkout-timeslot .table-checkout-delivery-method #slots tr td span{cursor: pointer;}
+.checkout-timeslot .table-checkout-delivery-method #slots tr td:first-child{cursor: auto;}
+#deliverydate-form .table-checkout-delivery-method .delivery-time-slots label{color: #2c2c2c;}
+.checkout-timeslot #slots tr td:nth-child(2) .radio-checked{left: 20px;}
+#checkout-step-shipping_method .checkout-timeslot .delivery-time-slots .radio-checked{left: 28px;}
+#checkout-step-shipping_method .checkout-timeslot #slots tr td:nth-child(2) .radio-checked{left: 28px;}
+.checkout-dds .date_time_container .time_slot_wrap .timeslot_radio.available_slot_radio{margin-top: 0; width: 60%;}
+.checkout-dds .date_time_container .field{width: 40%;}
+#deliverydate-main-wrapper.checkout-dds .calander_button .available_date_button{margin-left: 10px; margin-right: 30px;}
+#deliverydate-main-wrapper.checkout-dds .date_time_container .data-item{width: 100% !important; box-sizing: border-box;}
+#deliverydate-main-wrapper.checkout-dds .date_time_container .data-item label{font-size: 14px;}
+.date_time_container .time_slot_wrap .timeslot_radio.available_slot_radio{margin-top: 0;}
+
+
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar .ui-datepicker-today a{color: #333 !important;}
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar .ui-datepicker-today a:after{background-color: #333 !important; opacity: 1;}
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar .ui-datepicker-today{background: none !important;}
+
+.date_time_container .dds_drop_down .selected{ margin-top: 0;}
+
+.checkout-timeslot .delivery-time-slots input[type="radio"], 
+.checkout-timeslot .delivery-time-slots input[type="radio"]:disabled{top: 27px; left: 28px;}
+
+.checkout-timeslot .table-checkout-delivery-method #slots tr td:nth-child(2) input[type="radio"]{left: 28px; top: 27px;}
+.checkout-deliverydate .date_time_container .control.calander_button .available_date_radio{margin-top: 0;}
+
+.date_time_container .field{width: 40%;}
+#deliverydate-main-wrapper .time_slider .data-item label{color: #2c2c2c;}
+
+#deliverydate-main-wrapper .data-item label{color: #2c2c2c;}
+.checkout-dds .timeslot_radio.available_slot_radio{width: 36%;}
+.deliverydate-main-wrapper.checkout-dds .dds_drop_down{margin-left: 0; width: 30%;}
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar .ui-datepicker-today.ui-state-disabled span{color: #959595 !important; cursor: not-allowed !important;}
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar .ui-datepicker-today.ui-state-disabled span:after{background: #959595;}
+#ui-datepicker-div.ui-datepicker .ui-datepicker-calendar .ui-datepicker-today.ui-state-disabled{cursor: not-allowed !important;}
+
+/*my account css*/
+
+#update-deliverydate{opacity: 0.9; -webkit-transition: all 0.3s ease;-o-transition: all 0.3s ease;transition: all 0.3s ease;}
+#cancel_update{display: block; text-align: center; background: #e10000; color: #fff; font-size: 15px; padding: 5px; margin-top: 10px; cursor: pointer; font-weight: 600; opacity: 0.9; -webkit-transition: all 0.3s ease;-o-transition: all 0.3s ease;transition: all 0.3s ease;}
+
+
+
+#cancel_update:hover, 
+#update-deliverydate:hover{opacity: 1;}
+
+@media(min-width: 1151px) and (max-width: 1178px){
+    #deliverydate-main-wrapper .delivery-date-cell{padding: 10px 0;}
+}
+
+@media(min-width: 980px) and (max-width: 1150px){
+    .date_time_container .time_slot_wrap{padding: 0; width:75%;}
+}
+
+@media(min-width: 768px) and (max-width: 979px){
+    .date_time_container .time_slot_wrap{padding: 0; width:100%;}
+
+    #deliverydate-main-wrapper .calander_button .available_date_radio .delivery-date-cell label{font-size: 15px;}
+    .checkout-dds .available_date_radio .delivery-date-cell label:after{top: 11px !important;}
+}
+
+@media(min-width: 768px) and (max-width: 991px){
+    .checkout-dds .date_time_container .dds_drop_down.datetimeslot{ width: 55% !important; margin-top: 0 !important; margin-left: 20px !important;}
+}
+
+@media(max-width: 1150px){
+    .date_time_container .field{width: 80%;}
+    .date_time_container .dds_drop_down.datetimeslot{width: 80%;}
+    .date_time_container .available_date_calendar{width: 80%;}
+}
+
+@media(max-width: 767px){
+    .date_time_container .time_slot_wrap .timeslot_radio.available_slot_radio{width: 100%;padding: 0 6px;}
+    .date_time_container .timeslot_radio .delivery-date-cell{padding: 10px 0;}
+    .date_time_container .time_slot_wrap .timeslot_radio .delivery-date-cell label{padding: 0 !important; padding-left: 25px !important; font-size: 13px;}
+    .date_time_container .time_slot_wrap{padding-left: 0; margin-top: 10px;}
+    .timeslot_radio .delivery-date-cell label:after{top:4px;}
+
+    .checkout-dds .checkout-deliverydate .control.calander_button .available_date_radio{background: #fff;}
+    .checkout-dds .date_time_container .field{width: 100%;}
+    .checkout-dds .date_time_container .time_slot_wrap{width: 77%; margin-top: 15px;}
+    .checkout-dds .date_time_container .time_slot_wrap .timeslot_radio.available_slot_radio{width: 100%; max-width: 285px;}
+}
+
+
+/*23-11-2020*/
+
+.date_time_container .time_slot_wrap{width: 61%;}
+
+@media(min-width: 1151px){
+    .date_time_container .dds_drop_down.datetimeslot{width: 62%; padding-left: 0;}
+    .date_time_container .dds_drop_down.datetimeslot .options.open_option{left: 0;}
+}
+
+/*25-12-2020*/
+
+.checkout-timeslot .table-checkout-delivery-method #slots tr td.time-slot-disabled span{cursor: not-allowed;} 
+.delivery-time-slots.time-slot-disabled input[type="radio"]{cursor: not-allowed !important;}
+
+/*29-12-2020*/
+
+.calender-comment-label:after{opacity: 0;}
+.calander_button.datepicker-rtl .available_date_calendar input{position: static;}
+.checkout-timeslot.required .calender-comment-label:after,
+.field.required .calender-comment-label:after, 
+.calender-comment-label.required:after{opacity: 1;}
+.delivery-callme-label span{font-weight: 700; color: #333;}
+
+
+
+/*5-1-2021*/
+
+.multishipping-timeslot.checkout-timeslot .delivery-time-slots .radio-checked, 
+.multishipping-timeslot.checkout-timeslot .delivery-time-slots.time-slot-disabled .radio-checked{top: 18px;}
+.multishipping-timeslot.checkout-timeslot .delivery-time-slots .admin__control-radio, 
+.multishipping-timeslot.checkout-timeslot .delivery-time-slots.time-slot-disabled .admin__control-radio{top: 18px; left: 19px;}
+.checkout-timeslot .table-checkout-delivery-method .delivery-time-slots, 
+.checkout-timeslot .delivery-time-slots label{cursor: pointer; padding: 15px 10px !important; padding-left: 20px !important;}
+.checkout-timeslot .table-checkout-delivery-method .delivery-time-slots.time-slot-disabled, 
+.checkout-timeslot .table-checkout-delivery-method .delivery-time-slots.time-slot-disabled label{cursor: not-allowed;}
+.deliverydate-timeslot .table-checkout-delivery-method .slots .slots-data td:first-child{vertical-align: middle; font-family: 'Open Sans', 'Helvetica Neue', Helvetica, Arial, sans-serif; background-color: #f4f7ff; width: 170px; font-size: 14px; position: relative;}
+.deliverydate-timeslot .table-checkout-delivery-method .slots .slots-data td:first-child:after{content: ''; width: 100%; height: 1px; background-color: #dfdfdf; position: absolute; left: 0; bottom: 0;}
+.checkout-timeslot .table-checkout-delivery-method .slots tr td:after{content: ''; width: 100%; height: 1px; background-color: #dfdfdf; position: absolute; left: 0; bottom: 0;}
+.deliverydate-timeslot .table-checkout-delivery-method .slots .slots-data:last-child td:after{content: none;}
+.multishipping-dds .calender-comment-label{display: inline-block; width: 100%; margin-bottom: 8px;}
+
+
+
+/*radio button css*/
+
+#deliverydate-main-wrapper .calander_button .delivery-date-cell:last-child{border-bottom: 0;}
+#deliverydate-main-wrapper .calander_button .delivery-date-cell.disable_radio input[type="radio"]{cursor: not-allowed;}
+.checkout-dds.multishipping-dds .available_date_radio .delivery-date-cell label:after{top: 6px !important;}
+#deliverydate-main-wrapper .calander_button .delivery-date-cell input[type="radio"]:checked + label{color:#4e72d9 !important; font-weight: 600 !important;}
+#deliverydate-main-wrapper .calander_button .delivery-date-cell{padding: 10px 0;}
+.date_time_container .checkout-dds.multishipping-dds .time_slot_wrap .timeslot_radio.available_slot_radio{width: 100%;}
+.date_time_container .multishipping-dds .time_slot_wrap{width: 100%;}
+.checkout-dds.multishipping-dds .timeslot_radio .delivery-date-cell label:after{top:6px;}
+.checkout-dds.multishipping-dds .timeslot_radio .delivery-date-cell input[type="radio"]:checked + label{color:#4e72d9 !important; font-weight: 600 !important;}
+.checkout-dds.multishipping-dds .date_time_container .time_slot_wrap .timeslot_radio.available_slot_radio{box-sizing: border-box; width: 100%;}
+.checkout-dds.multishipping-dds .date_time_container .time_slot_wrap{width: 100%;}
+.checkout-dds.multishipping-dds .date_time_container .field{width: 25%; margin-right: 40px;}
+.checkout-dds.multishipping-dds .date_time_container .checkout-deliverydate .control.calander_button{width: 100%;}
+.checkout-dds.multishipping-dds.slider .checkout-deliverydate .control.calander_button .available_date_radio{max-width: 25%;}
+.checkout-dds.multishipping-dds .checkout-deliverydate .control.calander_button .available_date_radio{max-width: 85%;}
+
+
+
+.multishipping-dds .calander_button .delivery-date-cell{padding: 10px 0; border-bottom: 1px solid #dfdfdf; position: relative; cursor: pointer;}
+.multishipping-dds .calander_button .delivery-date-cell input[type="radio"]{opacity: 0; z-index: 99; position: absolute; left: 13px; top: 13px; cursor: pointer;}
+.multishipping-dds .calander_button .available_date_radio .delivery-date-cell label{font-size: 16px; color: #2c2c2c !important; position: relative; padding-left: 35px; cursor: pointer;}
+.multishipping-dds .calander_button .delivery-date-cell label:before{    content: ''; height: 16px; width: 16px; border-radius: 100%; border: 1px solid #c1c1c1; position: absolute; left: 0; top: 50%; -webkit-transform: translateY(-50%); -ms-transform: translateY(-50%); transform: translateY(-50%); -webkit-transition: all 0.3s ease; -o-transition: all 0.3s ease; transition: all 0.3s ease; cursor: pointer;}
+.multishipping-dds .calander_button .delivery-date-cell label:after { content: ''; height: 10px; width: 10px; background: #4e72d9; position: absolute; border-radius: 100%; left: 4px; top: 6px; opacity: 0;}
+.multishipping-dds .calander_button .delivery-date-cell input[type="radio"]:checked + label{color: #4e72d9 !important;
+                                                                                            font-weight: 600 !important;}
+.multishipping-dds .calander_button .delivery-date-cell input[type="radio"]:checked + label:before {border-color: #4e72d9;}
+.multishipping-dds .calander_button .delivery-date-cell input[type="radio"]:checked + label:after {opacity: 1;}
+
+.checkout-dds.slider .timeslot_radio.available_slot_radio{width: 30% !important; max-width: 30% !important; box-sizing: border-box;}
+.deliverydate-main-wrapper.checkout-dds.multishipping-dds.slider .time_slot_div{box-sizing: border-box;}
+.checkout-dds.slider.multishipping-dds .checkout-deliverydate .control.calander_button{width: 95%;}
+.checkout-dds.slider .timeslot_radio.available_slot_radio{box-sizing: border-box;}
+
+.multishipping-dds .calander_button .delivery-date-cell.disable_radio{cursor: not-allowed;}
+.multishipping-dds .calander_button .delivery-date-cell.disable_radio label{color: #959191 !important; cursor: not-allowed;}
+
+
+/*slider css*/
+#deliverydate-main-wrapper .multishipping-dds .slick-slider .delivery-date-cell{margin: 0 15px;}
+.deliverydate-main-wrapper.checkout-dds.multishipping-dds .time_slot_div{width: 100% !important;}
+#deliverydate-main-wrapper.checkout-dds .timeslot_button.available_slot.time_slider{width: 100%;}
+#deliverydate-main-wrapper .delivery-date-cell.slick-slide .data-item.arrival_slot_time_button{margin: 0 15px;}
+
+.multishipping-dds .available_slot.time_slider{width: 100%; box-shadow: none; overflow: unset; height: auto; padding: 0 !important;}
+.multishipping-dds .slick-prev{left: -15px;}
+.multishipping-dds .slick-prev, 
+.multishipping-dds .slick-next{box-shadow: none !important; border: none !important;}
+.multishipping-dds .slick-prev:before, 
+.multishipping-dds .slick-next:before{content: '' !important; height: 12px; width: 12px; border-bottom: 3px solid #c0c0c0; border-left: 3px solid #c0c0c0; position: absolute; -webkit-transform: rotate(45deg); -ms-transform: rotate(45deg); transform: rotate(45deg); top: 0; left: 0;}
+.multishipping-dds .available_slot .delivery-date-cell.slick-slide{padding: 8px !important; margin-bottom: 0px !important;}
+.multishipping-dds .delivery-date-cell.slick-slide .data-item.arrival_slot_time_button{border: 1px solid #a6a6a6 !important; padding: 6px 0 !important; text-align: center; width: 100% !important; font-size: 14px !important; margin: 0 auto !important; border-radius: 7px; cursor: pointer;}
+.multishipping-dds .time_slider .data-item label{color: #2c2c2c; cursor: pointer;}
+.multishipping-dds .slick-next{right: -15px;}
+.multishipping-dds .slick-next:before{-webkit-transform: rotate(-135deg); -ms-transform: rotate(-135deg); transform: rotate(-135deg); left: auto; right: 0;}
+.multishipping-dds .data-item.active label { color: #4e72d9 !important; font-weight: 600 !important;}
+.multishipping-dds .delivery-date-cell.slick-slide .data-item.arrival_slot_time_button.active { border-color: #4e72d9 !important; -webkit-box-shadow: 0 2px 9px 0px rgba(0,0,0,0.1) !important;box-shadow: 0 2px 9px 0px rgba(0,0,0,0.1) !important; }
+.multishipping-dds .available_date_calendar{max-width: 240px;}
+.multishipping-dds .checkout-deliverydate{margin-bottom: 20px;}
+
+.multishipping-dds .calander_button .available_date_button{border: none; height: auto;}
+.multishipping-dds  .calander_button .available_date_button .delivery-date-cell{text-align: center; border-bottom: none; padding: 6px; position: relative; cursor: pointer; margin-bottom: 0px;}
+.multishipping-dds .available_date_button .data-item.calendar_date_button, 
+.multishipping-dds .delivery-date-cell.slick-slide .data-item.arrival_slot_time_button{border: 1px solid #a6a6a6 !important; padding: 6px 0 !important; text-align: center; width: 100% !important; font-size: 14px !important; margin: 0 auto !important; border-radius: 7px; cursor: pointer;}
+.multishipping-dds .calander_button .available_date_button .delivery-date-cell label{padding-left: 0; color: #2c2c2c !important; font-size: 14px; position: relative; cursor: pointer;}
+.multishipping-dds .delivery-date-cell.disable_button .data-item.button_disable{background: #ededed; border-color: #ededed !important; cursor: not-allowed; pointer-events: none;}
+.multishipping-dds .delivery-date-cell.disable_button .data-item.button_disable label{color: #a6a6a6 !important; cursor: not-allowed;}
+.multishipping-dds .available_date_button .data-item.calendar_date_button.active, 
+.multishipping-dds .delivery-date-cell.slick-slide .data-item.arrival_slot_time_button.active{border-color: #4e72d9 !important;}
+.multishipping-dds .calander_button .available_date_button .delivery-date-cell .calendar_date_button.active label{color: #4e72d9 !important;}
+
+.multishipping-dds .available_slot .delivery-date-cell.slick-slide.disable_button{cursor: not-allowed;}
+.multishipping-dds .calander_button .date_slider .delivery-date-cell label:before{content: none;}
+.deliverydate-main-wrapper.checkout-dds.multishipping-dds.slider .time_slot_div{margin-bottom: 20px; width: 95% !important;}
+
+
+/*dropdown css*/
+
+.deliverydate-main-wrapper.checkout-dds.multishipping-dds .date_time_container .dds_drop_down, 
+.deliverydate-main-wrapper.checkout-dds.multishipping-dds .date_time_container .dds_drop_down{width: 100%;}
+.deliverydate-main-wrapper.checkout-dds.multishipping-dds .time_slot_div{width: 25% !important;}
+.deliverydate-main-wrapper.checkout-dds.slider.multishipping-dds .time_slot_div{width: 100% !important;}
+
+.multishipping-dds .dds_drop_down .options.open_option{width: 100%;}
+.deliverydate-main-wrapper.multishipping-dds.checkout-dds .dds_drop_down{width: 20%;}
+.date_time_container .field{width: 50%;}
+
+.deliverydate-main-wrapper.multishipping-dds.checkout-dds.slider .dds_drop_down{width:25%;}
+.multishipping-dds.slider .dds_drop_down .options.open_option{width: 25%;}
+.multishipping-dds .dds_drop_down .options.open_option{height: 178px;}
+.checkout-dds.dds_drop_down .date_time_container{margin-bottom: 20px;}
+
+/*18-1-2021*/
+
+.multicheckout .block-content{margin-bottom: 40px; font-size: 16px;}
+.multicheckout .title{margin-bottom: 0;}
+.admin__page-section-content .message.warning{margin:20px 0;}
+.control{margin: 20px 0;}
+.before_delivery{font-style: italic; color: #008000 !important;}
+
+.multishipping-dds .checkout-deliverydate .calander_button{margin-top: 0;}
+.checkout-dds.multishipping-dds .date_time_container .time_slot_wrap{margin-top: 0;}
+
+
+.checkout-dds .date_time_container .time_slot_wrap{width: 60%; max-width: 320px;}
+#deliverydate-main-wrapper.checkout-dds .date_time_container .calander_button{margin-top: 0;}
+.checkout-dds .message.warning{margin-top: 20px;}
+
+@media(min-width: 768px) and (max-width: 1188px){
+    .checkout-dds.multishipping-dds .date_time_container .field{width: 35%;}
+    .deliverydate-main-wrapper.checkout-dds.multishipping-dds .time_slot_div{width: 45% !important; max-width: 330px;}
+}
+
+@media(min-width: 992px) and (max-width: 1188px){
+    .checkout-dds .date_time_container .time_slot_wrap .timeslot_radio.available_slot_radio{width: 80%; max-width: 330px;}
+}
+
+@media(min-width: 768px) and (max-width: 991px){
+    .checkout-dds .date_time_container .field{width: 66%;}
+    #deliverydate-main-wrapper.checkout-dds .date_time_container .calander_button{width: 100%;}
+    .checkout-dds .date_time_container .available_date_calendar{width: 100%; max-width: 100%;}
+    .checkout-dds .date_time_container .time_slot_wrap{width: 100%;}
+}
+
+@media(max-width: 767px){
+    .checkout-dds.multishipping-dds .date_time_container .field{width: 100%;}
+    .deliverydate-main-wrapper.checkout-dds.multishipping-dds .time_slot_div{width: 100% !important;}
+
+    .checkout-dds .date_time_container .time_slot_wrap{width: 100%;}
+}
+
+/*19-02-2021*/
+
+.checkout-cart-index .checkout-dds .date_time_container .field{width: 25%;}
+.checkout-cart-index .checkout-dds .date_time_container .time_slot_wrap{width: 75%; max-width: 460px;}
+.checkout-cart-index .dds_drop_down .options.open_option{height: 180px;}
+.checkout-cart-index .checkout-dds .timeslot_radio.available_slot_radio{max-width: 290px;}
+.checkout-cart-index .deliverydate-main-wrapper.checkout-dds .dds_drop_down{margin-left: 10px; max-width: 280px;}
+.checkout-cart-index #deliverydate-main-wrapper.checkout-dds .timeslot_button.available_slot.time_slider{width: 92%;}
+.checkout-cart-index .checkout-dds .checkout-deliverydate .control.calander_button .available_date_radio{padding-top: 0;}
+.checkout-cart-index .cart-discount .actions-toolbar{vertical-align: middle;}
+.footer .block.newsletter .form.subscribe > .actions{float: none; vertical-align: middle;}
+
+
+@media(min-width: 992px) and (max-width: 1300px){
+    .checkout-cart-index .checkout-dds .date_time_container .field{margin-right: 20px;}
+}
+
+@media(min-width: 768px) and (max-width: 991px){
+    .checkout-cart-index .checkout-dds .date_time_container .field{width: 30%;  margin-right: 40px;}
+    .checkout-cart-index #deliverydate-form label.calender-comment-label{padding: 0;}
+    .checkout-cart-index .checkout-dds .date_time_container .time_slot_wrap{margin-top: 0;}
+    .checkout-cart-index .checkout-dds .checkout-deliverydate .control.calander_button .available_date_radio{padding-top: 0;}
+}
+
+@media(min-width: 768px) and (max-width: 979px){
+    .checkout-cart-index .checkout-dds .available_date_radio .delivery-date-cell label:after{top: 12px !important;}
+    .checkout-cart-index #deliverydate-main-wrapper .calander_button .delivery-date-cell:first-child input[type="radio"]:checked + label:after{top:12px !important;}
+}
+
+@media(max-width: 767px){
+    .checkout-cart-index #deliverydate-form{padding: 10px 15px;}
+    .checkout-cart-index .checkout-dds .date_time_container .field{width: 100%;}
+    .checkout-cart-index .checkout-dds .date_time_container .time_slot_wrap{width: 95% !important; max-width: 100%;}
+    .checkout-cart-index .date_time_container .available_date_calendar{width: 95%;}
+    .checkout-cart-index .checkout-dds .timeslot_radio.available_slot_radio{width: 85%;}
+    .checkout-cart-index .checkout-deliverydate{margin-top: 20px;}
+    .checkout-cart-index .checkout-dds .checkout-deliverydate .control.calander_button{margin: 10px 0;}
+}
+
+@media(min-width: 992px){
+    .checkout-cart-index .checkout-dds .date_time_container .field{width: 25%;}
+    .checkout-cart-index .checkout-dds .date_time_container .time_slot_wrap{width: 75%; max-width: 480px;}
+
+}
+
+.checkout-cart-index #deliverydate-form .table-checkout-delivery-method .delivery-time-slots label{padding-left: 20px !important;}
+.checkout-cart-index .checkout-timeslot .delivery-time-slots .radio-checked{top: 24px;}
+.checkout-cart-index .available_date_calendar{max-width: 280px;}
+.checkout-cart-index .step-title{font-size: 16px; font-weight: 600;}
+.timer-end-warning{font-weight: 600; font-size: 16px; color: #df4a00; margin-bottom: 20px;}
+
+@media(max-width: 767px){
+    .checkout-cart-index .available_date_calendar{max-width: 100%; width: 100%;}
+    .timer-end-warning{font-size: 14px;}
+}
+
+.checkout-cart-index #deliverydate-form .field .control{margin-top: 0; max-width: 71%;}
+.checkout-cart-index .field.biz-comment-note{max-width: 71%;}
+
+@media(max-width: 767px){
+    .checkout-cart-index .field.biz-comment-note{max-width: 100%;}
+}
+
+/*3-3-2021*/
+
+#appjetty-deliverydate #deliverydate-form{float: left;  width: 75%;}
+.cart-container #appjetty-deliverydate #deliverydate-form .field .control{max-width: 95%;}
+
+@media(min-width:768px) and (max-width: 982px){
+    #appjetty-deliverydate #deliverydate-form .time_slot_wrap{margin-top: 20px;}
+}
+
+.timer-end .timer-end-msg, 
+.timer-end-warning{display: inline-block; font-weight: 600;}
+.timer-end .timer-end-msg{margin-right: 5px;}
+
+#appjetty-deliverydate #deliverydate-form.form{width: 71%;}
+
+.checkout-dds .date_time_container .time_slot_wrap .timeslot_radio.available_slot_radio{width: 90%;}
+.timer-end .timer-inner-box {
+    display: inline-block;
+    background: #f0f0f0;
+    padding: 10px 20px;
+    box-shadow: 0 0 4px 1px rgb(0 0 0 / 10%);
+}
+.timer-end .timer-inner-box p {
+    margin-bottom: 0;
+}
+
+
+/*21-04-2021*/
+
+.checkout-timeslot #slots tr td:first-child{width: 120px; display: inline-block;}
+
+.deliverydate-timeslot .table-checkout-delivery-method .slots .slots-data td:first-child{width: 120px; display: inline-block;}
+.checkout-timeslot .delivery-time-slots input[type="radio"], 
+.checkout-timeslot .delivery-time-slots input[type="radio"]:disabled{top: 18px; left: 20px;}

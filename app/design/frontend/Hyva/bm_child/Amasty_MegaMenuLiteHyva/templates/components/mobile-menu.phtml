@@ -1,0 +1,80 @@
+<?php declare(strict_types=1);
+
+/**
+ * @author Amasty Team
+ * @copyright Copyright (c) Amasty (https://www.amasty.com)
+ * @package Mega Menu Lite Hyva
+ */
+
+use Magento\Framework\Escaper;
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+use Amasty\MegaMenuLite\Block\Container;
+use Amasty\MegaMenuLite\ViewModel\Store\Menu;
+use Amasty\MegaMenuLiteHyva\ViewModel\DesktopMenuItem;
+
+/**
+ * @var Container $block
+ * @var Escaper $escaper
+ * @var ViewModelRegistry $viewModels
+ * @var DesktopMenuItem $menuItemViewModel
+ * @var array $item
+ **/
+
+/** @var HeroiconsOutline $heroIcons */
+$heroIcons = $viewModels->require(HeroiconsOutline::class);
+
+/** @var Menu $viewModelMenu */
+$viewModelMenu = $viewModels->require(Menu::class);
+
+/** @var DesktopMenuItem $menuItemViewModel */
+$menuItemViewModel = $viewModels->require(DesktopMenuItem::class);
+
+$menuItemViewModel->setBlock($block);
+$menuItems = $block->getNodesData()['elems'];
+
+$logoBlock = $block->getLayout()->getBlock('logo');
+// phpcs:disable Generic.Files.LineLength.TooLong
+?>
+<aside style="background-color: #fff;" class="bg-[var(--ammenu-main-menu-background)] box-content fixed z-70 font-normal text-base shadow-lg py-5 w-full top-0 bottom-0 left-0 overflow-y-auto"
+       x-transition:enter="transition ease-in-out duration-500 transform"
+       x-transition:enter-start="-translate-x-12 opacity-0 duration-700"
+       x-transition:enter-end="translate-x-0 opacity-100"
+       x-transition:leave="transition ease-in-out duration-500"
+       x-transition:leave-start="opacity-100 translate-x-0"
+       x-transition:leave-end="opacity-0 -translate-x-12"
+       tabindex="-1"
+       x-init="$watch('open', value => $nextTick(() => value && $el.focus()))"
+       x-show="open"
+       x-cloak
+       aria-label="<?= $escaper->escapeHtmlAttr(__('Main navigation tab'))  ?>">
+    <div class="flex items-center justify-between p-2 border-b-2">
+    <a class="flex" href="/" aria-label="<?= $escaper->escapeHtmlAttr(__('Go to Home page'))  ?>">
+        <img src="<?= $block->getViewFileUrl('images/logo.svg'); ?>" alt="<?= $logoBlock->getLogoAlt(); ?>" width="150" height="45" loading="eager">
+    </a>
+
+    <h2 class="aside-title p-2 flex justify-between items-center text-2xl">
+        <span class="text-[var(--ammenu-main-menu-text)]" x-text="mobile_menu_title"></span>
+        <button @click="open = false" type="button" class="text-[var(--ammenu-toggle-icon-color)]">
+            <?= $heroIcons->xHtml(''); ?>
+        </button>
+    </h2>
+    </div>
+
+
+    <template x-if="open">
+        <nav aria-label="<?= $escaper->escapeHtmlAttr(__('Main Menu'))  ?>">
+            <ul class="flex flex-wrap mb-6" data-action="amMenuMenubar">
+                <?php foreach ($menuItems as $key => $item): ?>
+                    <?php if ($item['status'] === 1 || $item['status'] === 3): ?>
+                        <?= /** @noEscape */ $menuItemViewModel->fetchView('components/mobile_menu/submenu-item.phtml', ['item' => $item, 'isFirst' => true]) ?>
+                    <?php endif; ?>
+                <?php endforeach; ?>
+            </ul>
+
+            <!-- Menu Pro / Drill -->
+            <?= /** @noEscape */ $block->getChildHtml('ammenu.menu.mobile.drill'); ?>
+            <!-- /Menu Pro -->
+        </nav>
+    </template>
+</aside>

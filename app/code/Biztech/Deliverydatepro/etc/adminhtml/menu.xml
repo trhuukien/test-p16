@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Copyright © 2015 Biztech. All rights reserved.
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../Backend/etc/menu.xsd">
+    <menu>
+        <add id="Biztech_Deliverydatepro::base" title="Delivery Date" module="Biztech_Deliverydatepro" sortOrder="20" dependsOnModule="Biztech_Deliverydatepro" resource="Biztech_Deliverydatepro::base"/>        
+        
+        <add id="Biztech_Deliverydatepro::biztech_holiday_index" title="Manage Holidays" module="Biztech_Deliverydatepro"  sortOrder="20" dependsOnModule="Biztech_Deliverydatepro" action="deliverydatepro/holiday/index" resource="Biztech_Deliverydatepro::biztech_holiday_index" parent="Biztech_Deliverydatepro::base" />
+        
+        <add id="Biztech_Deliverydatepro::biztech_order_calendar" title="Delivery Calendar" module="Biztech_Deliverydatepro"  sortOrder="25" dependsOnModule="Biztech_Deliverydatepro" action="deliverydatepro/order/calendar" resource="Biztech_Deliverydatepro::biztech_order_calendar" parent="Biztech_Deliverydatepro::base" />
+    </menu>
+</config>

@@ -1,0 +1,195 @@
+<?php
+/**
+ * Copyright © 2015 Magento. All rights reserved.
+ * See COPYING.txt for license details.
+ */
+// @codingStandardsIgnoreFile
+?>
+<?php /** @var $block \Magento\Sales\Block\Order\Info */ ?>
+<?php $_order = $block->getOrder() ?>
+<div class="block block-order-details-view">
+    <div class="block-title">
+        <strong><?php
+            /* @escapeNotVerified */
+            echo __('Order Information')
+            ?></strong>
+    </div>
+    <div class="block-content">
+        <?php if (!$_order->getIsVirtual()): ?>
+            <div class="box box-order-shipping-address">
+                <strong class="box-title"><span><?php
+                        /* @escapeNotVerified */
+                        echo __('Shipping Address')
+                        ?></span></strong>
+
+                <div class="box-content">
+                    <address><?php
+                        /* @escapeNotVerified */
+                        echo $block->getFormattedAddress($_order->getShippingAddress());
+                        ?></address>
+                </div>
+            </div>
+
+            <div class="box box-order-shipping-method">
+                <strong class="box-title">
+                    <span><?php
+                        /* @escapeNotVerified */
+                        echo __('Shipping Method')
+                        ?></span>
+                </strong>
+
+                <div class="box-content">
+                    <?php if ($_order->getShippingDescription()): ?>
+                        <?php echo $block->escapeHtml($_order->getShippingDescription()) ?>
+
+                        <?php
+                        echo $this->getLayout()->createBlock('Magento\Framework\View\Element\Template')
+                                ->setTemplate('Biztech_Deliverydate::general/info.phtml')
+                                ->setOrder($_order)
+                                ->toHtml();
+                        ?>
+                        <?php
+                        /* 13/10/2020 - update delivery date button */
+                        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+                        $area = $objectManager->get('Magento\Framework\App\State');
+                        $areaCode = $area->getAreaCode();
+                        $request = $objectManager->get('\Magento\Framework\App\Request\Http');
+                        $requestname = $areaCode . "_" . $request->getFullActionName();
+                        $config = $objectManager->create('Magento\Framework\App\Config\ScopeConfigInterface');
+                        $isEnable = $config->getValue('deliverydate/deliverydate_general/enabled');
+                        $update_deliverydate = $config->getValue('deliverydate/deliverydate_update_date/update_customer_deliverydate');
+                        $enableview = $config->getValue('deliverydate/deliverydate_general/display_on');
+
+                        if (strlen($enableview) > 0) {
+                            $enableview = explode(",", $enableview);
+                        } else {
+                            $enableview = [];
+                        }
+                        $orderId = $_order->getId();
+                        if ($isEnable && (in_array($requestname, $enableview) || in_array("all", $enableview))) {
+                            $shipping_arrival_date = $_order->getShippingArrivalDate();
+                            if ($_order->getShippingArrivalSlot() == null || $_order->getShippingArrivalSlot() == '') {
+                                $timeslot = null;
+                            } else {
+                                $timeslot = $_order->getShippingArrivalSlot();
+                            }
+                            if ($shipping_arrival_date != '' && !is_null($shipping_arrival_date) && $update_deliverydate && $_order->canShip()) {
+                                $orderStatus = $_order->getStatus();
+                                $ruleActivation = $config->getValue('deliverydate/deliverydate_update_date/rule_activation');
+                                if($ruleActivation == NULL || $ruleActivation == ''){
+                                    $ruleActivation = 'status';
+                                }
+                                $updateDate = false; //Update date id its true
+                                if ($ruleActivation == 'status') {
+                                    $order_status = $config->getValue('deliverydate/deliverydate_update_date/order_status');
+                                    if (in_array($orderStatus, explode(',', $order_status))) {
+                                        $updateDate = true;
+                                    }
+                                }
+                                if ($ruleActivation == 'date') {
+                                    $date_interval = $config->getValue('deliverydate/deliverydate_update_date/date_interval');
+                                    $this->_timezone = $objectManager->get('\Magento\Framework\Stdlib\DateTime\TimezoneInterface');
+                                    $date = $this->_timezone->date()->format('Y-m-d');
+                                    $todayDate = date('Y-m-d', strtotime($date));
+                                    $selectedDate = date('Y-m-d', strtotime('-' . $date_interval . ' day', strtotime($shipping_arrival_date)));
+
+                                    if ($selectedDate >= $todayDate) {
+                                        $updateDate = true;
+                                    }
+                                }
+                                if ($updateDate == true) {
+                                    ?>
+                                    <input type="hidden" id="orderid" name="orderid"/>
+                                    <input type="hidden" id="orderedate" name="orderedate"/>
+                                    <input type="hidden" id="orderetimeslot" name="orderetimeslot"/>
+                                    <script>
+                                        document.getElementById("orderid").value = "<?= $orderId ?>";
+                                        document.getElementById("orderedate").value = "<?= $shipping_arrival_date ?>";
+                                        document.getElementById("orderetimeslot").value = "<?= $timeslot ?>";
+                                    </script>
+                                    <div id="deliverydate-edit">Edit</div>
+                                    <div id="appjetty-deliverydate-1" data-bind="scope:'customer-deliverydate'" style="display: none;">
+                                        <!-- ko template: getTemplate() --><!-- /ko -->
+                                        <script>
+                                            window.deliverydateConfig = <?php echo Json_encode($block->getDeliveryDateConfig()); ?>;
+                                        </script>
+                                        <script type="text/x-magento-init">
+                                            {
+                                            "#appjetty-deliverydate-1": {
+                                            "Magento_Ui/js/core/app": {
+                                            "components": {
+                                            "customer-deliverydate": {
+                                            "component": "Biztech_Deliverydate/js/customer-deliverydate"
+                                            }
+                                            }
+                                            }
+                                            }
+                                            }
+                                        </script>
+                                    </div>
+                                    <div id="update-deliverydate" style="display: none;">Update Delivery Date</div>
+                                    <div id="cancel_update" style="display: none;">Cancel</div>
+                                    <?php
+                                }
+                            }
+                        }
+                        /* end */
+                        ?>
+                    <?php else: ?>
+                        <?php
+                        /* @escapeNotVerified */
+                        echo __('No shipping information available');
+                        ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php endif; ?>
+
+        <div class="box box-order-billing-address">
+            <strong class="box-title">
+                <span><?php
+                    /* @escapeNotVerified */
+                    echo __('Billing Address')
+                    ?></span>
+            </strong>
+
+            <div class="box-content">
+                <address><?php
+                    /* @escapeNotVerified */
+                    echo $block->getFormattedAddress($_order->getBillingAddress());
+                    ?></address>
+            </div>
+        </div>
+        <div class="box box-order-billing-method">
+            <strong class="box-title">
+                <span><?php
+                    /* @escapeNotVerified */
+                    echo __('Payment Method')
+                    ?></span>
+            </strong>
+
+            <div class="box-content">
+                <?php echo $block->getPaymentInfoHtml() ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="text/javascript">
+    require([
+        'jquery'
+    ], function ($) {
+        jQuery(document).ready(function () {
+            jQuery(document).on('click', '#deliverydate-edit', function (event) {
+                jQuery("#update-deliverydate").css('display', 'block');
+                jQuery("#cancel_update").css('display', 'block');
+                jQuery("#appjetty-deliverydate-1").css('display', 'block');
+            });
+            jQuery(document).on('click', '#cancel_update', function (event) {
+                jQuery("#update-deliverydate").css('display', 'none');
+                jQuery("#cancel_update").css('display', 'none');
+                jQuery("#appjetty-deliverydate-1").css('display', 'none');
+            });
+        });
+    });
+</script>

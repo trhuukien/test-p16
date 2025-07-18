@@ -1,0 +1,12 @@
+<?php
+$order = $block->getOrder();
+$billingAddress = $order->getBillingAddress();
+$shippingAddress = $order->getShippingAddress();
+?>
+<?php
+$order = $block->getOrder();
+$shippingAddress = $order->getShippingAddress();
+?>
+<script>
+	dataLayer.push({'event': 'synch_email', 'email': "<?php echo $shippingAddress->getEmail()?>"});
+</script>

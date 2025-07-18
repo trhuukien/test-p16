@@ -1,0 +1,539 @@
+<?php
+/**
+ * Hyvä Themes - https://hyva.io
+ * Copyright © Hyvä Themes 2020-present. All rights reserved.
+ * This product is licensed per Magento install
+ * See https://hyva.io/license
+ */
+
+use Hyva\Theme\Model\ViewModelRegistry;
+use Hyva\Theme\ViewModel\Sales\PaymentInfo;
+use Magento\Framework\Escaper;
+use Magento\Sales\Block\Order\Info;
+use Hyva\Theme\ViewModel\HeroiconsOutline;
+
+/** @var Info $block */
+/** @var Escaper $escaper */
+/** @var PaymentInfo $paymentInfo */
+/** @var ViewModelRegistry $viewModels */
+
+$order = $block->getOrder();
+$paymentInfo = $viewModels->require(PaymentInfo::class);
+$heroicons = $viewModels->require(HeroiconsOutline::class);
+?>
+<div class="mb-4 pb-4 border-b border-container">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-2">
+        <div class="w-full py-4">
+            <p class="font-semibold mb-2"><?= $escaper->escapeHtml(__('Billing Address')) ?></p>
+            <div class="box-content">
+                <address><?= /* @noEscape */ $block->getFormattedAddress($order->getBillingAddress()) ?></address>
+            </div>
+        </div>
+        <?php if (!$order->getIsVirtual()): ?>
+            <div class="w-full py-4">
+                <p class="font-semibold mb-2"><?= $escaper->escapeHtml(__('Shipping Address')) ?></p>
+                <div class="box-content">
+                    <address><?= /* @noEscape */ $block->getFormattedAddress($order->getShippingAddress()) ?></address>
+                </div>
+            </div>
+            <div class="w-full py-4">
+                <p class="font-semibold mb-2"><?= $escaper->escapeHtml(__('Shipping Method')) ?></p>
+                <div class="box-content">
+                    <?php if ($order->getShippingDescription()): ?>
+                        <?= $escaper->escapeHtml($order->getShippingDescription()) ?>
+
+                        <?php
+                        echo $this->getLayout()->createBlock('Magento\Framework\View\Element\Template')
+                                ->setTemplate('Biztech_Deliverydate::general/info.phtml')
+                                ->setOrder($order)
+                                ->toHtml();
+                        ?>
+                        <?php
+                        $objectManager = \Magento\Framework\App\ObjectManager::getInstance();
+                        $area = $objectManager->get('Magento\Framework\App\State');
+                        $areaCode = $area->getAreaCode();
+                        $request = $objectManager->get('\Magento\Framework\App\Request\Http');
+                        $requestname = $areaCode . "_" . $request->getFullActionName();
+                        $config = $objectManager->create('Magento\Framework\App\Config\ScopeConfigInterface');
+                        $isEnable = $config->getValue('deliverydate/deliverydate_general/enabled');
+                        $update_deliverydate = $config->getValue('deliverydate/deliverydate_update_date/update_customer_deliverydate');
+                        $enableview = $config->getValue('deliverydate/deliverydate_general/display_on');
+
+                        if (strlen($enableview) > 0) {
+                            $enableview = explode(",", $enableview);
+                        } else {
+                            $enableview = [];
+                        }
+                        $orderId = $order->getId();
+                        if ($isEnable && (in_array($requestname, $enableview) || in_array("all", $enableview))) {
+                            $shipping_arrival_date = $order->getShippingArrivalDate();
+                            if ($order->getShippingArrivalSlot() == null || $order->getShippingArrivalSlot() == '') {
+                                $timeslot = null;
+                            } else {
+                                $timeslot = $order->getShippingArrivalSlot();
+                            }
+                            if ($shipping_arrival_date != '' && !is_null($shipping_arrival_date) && $update_deliverydate && $order->canShip()) {
+                                $orderStatus = $order->getStatus();
+                                $ruleActivation = $config->getValue('deliverydate/deliverydate_update_date/rule_activation');
+                                if($ruleActivation == NULL || $ruleActivation == ''){
+                                    $ruleActivation = 'status';
+                                }
+                                $updateDate = false; //Update date id its true
+                                if ($ruleActivation == 'status') {
+                                    $order_status = $config->getValue('deliverydate/deliverydate_update_date/order_status');
+                                    if (in_array($orderStatus, explode(',', $order_status))) {
+                                        $updateDate = true;
+                                    }
+                                }
+                                if ($ruleActivation == 'date') {
+                                    $date_interval = $config->getValue('deliverydate/deliverydate_update_date/date_interval');
+                                    $this->_timezone = $objectManager->get('\Magento\Framework\Stdlib\DateTime\TimezoneInterface');
+                                    $date = $this->_timezone->date()->format('Y-m-d');
+                                    $todayDate = date('Y-m-d', strtotime($date));
+                                    $selectedDate = date('Y-m-d', strtotime('-' . $date_interval . ' day', strtotime($shipping_arrival_date)));
+
+                                    if ($selectedDate >= $todayDate) {
+                                        $updateDate = true;
+                                    }
+                                }
+                                if ($updateDate == true) {
+                                    ?>
+                                    <div class="custom-deliverydate" x-data="deliveryDateUpdater()">
+                                        <div x-data="initDatePicker()" x-show="editing" id="custom-appjetty-deliverydate" class="mt-2 relative" >
+                                                <input type="text"
+                                                       name="shipping_arrival_date"
+                                                       id="date-picker"
+                                                       title=""
+                                                       x-model="value"
+                                                       @click="showDatepicker = !showDatepicker"
+                                                       @keydown="onInputKeydown($event)"
+                                                       @paste="$event.preventDefault()"
+                                                       autocomplete="off"
+                                                       class="form-input"
+                                                >
+                                                <div x-effect="if (value) { selectedDate = value; loadTimeslots() }"></div>
+                                                <label x-show="showTimeslot" x-text="labelText"></label>
+
+                                                <div x-show="showTimeslot">
+                                                    <ul>
+                                                      <template x-for="(slot, index) in timeslots" :key="index">
+                                                        <li :class="{ 'disable_opt': slot.disabled }">
+                                                          <span x-text="slot.label"></span>
+                                                        </li>
+                                                      </template>
+                                                    </ul>
+                                                </div>
+                                                <input type="hidden" id="shipping_arrival_slot" name="shipping_arrival_slot" x-ref="timeSlot" />
+                                            <div class="top-0 right-0 z-10 text-gray-300"
+                                                @click="showDatepicker = true"
+                                                x-show="!showDatepicker"
+                                            >
+                                               <img class="ui-datepicker-trigger v-middle" src="https://bm4.medeka-ontwikkeling.nl/static/version1748009404/frontend/Smartwave/porto_benem/nl_NL/Biztech_Deliverydate/images/datepicker.png" alt="Datum selecteren" title="Datum selecteren">
+                                            </div>
+                                            <div
+                                                class="absolute left-0 top-full p-3 mt-12 bg-white rounded-lg shadow calendar-window"
+                                                style="width: 14rem"
+                                                x-cloak
+                                                x-transition x-show="showDatepicker"
+                                                @click.outside="showDatepicker = false"
+                                                @keydown="onCalendarKeydown($event)"
+                                            >
+
+                                                <div class="flex justify-between items-center -mx-1 py-2" style="background-color: #67ae44;">
+                                                    <button
+                                                        type="button"
+                                                        class="inline-flex p-1 rounded transition-colors cursor-pointer hover:bg-gray-100"
+                                                        :class="{'cursor-not-allowed opacity-0': isFirstMonth()}"
+                                                        :disabled="isFirstMonth()"
+                                                        :title="labels.prevText"
+                                                        @click="goToMonth(month - 1)">
+                                                        <?= /** @noEscape */ $heroicons->chevronLeftHtml('w-6 h-6', 25, 25); ?>
+                                                        <span class="sr-only" x-text="labels.prevText"></span>
+                                                    </button>
+                                                    <div class="datepicker-title">
+                                                        <span class="text-sm rounded border-gray-300 datepicker_month" x-text="labels.monthNames[month]"></span>
+                                                        <span class="text-sm rounded border-gray-300 datepicker_year" x-text="year"></span>
+                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        class="inline-flex p-1 rounded transition-colors cursor-pointer hover:bg-gray-100"
+                                                        :title="labels.nextText"
+                                                        @click="goToMonth(month + 1)">
+                                                        <?= /** @noEscape */ $heroicons->chevronRightHtml('w-4 h-4', 25, 25); ?>
+                                                        <span class="sr-only" x-text="labels.nextText"></span>
+                                                    </button>
+                                                </div>
+
+                                                <div class="grid grid-cols-7 -mx-1 grid-outline-rb">
+                                                    <template x-for="(day, index) in labels.dayNamesShort" :key="index">
+                                                        <div class="grid-outline-tl p-1">
+                                                            <div x-text="day"
+                                                                 class="font-bold text-center text-xs w-4 h-4 flex items-center
+                                                                    justify-center uppercase"
+                                                            ></div>
+                                                        </div>
+                                                    </template>
+                                                    <template x-for="(date, dateIndex) in dayNumbers" :key="dateIndex">
+                                                        <button type="button" class="grid-outline-tl p-1"
+                                                            :style="getDayStyle(date)"
+                                                                @click="if (canSelectDate(date)) { setDate(date) }"
+                                                        >
+                                                            <div
+                                                                x-text="date"
+                                                                class="text-center text-xs rounded-full transition-colors
+                                                                    flex items-center justify-center w-4 h-4"
+                                                                :class="{
+                                                                    'cursor-pointer hover:bg-gray-100 hover:text-black': canSelectDate(date),
+                                                                    'bg-primary text-white': isToday(date),
+                                                                    'text-gray-500': !canSelectDate(date)
+                                                                }"
+                                                            ></div>
+                                                        </button>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" id="orderid" name="orderid" value="<?= $orderId ?>" x-ref="orderId"/>
+                                        <input type="hidden" id="orderedate" name="orderedate" value="<?= $shipping_arrival_date ?>" x-ref="orderDate" />
+                                        <input type="hidden" id="orderetimeslot" name="orderetimeslot" value="<?= $timeslot ?>" x-ref="orderTimeSlot" />
+                                        <div id="deliverydate-edit" x-show="!editing" @click="editing = true">Edit</div>
+                                        <div id="update-deliverydate" x-show="editing" @click="update" style="display: none;">Update Delivery Date</div>
+                                        <div id="cancel_update" x-show="editing" style="display: block;" @click="editing = false">Cancel</div>
+                                    </div>
+                                    
+                                    <?php
+                                }
+                            }
+                        }
+                        /* end */
+                        ?>
+                    <?php else: ?>
+                        <?= $escaper->escapeHtml(__('No shipping information available')) ?>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php endif; ?>
+        <div class="w-full py-4">
+            <p class="font-semibold mb-2"><?= $escaper->escapeHtml(__('Payment Method')) ?></p>
+            <div class="box-content">
+                <?= $escaper->escapeHtml($paymentInfo->getPaymentTitle($order)) ?>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function initDatePicker() {
+        const format = 'dd/mm/yyyy';
+        const firstDayOfWeek = 0;
+        const labelsConfig = {"closeText":"Gereed","prevText":"Vorige","nextText":"Volgende","currentText":"Vandaag","monthNames":["Januari","Februari","Maart","April","Mei","Juni","Juli","Augustus","September","Oktober","November","December"],"monthNamesShort":["jan.","feb.","mrt.","apr.","mei","jun.","jul.","aug.","sep.","okt.","nov.","dec."],"dayNames":["zondag","maandag","dinsdag","woensdag","donderdag","vrijdag","zaterdag"],"dayNamesShort":["zo","ma","di","wo","do","vr","za"],"dayNamesMin":["zo","ma","di","wo","do","vr","za"]};
+
+        return {
+            showDatepicker: false,
+            disabledDates: ['2025-06-06', '2025-06-10'],
+            value: '',
+            month: '',
+            year: '',
+            today: new Date(),
+            dayNumbers: [],
+            yearRange: [],
+            labels: labelsConfig,
+            dateFormatter: DateFormatter(format),
+            calendarWindow: null,
+
+            selectedDate: '',
+            timeslots: [],
+            showTimeslot: false,
+            labelText: 'Available Timeslots',
+
+            init() {
+                const today = new Date();
+                this.initYearsRange();
+                this.correctWeeks();
+
+                this.$nextTick(() => {
+                    this.month = today.getMonth();
+                    this.year = today.getFullYear();
+                    this.recalcDaysGrid();
+                    this.calendarWindow = this.$root.querySelector('.calendar-window');
+                });
+            },
+
+            initYearsRange() {
+                const today = new Date();
+                const thisYear = today.getFullYear();
+                const minimalYear = thisYear;
+                const maxYear = thisYear + 120;
+                const range = [];
+
+                for (let year = maxYear; year >= minimalYear; year--) {
+                    range.unshift(year);
+                }
+
+                this.yearRange = range;
+            },
+
+            correctWeeks() {
+                if (firstDayOfWeek > 0) {
+                    this.labels.dayNames = [
+                        ...this.labels.dayNames.slice(firstDayOfWeek),
+                        ...this.labels.dayNames.slice(0, firstDayOfWeek)
+                    ];
+                    this.labels.dayNamesShort = [
+                        ...this.labels.dayNamesShort.slice(firstDayOfWeek),
+                        ...this.labels.dayNamesShort.slice(0, firstDayOfWeek)
+                    ];
+                }
+            },
+
+            isToday(date) {
+                const today = new Date();
+                const d = new Date(this.year, this.month, date);
+
+                return today.toDateString() === d.toDateString();
+            },
+
+            setDate(date) {
+                const selectedDate = new Date(this.year, this.month, date);
+                this.value = this.dateFormatter.format(selectedDate);
+                this.showDatepicker = false;
+            },
+
+            recalcDaysGrid() {
+                const daysInMonth = new Date(this.year, this.month + 1, 0).getDate();
+                const dayNumbers = [];
+
+                for (let i = 1; i <= daysInMonth; i++) {
+                    dayNumbers.push(i);
+                }
+                for (let i = 1; i <= 35 - daysInMonth; i++) {
+                    dayNumbers.push(' ');
+                }
+
+                this.dayNumbers = dayNumbers;
+            },
+
+            getDayStyle(day) {
+                const firstDayInWeek = this.correctDayOfWeek(new Date(this.year, this.month).getDay());
+
+                if (day.toString() === "1") {
+                    return `grid-column-start: ${firstDayInWeek + 1}`;
+                }
+
+                return '';
+            },
+
+            correctDayOfWeek(day) {
+                let corrected = day - firstDayOfWeek;
+
+                if (corrected < 0) {
+                    corrected += 7;
+                }
+
+                return corrected;
+            },
+
+            goToMonth(month) {
+                const date = new Date(this.year, this.month);
+
+                date.setMonth(month);
+                this.month = date.getMonth();
+                this.year = date.getFullYear();
+                this.recalcDaysGrid();
+            },
+
+            goToday() {
+                this.year = this.today.getFullYear();
+                this.month = this.today.getMonth();
+                this.recalcDaysGrid();
+            },
+
+            isInOld(date) {
+                const today = new Date();
+
+                return this.year === today.getFullYear() &&
+                    this.month === today.getMonth() &&
+                    date < today.getDate()
+            },
+
+            isFirstMonth() {
+                return this.year === this.yearRange[0] && this.month === this.today.getMonth();
+            },
+
+            isLastMonth() {
+                return this.year === this.yearRange[this.yearRange.length - 1] &&
+                    this.month === this.today.getMonth()
+            },
+
+            canSelectDate(date) {
+                const dateObj = new Date(this.year, this.month, date);
+                const dayOfWeek = dateObj.getDay(); // Sunday = 0, Saturday = 6
+
+                const isoDate =
+                    dateObj.getFullYear() + '-' +
+                    String(dateObj.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(dateObj.getDate()).padStart(2, '0');
+
+                const isInDisabledList = this.disabledDates.includes(isoDate);
+
+                const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+                return !this.isToday(date) && !this.isInOld(date) && !isWeekend && !isInDisabledList;
+            },
+
+            onInputKeydown(evt) {
+                const keyCode = evt.code;
+
+                if (keyCode === "Escape") {
+                    this.showDatepicker = false;
+                }
+
+                if (keyCode === "Tab") {
+                    return;
+                }
+
+                if (keyCode === "Enter") {
+                    evt.preventDefault();
+                    this.showDatepicker = true;
+                    hyva.trapFocus(this.calendarWindow);
+                }
+
+                if (keyCode !== "Enter") {
+                    evt.preventDefault();
+                }
+            },
+            onCalendarKeydown(evt) {
+                const keyCode = evt.code;
+
+                if (keyCode === "Escape") {
+                    hyva.releaseFocus(this.calendarWindow);
+                    this.showDatepicker = false;
+                }
+            },
+
+            loadTimeslots() {
+                const timeslotAlreadySelected = document.querySelector('[name="orderetimeslot"]')?.value;
+                if (!timeslotAlreadySelected) return;
+                const formKey = window.FORM_KEY || document.querySelector('input[name="form_key"]')?.value || '';
+
+              fetch('/deliverydate/index/calenderslot', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({ selectedDate: this.selectedDate,  form_key: formKey })
+              })
+              .then(res => res.json())
+              .then(data => {
+                this.showTimeslot = true;
+                if (data.timeslot === 'empty' || data.timeslot.length === 0) {
+                  this.labelText = 'No Timeslot available';
+                  this.timeslots = [];
+                  return;
+                }
+
+                this.timeslots = data.timeslot.map(slot => ({
+                  label: `${slot.start_time} - ${slot.end_time}`,
+                  disabled: slot.disable_value === 'true'
+                }));
+              });
+            }
+        }
+    }
+
+    function DateFormatter(template) {
+        return {
+            template: template,
+            map: {
+                'd' : { day: 'numeric' },
+                'dd': { day: '2-digit' },
+                'D' : { weekday: 'short' },
+                'DD': { weekday: 'long' },
+                'E' : { weekday: 'short' },
+                'EE' : { weekday: 'short' },
+                'EEE' : { weekday: 'short' },
+                'EEEE': { weekday: 'long' },
+                'M': { month: '2-digit' },
+                'MM': { month: '2-digit' },
+                'MMM' : { month: 'short' },
+                'MMMM': { month: 'long' },
+                'm' : { month : 'numeric'},
+                'mm': { month: '2-digit' },
+                'y': { year: 'numeric' },
+                'Y': { year: 'numeric' },
+                'yy': { year: 'numeric' },
+                'yyyy': { year: 'numeric' }
+            },
+            format(date) {
+                const parsedFormat = template.match(new RegExp(/([mM]+)|([dD]+)|([yY]+)/g));
+
+                const options = parsedFormat.reduce((accumulator, match) => {
+                    if (this.map[match]) {
+                        return {
+                            ...accumulator,
+                            ...this.map[match]
+                        }
+                    }
+
+                    return accumulator;
+                }, {})
+
+                const dateData = Intl.DateTimeFormat('en-US', options).formatToParts(date);
+
+                return parsedFormat.reduce((result, valueTemplate) => {
+                    const dateItem = dateData.find(item => item.type === Object.keys(this.map[valueTemplate])[0]);
+
+                    if (dateItem) {
+                        return result.replace(valueTemplate, dateItem.value);
+                    }
+                    return result;
+                }, this.template);
+            }
+        }
+    }
+</script>
+<script>
+  function deliveryDateUpdater() {
+    return {
+      editing: false,
+
+      update() {
+        const root = this.$root;
+
+        const date = root.querySelector('[name="shipping_arrival_date"]')?.value;
+        const slot = root.querySelector('[name="shipping_arrival_slot"]')?.value;
+        const orderId = root.querySelector('[name="orderid"]')?.value;
+        const orderDate = root.querySelector('[name="orderedate"]')?.value;
+        const orderTimeSlot = root.querySelector('[name="orderetimeslot"]')?.value || null;
+
+        if (!date) {
+          alert('Please Select Delivery Date');
+          return;
+        }
+
+        if (!slot || slot === 'undefined') {
+          alert('Please Select A Timeslot');
+          return;
+        }
+
+        const selectedTimeslot = orderTimeSlot ? slot : null;
+
+        fetch('/deliverydate/index/updatedeliverydate', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-Requested-With': 'XMLHttpRequest'
+          },
+          body: new URLSearchParams({
+            selectedDate: date,
+            selectedTimeslot: selectedTimeslot,
+            orderId: orderId,
+            ordereDate: orderDate,
+            ordereTimeslot: orderTimeSlot
+          })
+        }).then(res => res.json())
+          .then(() => window.location.reload())
+          .catch(err => {
+            console.error(err);
+            alert('Failed to update delivery date.');
+          });
+      }
+    }
+  }
+</script>

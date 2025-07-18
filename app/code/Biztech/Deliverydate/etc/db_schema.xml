@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+<table name="quote">
+	<column xsi:type="datetime" name="shipping_arrival_date" nullable="true" comment="Shipping arrival date for Delivery Date Scheduler"/>
+	<column xsi:type="text" name="shipping_arrival_comments" nullable="true" comment="Shipping arrival comments for Delivery Date Scheduler"/>
+	<column xsi:type="text" name="shipping_arrival_slot" nullable="true" comment="Shipping arrival slots for Delivery Date Scheduler"/>
+	<column xsi:type="decimal" name="delivery_charges" nullable="true" comment="Delivery Charges for Delivery Date Scheduler"/>
+    <column xsi:type="decimal" name="same_day_charges" nullable="true" default="0.00" comment="Same Day Delivery Charges of Delivery Date Scheduler"/>
+    <column xsi:type="smallint" name="call_before_delivery" nullable="true" default="0" comment="Call Before Delivery of Delivery Date Scheduler"/>
+   </table>
+   <table name="sales_order">
+	<column xsi:type="datetime" name="shipping_arrival_date" nullable="true" comment="Shipping arrival date for Delivery Date Scheduler"/>
+	<column xsi:type="text" name="shipping_arrival_comments" nullable="true" comment="Shipping arrival comments for Delivery Date Scheduler"/>
+	<column xsi:type="text" name="shipping_arrival_slot" nullable="true" comment="Shipping arrival slots for Delivery Date Scheduler"/>
+	<column xsi:type="decimal" name="delivery_charges" nullable="true" comment="Delivery Charges for Delivery Date Scheduler"/>
+    <column xsi:type="decimal" name="base_delivery_charges" nullable="true" comment="Shipping arrival slots of Delivery Date Scheduler"/>
+    <column xsi:type="decimal" name="same_day_charges" nullable="true" default="0.00" comment="Same Day Delivery Charges of Delivery Date Scheduler"/>
+    <column xsi:type="smallint" name="call_before_delivery" nullable="true" default="0" comment="Call Before Delivery of Delivery Date Scheduler"/>
+   </table>
+   <table name="quote_address">
+	<column xsi:type="datetime" name="shipping_arrival_date" nullable="true" comment="Shipping arrival date for Delivery Date Scheduler"/>
+	<column xsi:type="text" name="shipping_arrival_comments" nullable="true" comment="Shipping arrival comments for Delivery Date Scheduler"/>
+	<column xsi:type="text" name="shipping_arrival_slot" nullable="true" comment="Shipping arrival slots for Delivery Date Scheduler"/>
+	<column xsi:type="decimal" name="delivery_charges" nullable="true" comment="Delivery Charges for Delivery Date Scheduler"/>
+    <column xsi:type="decimal" name="same_day_charges" nullable="true" default="0.00" comment="Same Day Delivery Charges of Delivery Date Scheduler"/>
+    <column xsi:type="smallint" name="call_before_delivery" nullable="true" default="0" comment="Call Before Delivery of Delivery Date Scheduler"/>
+   </table>
+   <table name="sales_order_grid">
+	<column xsi:type="datetime" name="shipping_arrival_date" nullable="false" comment="Delivery Date"/>
+	<column xsi:type="text" name="shipping_arrival_comments" nullable="false" comment="Delivery comment"/>
+	<column xsi:type="text" name="shipping_arrival_slot" nullable="false" comment="Delivery Slot"/>
+    <column xsi:type="decimal" name="same_day_charges" nullable="true" default="0.00" comment="Same Day Delivery Charges of Delivery Date Scheduler"/>
+    <column xsi:type="smallint" name="call_before_delivery" nullable="true" default="0" comment="Call Before Delivery of Delivery Date Scheduler"/>
+   </table>
+   <table name="sales_invoice">
+	<column xsi:type="datetime" name="shipping_arrival_date" nullable="true" comment="Shipping arrival date for Delivery Date Scheduler"/>
+	<column xsi:type="text" name="shipping_arrival_comments" nullable="true" comment="Shipping arrival comments for Delivery Date Scheduler"/>
+	<column xsi:type="decimal" name="delivery_charges" nullable="true" comment="Delivery Charges for Delivery Date Scheduler"/>
+    <column xsi:type="decimal" name="same_day_charges" nullable="true" default="0.00" comment="Same Day Delivery Charges of Delivery Date Scheduler"/>
+    <column xsi:type="smallint" name="call_before_delivery" nullable="true" default="0" comment="Call Before Delivery of Delivery Date Scheduler"/>
+   </table>
+    <table name="sales_creditmemo">
+	<column xsi:type="datetime" name="shipping_arrival_date" nullable="true" comment="Shipping arrival date for Delivery Date Scheduler"/>
+	<column xsi:type="text" name="shipping_arrival_comments" nullable="true" comment="Shipping arrival comments for Delivery Date Scheduler"/>
+	<column xsi:type="text" name="shipping_arrival_slot" nullable="true" comment="Shipping arrival slots for Delivery Date Scheduler"/>
+	<column xsi:type="decimal" name="delivery_charges" nullable="true" comment="Delivery Charges for Delivery Date Scheduler"/>
+    <column xsi:type="decimal" name="same_day_charges" nullable="true" default="0.00" comment="Same Day Delivery Charges of Delivery Date Scheduler"/>
+    <column xsi:type="smallint" name="call_before_delivery" nullable="true" default="0" comment="Call Before Delivery of Delivery Date Scheduler"/>
+   </table>
+</schema>

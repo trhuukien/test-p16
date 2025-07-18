@@ -1,0 +1,101 @@
+define([
+    'jquery',
+    'uiComponent',
+    'Magento_Checkout/js/model/quote',
+    'Magento_Checkout/js/model/step-navigator',
+    'Magento_Checkout/js/model/sidebar',
+    'moment'
+], function ($, Component, quote, stepNavigator, sidebarModel , moment) {
+    'use strict';
+
+    return Component.extend({
+        defaults: {
+            template: 'Biztech_Deliverydate/deliverydate-information'
+        },
+
+        /**
+         * @return {Boolean}
+         */
+        isVisible: function () {
+            return !quote.isVirtual() && stepNavigator.isProcessed('shipping') && window.deliverydateConfig.general.enabled && (this.getDeliveryDate() != "") ;
+        },
+
+        /**
+         * Provide the delivery date
+         * @return {String}
+         */
+        getDeliveryDate: function () {   
+            var selecteddeliverydate = window.localStorage.getItem('selecteddeliverydate');
+            var selectedslot = window.localStorage.getItem('selectedslot');
+            
+            // Load the Dutch locale explicitly without 'ste' or 'de' for the day ordinal
+            if (moment.locales().indexOf('nl') === -1) {
+                moment.defineLocale('nl', {
+                    months: 'januari_februari_maart_april_mei_juni_juli_augustus_september_oktober_november_december'.split('_'),
+                    monthsShort: 'jan_feb_mrt_apr_mei_jun_jul_aug_sep_okt_nov_dec'.split('_'),
+                    weekdays: 'zondag_maandag_dinsdag_woensdag_donderdag_vrijdag_zaterdag'.split('_'),
+                    weekdaysShort: 'zo_ma_di_wo_do_vr_za'.split('_'),
+                    weekdaysMin: 'zo_ma_di_wo_do_vr_za'.split('_'),
+                    longDateFormat: {
+                        LT: 'HH:mm',
+                        LTS: 'HH:mm:ss',
+                        L: 'DD-MM-YYYY',
+                        LL: 'D MMMM YYYY',
+                        LLL: 'D MMMM YYYY HH:mm',
+                        LLLL: 'dddd, D MMMM YYYY HH:mm'
+                    },
+                    calendar: {
+                        sameDay: '[Vandaag om] LT',
+                        nextDay: '[Morgen om] LT',
+                        nextWeek: 'dddd [om] LT',
+                        lastDay: '[Gisteren om] LT',
+                        lastWeek: '[afgelopen] dddd [om] LT',
+                        sameElse: 'L'
+                    },
+                    relativeTime: {
+                        future: 'over %s',
+                        past: '%s geleden',
+                        s: 'een paar seconden',
+                        m: 'één minuut',
+                        mm: '%d minuten',
+                        h: 'één uur',
+                        hh: '%d uur',
+                        d: 'één dag',
+                        dd: '%d dagen',
+                        M: 'één maand',
+                        MM: '%d maanden',
+                        y: 'één jaar',
+                        yy: '%d jaar'
+                    },
+                    ordinal: function (number) {
+                        // Remove 'ste' or 'de', just return the number
+                        return number.toString();
+                    },
+                    week: {
+                        dow: 1, // Monday is the first day of the week.
+                        doy: 4  // The week that contains Jan 4th is the first week of the year.
+                    }
+                });
+            }
+        
+            // Set Moment.js locale to Dutch (nl)
+            moment.locale('nl');
+            
+            if (selecteddeliverydate != '' && selecteddeliverydate != undefined && selectedslot != '' && selectedslot != undefined) {
+                return moment(selecteddeliverydate, "DD-MM-YYYY").format("dddd, MMMM Do YYYY") + ' - ' + selectedslot;
+            } else if (selecteddeliverydate != '' && selecteddeliverydate != undefined) {
+                return moment(selecteddeliverydate, "DD-MM-YYYY").format("dddd, MMMM Do YYYY");
+            } else { 
+                return '';
+            }
+        },        
+
+        /**
+         * Back to DeliveryDate selection.
+         */
+        backToDeliverydate: function () {
+            sidebarModel.hide();
+            stepNavigator.navigateTo('shipping', 'opc-shipping_method');
+        }
+    });
+});
